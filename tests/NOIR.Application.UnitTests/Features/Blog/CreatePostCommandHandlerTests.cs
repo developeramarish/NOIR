@@ -1,6 +1,8 @@
 using NOIR.Application.Features.Blog.Commands.CreatePost;
 using NOIR.Application.Features.Blog.DTOs;
+using NOIR.Application.Features.Blog.Services;
 using NOIR.Application.Features.Blog.Specifications;
+using NOIR.Domain.ValueObjects;
 
 namespace NOIR.Application.UnitTests.Features.Blog;
 
@@ -16,6 +18,7 @@ public class CreatePostCommandHandlerTests
     private readonly Mock<IRepository<PostTag, Guid>> _tagRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ICurrentUser> _currentUserMock;
+    private readonly Mock<IContentAnalyzer> _contentAnalyzerMock;
     private readonly CreatePostCommandHandler _handler;
 
     private const string TestTenantId = "test-tenant";
@@ -27,15 +30,22 @@ public class CreatePostCommandHandlerTests
         _tagRepositoryMock = new Mock<IRepository<PostTag, Guid>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _currentUserMock = new Mock<ICurrentUser>();
+        _contentAnalyzerMock = new Mock<IContentAnalyzer>();
 
         // Setup default current user
         _currentUserMock.Setup(x => x.TenantId).Returns(TestTenantId);
+
+        // Setup default content analyzer (returns empty metadata)
+        _contentAnalyzerMock
+            .Setup(x => x.Analyze(It.IsAny<string?>()))
+            .Returns(new ContentMetadata());
 
         _handler = new CreatePostCommandHandler(
             _postRepositoryMock.Object,
             _tagRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _currentUserMock.Object);
+            _currentUserMock.Object,
+            _contentAnalyzerMock.Object);
     }
 
     private static CreatePostCommand CreateTestCommand(

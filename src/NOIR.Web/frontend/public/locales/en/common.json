@@ -1429,7 +1429,9 @@
     "noRecentOrders": "No recent orders",
     "noTopProducts": "No sales data yet",
     "loadError": "Failed to load dashboard",
-    "loadErrorDescription": "There was an error loading the dashboard data. Please try again."
+    "loadErrorDescription": "There was an error loading the dashboard data. Please try again.",
+    "comingSoon": "Dashboard coming soon",
+    "comingSoonDesc": "This dashboard is being built. Use the sidebar to navigate to different sections."
   },
   "reports": {
     "title": "Reports & Analytics",
@@ -3529,5 +3531,18 @@
       "Inactive": "Inactive",
       "Suspended": "Suspended"
     }
+  },
+  "serverHealth": {
+    "shuttingDown": "Server is restarting...",
+    "recovering": "Server recovered. Refreshing data..."
+  },
+  "pwa": {
+    "updateAvailable": "A new version is available",
+    "updateNow": "Update now",
+    "dismiss": "Dismiss",
+    "installTitle": "Install NOIR",
+    "installDescription": "Install NOIR as an app for quick access",
+    "install": "Install",
+    "offlineReady": "App ready for offline use"
   }
 }

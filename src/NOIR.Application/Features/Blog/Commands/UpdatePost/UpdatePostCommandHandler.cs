@@ -1,3 +1,4 @@
+using NOIR.Application.Features.Blog.Services;
 
 namespace NOIR.Application.Features.Blog.Commands.UpdatePost;
 
@@ -11,19 +12,22 @@ public class UpdatePostCommandHandler
     private readonly IRepository<PostCategory, Guid> _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
+    private readonly IContentAnalyzer _contentAnalyzer;
 
     public UpdatePostCommandHandler(
         IRepository<Post, Guid> postRepository,
         IRepository<PostTag, Guid> tagRepository,
         IRepository<PostCategory, Guid> categoryRepository,
         IUnitOfWork unitOfWork,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IContentAnalyzer contentAnalyzer)
     {
         _postRepository = postRepository;
         _tagRepository = tagRepository;
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _contentAnalyzer = contentAnalyzer;
     }
 
     public async Task<Result<PostDto>> Handle(
@@ -61,6 +65,10 @@ public class UpdatePostCommandHandler
             command.Excerpt,
             command.ContentJson,
             command.ContentHtml);
+
+        // Analyze content and store metadata for frontend conditional rendering
+        var contentMetadata = _contentAnalyzer.Analyze(command.ContentHtml);
+        post.SetContentMetadata(contentMetadata);
 
         // Update featured image (prefer MediaFile reference over URL)
         if (command.FeaturedImageId.HasValue)
@@ -193,8 +201,19 @@ public class UpdatePostCommandHandler
             authorName,
             post.ViewCount,
             post.ReadingTimeMinutes,
+            MapContentMetadata(post.ContentMetadata),
             tags,
             post.CreatedAt,
             post.ModifiedAt);
     }
+
+    private static ContentMetadataDto? MapContentMetadata(ContentMetadata? metadata) =>
+        metadata is null
+            ? null
+            : new ContentMetadataDto(
+                metadata.HasCodeBlocks,
+                metadata.HasMathFormulas,
+                metadata.HasMermaidDiagrams,
+                metadata.HasTables,
+                metadata.HasEmbeddedMedia);
 }

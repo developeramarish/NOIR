@@ -1,7 +1,9 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+import { localeHmrPlugin } from './plugins/vite-locale-hmr'
 
 /**
  * Suppresses the false-positive "Something has shimmed the React DevTools
@@ -19,9 +21,65 @@ const suppressDevToolsShimWarning = (): Plugin => ({
   },
 })
 
+// Only enable PWA in main app build (not Storybook)
+const isStorybook = process.argv.some(arg => arg.includes('storybook'))
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [suppressDevToolsShimWarning(), react(), tailwindcss()],
+  plugins: [
+    suppressDevToolsShimWarning(),
+    react(),
+    tailwindcss(),
+    localeHmrPlugin(),
+    !isStorybook && VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['favicon.ico', 'favicon.svg', 'icons/*.png'],
+      workbox: {
+        runtimeCaching: [
+          {
+            // API calls: NetworkFirst with 3s timeout
+            urlPattern: /^https?:\/\/.*\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'noir-api-cache',
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+          {
+            // Images: CacheFirst with 30 day expiration
+            urlPattern: /\.(png|jpg|jpeg|gif|svg|webp|avif)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'noir-images',
+              expiration: { maxEntries: 200, maxAgeSeconds: 2592000 },
+            },
+          },
+          {
+            // JS/CSS: StaleWhileRevalidate
+            urlPattern: /\.(js|css)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'noir-assets',
+              expiration: { maxEntries: 100, maxAgeSeconds: 604800 },
+            },
+          },
+          {
+            // Fonts: CacheFirst with 1 year
+            urlPattern: /\.(woff|woff2|ttf|eot)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'noir-fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 31536000 },
+            },
+          },
+        ],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallbackDenylist: [/^\/api\//, /^\/hubs\//, /^\/hangfire\//],
+      },
+      manifest: false, // Use existing manifest.json in public/
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@uikit': path.resolve(__dirname, './src/uikit'),
@@ -49,6 +107,12 @@ export default defineConfig({
             }
             if (id.includes('framer-motion')) {
               return 'vendor-framer'
+            }
+            if (id.includes('katex')) {
+              return 'vendor-katex'
+            }
+            if (id.includes('shiki')) {
+              return 'vendor-shiki'
             }
             if (id.includes('@radix-ui')) {
               return 'vendor-radix'

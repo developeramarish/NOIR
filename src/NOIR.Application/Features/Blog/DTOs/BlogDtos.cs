@@ -1,6 +1,16 @@
 namespace NOIR.Application.Features.Blog.DTOs;
 
 /// <summary>
+/// Content feature metadata for conditional frontend rendering.
+/// </summary>
+public sealed record ContentMetadataDto(
+    bool HasCodeBlocks,
+    bool HasMathFormulas,
+    bool HasMermaidDiagrams,
+    bool HasTables,
+    bool HasEmbeddedMedia);
+
+/// <summary>
 /// Full post details for editing.
 /// </summary>
 public sealed record PostDto(
@@ -30,6 +40,7 @@ public sealed record PostDto(
     string? AuthorName,
     long ViewCount,
     int ReadingTimeMinutes,
+    ContentMetadataDto? ContentMetadata,
     List<PostTagDto> Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ModifiedAt);

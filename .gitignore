@@ -35,6 +35,9 @@ tmpclaude-*
 .storybook.log
 .script-output.log
 
+# Lifecycle shutdown marker (written during graceful shutdown)
+.shutdown-marker.json
+
 # =============================================================================
 # .NET BUILD OUTPUTS
 # =============================================================================

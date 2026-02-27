@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { BrandingProvider } from '@/contexts/BrandingContext'
 import { RegionalSettingsProvider } from '@/contexts/RegionalSettingsContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
+import { ServerHealthProvider } from '@/contexts/ServerHealthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { DensityProvider } from '@/contexts/DensityContext'
@@ -13,6 +14,9 @@ import { Permissions } from '@/hooks/usePermissions'
 import { PortalLayout } from '@/layouts/PortalLayout'
 import { PageSkeleton } from '@uikit'
 import { CommandProvider, CommandPalette } from '@/components/command-palette'
+import { ServerRecoveryBanner } from '@/components/ServerRecoveryBanner'
+import { PWAUpdatePrompt } from '@/components/pwa/PWAUpdatePrompt'
+import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt'
 
 import { LoginPage } from '@/layouts/auth/login/LoginPage'
 import { WelcomePage } from '@/portal-app/welcome/features/welcome/WelcomePage'
@@ -90,8 +94,10 @@ export const App = () => {
           <AuthProvider>
           <BrandingProvider>
             <RegionalSettingsProvider>
+              <ServerHealthProvider>
               <NotificationProvider>
                 <BrowserRouter>
+                  <ServerRecoveryBanner />
                   <CommandProvider>
                     <Toaster
                       position="top-center"
@@ -190,8 +196,13 @@ export const App = () => {
                     {/* Global Command Palette (Cmd+K / Ctrl+K) */}
                     <CommandPalette />
                   </CommandProvider>
+
+                  {/* PWA update and install prompts */}
+                  <PWAUpdatePrompt />
+                  <PWAInstallPrompt />
                 </BrowserRouter>
               </NotificationProvider>
+              </ServerHealthProvider>
             </RegionalSettingsProvider>
           </BrandingProvider>
           </AuthProvider>

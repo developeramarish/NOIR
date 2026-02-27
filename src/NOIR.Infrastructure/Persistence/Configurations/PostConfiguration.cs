@@ -73,6 +73,16 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder.Property(e => e.AllowIndexing)
             .HasDefaultValue(true);
 
+        // Content metadata (owned value object — stores content feature flags)
+        builder.OwnsOne(e => e.ContentMetadata, cm =>
+        {
+            cm.Property(m => m.HasCodeBlocks).HasColumnName("ContentMeta_HasCodeBlocks").HasDefaultValue(false);
+            cm.Property(m => m.HasMathFormulas).HasColumnName("ContentMeta_HasMathFormulas").HasDefaultValue(false);
+            cm.Property(m => m.HasMermaidDiagrams).HasColumnName("ContentMeta_HasMermaidDiagrams").HasDefaultValue(false);
+            cm.Property(m => m.HasTables).HasColumnName("ContentMeta_HasTables").HasDefaultValue(false);
+            cm.Property(m => m.HasEmbeddedMedia).HasColumnName("ContentMeta_HasEmbeddedMedia").HasDefaultValue(false);
+        });
+
         // Statistics
         builder.Property(e => e.ViewCount)
             .HasDefaultValue(0L);

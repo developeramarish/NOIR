@@ -19,7 +19,9 @@ global using System.Text.Json.Nodes;
 global using System.Text.Json.Serialization;
 global using System.Text.RegularExpressions;
 global using System.Net.Http.Json;
+global using System.Runtime.CompilerServices;
 global using System.Threading;
+global using System.Threading.Channels;
 global using System.Threading.Tasks;
 
 // Microsoft - ASP.NET Core
@@ -191,6 +193,7 @@ global using NOIR.Domain.ValueObjects;
 global using Microsoft.AspNetCore.Authorization;
 
 // NOIR Infrastructure
+global using NOIR.Infrastructure.Lifecycle;
 global using NOIR.Infrastructure.Audit;
 global using NOIR.Infrastructure.BackgroundJobs;
 global using NOIR.Infrastructure.Email;
@@ -210,6 +213,7 @@ global using NOIR.Infrastructure.Storage;
 global using NOIR.Infrastructure.Localization;
 global using NOIR.Infrastructure.Caching;
 global using NOIR.Infrastructure.Media;
+global using NOIR.Infrastructure.Sse;
 global using NOIR.Infrastructure.Persistence.SeedData;
 global using NOIR.Infrastructure.Persistence.SeedData.Data;
 

@@ -17,4 +17,14 @@ public interface INotificationClient
     /// Updates the unread notification count.
     /// </summary>
     Task UpdateUnreadCount(int count);
+
+    /// <summary>
+    /// Notifies clients that the server is shutting down gracefully.
+    /// </summary>
+    Task ReceiveServerShutdown(string reason);
+
+    /// <summary>
+    /// Notifies clients that the server has recovered from a restart.
+    /// </summary>
+    Task ReceiveServerRecovery();
 }

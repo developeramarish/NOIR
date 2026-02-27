@@ -20,6 +20,8 @@ public class JwtCookieEvents : JwtBearerEvents
     /// <summary>
     /// Called when a message is received. If no Authorization header is present,
     /// attempts to read the JWT from the access token cookie.
+    /// Also supports query string token for SSE and SignalR endpoints where
+    /// custom headers are not available (EventSource API limitation).
     /// </summary>
     public override Task MessageReceived(MessageReceivedContext context)
     {
@@ -27,6 +29,19 @@ public class JwtCookieEvents : JwtBearerEvents
         if (context.Request.Headers.ContainsKey("Authorization"))
         {
             return base.MessageReceived(context);
+        }
+
+        // For SSE and SignalR endpoints, accept token from query string
+        // (EventSource and WebSocket APIs cannot set custom headers)
+        var path = context.HttpContext.Request.Path;
+        if (path.StartsWithSegments("/api/sse") || path.StartsWithSegments("/hubs"))
+        {
+            var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+                return base.MessageReceived(context);
+            }
         }
 
         // Try to get token from cookie

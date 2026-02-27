@@ -98,8 +98,19 @@ public class UnpublishPostCommandHandler
             authorName,
             post.ViewCount,
             post.ReadingTimeMinutes,
+            MapContentMetadata(post.ContentMetadata),
             tags,
             post.CreatedAt,
             post.ModifiedAt);
     }
+
+    private static ContentMetadataDto? MapContentMetadata(ContentMetadata? metadata) =>
+        metadata is null
+            ? null
+            : new ContentMetadataDto(
+                metadata.HasCodeBlocks,
+                metadata.HasMathFormulas,
+                metadata.HasMermaidDiagrams,
+                metadata.HasTables,
+                metadata.HasEmbeddedMedia);
 }

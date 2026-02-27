@@ -29,9 +29,19 @@ export interface Post {
   authorName?: string
   viewCount: number
   readingTimeMinutes: number
+  contentMetadata?: ContentMetadata
   tags: PostTag[]
   createdAt: string
   modifiedAt?: string
+}
+
+// Content metadata for conditional renderer loading
+export interface ContentMetadata {
+  hasCodeBlocks: boolean
+  hasMathFormulas: boolean
+  hasMermaidDiagrams: boolean
+  hasTables: boolean
+  hasEmbeddedMedia: boolean
 }
 
 // Simplified post for list views

@@ -33,6 +33,9 @@ global using System.Net.Sockets;
 global using System.Security.Claims;
 global using System.Security.Cryptography;
 
+// System - Text
+global using System.Text.RegularExpressions;
+
 // Microsoft - Entity Framework Core (used by handlers via IApplicationDbContext)
 global using Microsoft.EntityFrameworkCore;
 

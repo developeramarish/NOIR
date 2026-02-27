@@ -11,7 +11,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import * as signalR from '@microsoft/signalr'
 import { getAccessToken } from '@/services/tokenStorage'
+import { useTabVisibility } from '@/hooks/useTabVisibility'
 import type { Notification } from '@/types'
+
+/** Disconnect SignalR after tab has been hidden for this many milliseconds */
+const BACKGROUND_DISCONNECT_MS = 30_000
 
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting'
 
@@ -24,6 +28,10 @@ interface UseSignalROptions {
   onUnreadCountUpdate?: (count: number) => void
   /** Called when connection state changes */
   onConnectionChange?: (state: ConnectionState) => void
+  /** Called when the server is shutting down */
+  onServerShutdown?: (reason: string) => void
+  /** Called when the server has recovered from a restart */
+  onServerRecovery?: () => void
 }
 
 interface UseSignalRReturn {
@@ -59,6 +67,8 @@ export const useSignalR = (options: UseSignalROptions = {}): UseSignalRReturn =>
     onNotification,
     onUnreadCountUpdate,
     onConnectionChange,
+    onServerShutdown,
+    onServerRecovery,
   } = options
 
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected')
@@ -104,6 +114,18 @@ export const useSignalR = (options: UseSignalROptions = {}): UseSignalRReturn =>
       }
     })
 
+    connection.on('ReceiveServerShutdown', (reason: string) => {
+      if (mountedRef.current && onServerShutdown) {
+        onServerShutdown(reason)
+      }
+    })
+
+    connection.on('ReceiveServerRecovery', () => {
+      if (mountedRef.current && onServerRecovery) {
+        onServerRecovery()
+      }
+    })
+
     // Handle connection state changes
     connection.onreconnecting(() => {
       updateState('reconnecting')
@@ -118,7 +140,7 @@ export const useSignalR = (options: UseSignalROptions = {}): UseSignalRReturn =>
     })
 
     return connection
-  }, [onNotification, onUnreadCountUpdate, updateState])
+  }, [onNotification, onUnreadCountUpdate, onServerShutdown, onServerRecovery, updateState])
 
   // Connect to SignalR hub
   const connect = useCallback(async () => {
@@ -178,6 +200,44 @@ export const useSignalR = (options: UseSignalROptions = {}): UseSignalRReturn =>
       return () => clearTimeout(timer)
     }
   }, [autoConnect, connect])
+
+  // Disconnect when tab is backgrounded for too long, reconnect when visible
+  const { isVisible, wasHiddenFor } = useTabVisibility()
+  const disconnectedByVisibilityRef = useRef(false)
+
+  useEffect(() => {
+    if (!autoConnect) return
+
+    if (!isVisible) {
+      // Tab hidden — schedule disconnect after threshold
+      const timer = setTimeout(() => {
+        if (!document.hidden) return // Tab became visible during timeout
+        if (connectionRef.current?.state === signalR.HubConnectionState.Connected) {
+          disconnectedByVisibilityRef.current = true
+          disconnect()
+        }
+      }, BACKGROUND_DISCONNECT_MS)
+      return () => clearTimeout(timer)
+    }
+
+    // Tab became visible — reconnect if we disconnected due to visibility
+    if (isVisible && disconnectedByVisibilityRef.current) {
+      disconnectedByVisibilityRef.current = false
+      if (getAccessToken()) {
+        connect()
+      }
+    }
+
+    // Also reconnect if the tab was hidden longer than the threshold
+    // (handles case where tab was hidden before hook mounted)
+    if (isVisible && wasHiddenFor && wasHiddenFor > BACKGROUND_DISCONNECT_MS) {
+      if (connectionRef.current?.state !== signalR.HubConnectionState.Connected &&
+          connectionRef.current?.state !== signalR.HubConnectionState.Connecting &&
+          getAccessToken()) {
+        connect()
+      }
+    }
+  }, [isVisible, wasHiddenFor, autoConnect, connect, disconnect])
 
   // Cleanup on unmount
   useEffect(() => {

@@ -2,10 +2,10 @@
  * LogTable Component
  *
  * Terminal-style log viewer with a macOS-style traffic light header.
- * Renders a list of log entries with scrolling support and optional
- * fullscreen dialog. Used by both Live Logs and History File Viewer.
+ * Uses TanStack Virtual for efficient rendering of large log entry lists.
+ * Used by both Live Logs and History File Viewer.
  */
-import { forwardRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Terminal,
@@ -15,10 +15,13 @@ import {
   ArrowDownToLine,
   Loader2,
 } from 'lucide-react'
-import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, EmptyState, ScrollArea } from '@uikit'
+import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, EmptyState, useVirtualList } from '@uikit'
 
+import { cn } from '@/lib/utils'
 import type { LogEntryDto } from '@/services/developerLogs'
 import { LogEntryRow } from './LogEntryRow'
+
+const ESTIMATED_ROW_HEIGHT = 52
 
 export interface LogTableProps {
   entries: LogEntryDto[]
@@ -39,9 +42,7 @@ export interface LogTableProps {
   emptyMessage?: string
   /** Custom empty sub-message */
   emptySubMessage?: string
-  /** Whether to use ScrollArea (for live logs) vs flex overflow (for history) */
-  useScrollArea?: boolean
-  /** Height class for ScrollArea mode */
+  /** Height class for the scroll container */
   scrollAreaClassName?: string
   /** Whether fullscreen is open */
   isFullscreen?: boolean
@@ -51,27 +52,23 @@ export interface LogTableProps {
   fullscreenTitle?: string
 }
 
-export const LogTable = forwardRef<HTMLDivElement, LogTableProps>((
-  {
-    entries,
-    expandedEntries,
-    onToggleExpand,
-    onViewDetail,
-    isLoading = false,
-    totalEntries,
-    searchTerm,
-    autoScroll,
-    isPaused,
-    emptyMessage = 'No log entries',
-    emptySubMessage,
-    useScrollArea = false,
-    scrollAreaClassName = 'h-[calc(100vh-330px)] min-h-[400px]',
-    isFullscreen = false,
-    onFullscreenChange,
-    fullscreenTitle = 'Logs',
-  },
-  ref
-) => {
+export const LogTable = ({
+  entries,
+  expandedEntries,
+  onToggleExpand,
+  onViewDetail,
+  isLoading = false,
+  totalEntries,
+  searchTerm,
+  autoScroll,
+  isPaused,
+  emptyMessage = 'No log entries',
+  emptySubMessage,
+  scrollAreaClassName = 'h-[calc(100vh-330px)] min-h-[400px]',
+  isFullscreen = false,
+  onFullscreenChange,
+  fullscreenTitle = 'Logs',
+}: LogTableProps) => {
   const { t } = useTranslation('common')
   const entryCount = entries.length
   const showFilteredInfo = searchTerm && totalEntries !== undefined && totalEntries !== entryCount
@@ -122,34 +119,21 @@ export const LogTable = forwardRef<HTMLDivElement, LogTableProps>((
         </div>
 
         {/* Log content */}
-        {useScrollArea ? (
-          <ScrollArea
-            ref={ref}
-            className={`${scrollAreaClassName} bg-card dark:bg-slate-950`}
-          >
-            <LogTableContent
-              entries={entries}
-              expandedEntries={expandedEntries}
-              onToggleExpand={onToggleExpand}
-              onViewDetail={onViewDetail}
-              isLoading={isLoading}
-              emptyMessage={emptyMessage}
-              emptySubMessage={emptySubMessage}
-            />
-          </ScrollArea>
-        ) : (
-          <div className="bg-card dark:bg-slate-950 flex-1 overflow-y-auto">
-            <LogTableContent
-              entries={entries}
-              expandedEntries={expandedEntries}
-              onToggleExpand={onToggleExpand}
-              onViewDetail={onViewDetail}
-              isLoading={isLoading}
-              emptyMessage={emptyMessage}
-              emptySubMessage={emptySubMessage}
-            />
-          </div>
-        )}
+        <div className={cn(
+          'bg-card dark:bg-slate-950',
+          scrollAreaClassName,
+        )}>
+          <LogTableContent
+            entries={entries}
+            expandedEntries={expandedEntries}
+            onToggleExpand={onToggleExpand}
+            onViewDetail={onViewDetail}
+            isLoading={isLoading}
+            emptyMessage={emptyMessage}
+            emptySubMessage={emptySubMessage}
+            autoScrollToEnd={autoScroll}
+          />
+        </div>
       </div>
 
       {/* Fullscreen Log Dialog */}
@@ -166,10 +150,9 @@ export const LogTable = forwardRef<HTMLDivElement, LogTableProps>((
       )}
     </>
   )
-})
-LogTable.displayName = 'LogTable'
+}
 
-// Internal component for log content rendering
+// Internal component for virtualized log content rendering
 const LogTableContent = ({
   entries,
   expandedEntries,
@@ -178,6 +161,7 @@ const LogTableContent = ({
   isLoading,
   emptyMessage,
   emptySubMessage,
+  autoScrollToEnd,
 }: {
   entries: LogEntryDto[]
   expandedEntries: Set<number>
@@ -186,7 +170,25 @@ const LogTableContent = ({
   isLoading: boolean
   emptyMessage: string
   emptySubMessage?: string
+  autoScrollToEnd?: boolean
 }) => {
+  const { parentRef, virtualizer, virtualItems, totalSize } = useVirtualList({
+    items: entries,
+    estimateSize: ESTIMATED_ROW_HEIGHT,
+    overscan: 5,
+    getItemKey: (entry) => entry.id,
+  })
+
+  const lastEntryCountRef = useRef(entries.length)
+
+  // Auto-scroll to the first entry (newest) when new entries arrive
+  useEffect(() => {
+    if (autoScrollToEnd && entries.length > lastEntryCountRef.current) {
+      virtualizer.scrollToIndex(0, { align: 'start' })
+    }
+    lastEntryCountRef.current = entries.length
+  }, [entries.length, autoScrollToEnd, virtualizer])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -207,16 +209,33 @@ const LogTableContent = ({
   }
 
   return (
-    <div className="divide-y divide-border">
-      {entries.map(entry => (
-        <LogEntryRow
-          key={entry.id}
-          entry={entry}
-          isExpanded={expandedEntries.has(entry.id)}
-          onToggleExpand={() => onToggleExpand(entry.id)}
-          onViewDetail={() => onViewDetail(entry)}
-        />
-      ))}
+    <div ref={parentRef} className="overflow-auto" style={{ height: '100%' }}>
+      <div style={{ height: `${totalSize}px`, width: '100%', position: 'relative' }}>
+        {virtualItems.map((virtualItem) => {
+          const entry = entries[virtualItem.index]
+          return (
+            <div
+              key={virtualItem.key}
+              data-index={virtualItem.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <LogEntryRow
+                entry={entry}
+                isExpanded={expandedEntries.has(entry.id)}
+                onToggleExpand={() => onToggleExpand(entry.id)}
+                onViewDetail={() => onViewDetail(entry)}
+              />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -241,6 +260,13 @@ const FullscreenLogDialog = ({
   onViewDetail: (entry: LogEntryDto) => void
 }) => {
   const { t } = useTranslation('common')
+  const { parentRef, virtualizer, virtualItems, totalSize } = useVirtualList({
+    items: entries,
+    estimateSize: ESTIMATED_ROW_HEIGHT,
+    overscan: 5,
+    getItemKey: (entry) => entry.id,
+  })
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full flex flex-col p-0">
@@ -253,7 +279,7 @@ const FullscreenLogDialog = ({
             </Badge>
           </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto bg-card dark:bg-slate-950">
+        <div className="flex-1 min-h-0 bg-card dark:bg-slate-950">
           {entries.length === 0 ? (
             <EmptyState
               icon={FileText}
@@ -262,16 +288,33 @@ const FullscreenLogDialog = ({
               className="border-0 rounded-none px-4 py-20"
             />
           ) : (
-            <div className="divide-y divide-border">
-              {entries.map(entry => (
-                <LogEntryRow
-                  key={entry.id}
-                  entry={entry}
-                  isExpanded={expandedEntries.has(entry.id)}
-                  onToggleExpand={() => onToggleExpand(entry.id)}
-                  onViewDetail={() => onViewDetail(entry)}
-                />
-              ))}
+            <div ref={parentRef} className="overflow-auto" style={{ height: '100%' }}>
+              <div style={{ height: `${totalSize}px`, width: '100%', position: 'relative' }}>
+                {virtualItems.map((virtualItem) => {
+                  const entry = entries[virtualItem.index]
+                  return (
+                    <div
+                      key={virtualItem.key}
+                      data-index={virtualItem.index}
+                      ref={virtualizer.measureElement}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
+                      <LogEntryRow
+                        entry={entry}
+                        isExpanded={expandedEntries.has(entry.id)}
+                        onToggleExpand={() => onToggleExpand(entry.id)}
+                        onViewDetail={() => onViewDetail(entry)}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>

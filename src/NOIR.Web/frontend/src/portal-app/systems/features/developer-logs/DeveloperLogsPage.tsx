@@ -7,7 +7,7 @@
  * This is the orchestrator component that manages top-level state and
  * delegates rendering to child components in the `components/` directory.
  */
-import { useState, useEffect, useCallback, useMemo, useRef, useDeferredValue } from 'react'
+import { useState, useEffect, useCallback, useMemo, useDeferredValue } from 'react'
 import { useUrlTab } from '@/hooks/useUrlTab'
 import { useTranslation } from 'react-i18next'
 import { usePageContext } from '@/hooks/usePageContext'
@@ -88,20 +88,6 @@ export const DeveloperLogsPage = () => {
   const isSearchStale = searchTerm !== deferredSearchTerm
   const [detailEntry, setDetailEntry] = useState<import('@/services/developerLogs').LogEntryDto | null>(null)
   const [isLiveFullscreen, setIsLiveFullscreen] = useState(false)
-
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const lastEntryCountRef = useRef(entries.length)
-
-  // Auto-scroll when new entries arrive
-  useEffect(() => {
-    if (autoScroll && entries.length > lastEntryCountRef.current && scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
-      if (viewport) {
-        viewport.scrollTop = 0
-      }
-    }
-    lastEntryCountRef.current = entries.length
-  }, [entries.length, autoScroll])
 
   // Fetch initial log level
   useEffect(() => {
@@ -274,7 +260,6 @@ export const DeveloperLogsPage = () => {
           />
 
           <LogTable
-            ref={scrollAreaRef}
             entries={filteredEntries}
             expandedEntries={expandedEntries}
             onToggleExpand={toggleEntryExpanded}
@@ -289,7 +274,6 @@ export const DeveloperLogsPage = () => {
                 ? t('developerLogs.waitingForLogs')
                 : t('developerLogs.noMatchingLogs')
             }
-            useScrollArea={true}
             scrollAreaClassName="h-[calc(100vh-330px)] min-h-[400px]"
             isFullscreen={isLiveFullscreen}
             onFullscreenChange={setIsLiveFullscreen}

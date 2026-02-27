@@ -1,3 +1,4 @@
+using NOIR.Application.Features.Blog.Services;
 
 namespace NOIR.Application.Features.Blog.Commands.CreatePost;
 
@@ -10,17 +11,20 @@ public class CreatePostCommandHandler
     private readonly IRepository<PostTag, Guid> _tagRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
+    private readonly IContentAnalyzer _contentAnalyzer;
 
     public CreatePostCommandHandler(
         IRepository<Post, Guid> postRepository,
         IRepository<PostTag, Guid> tagRepository,
         IUnitOfWork unitOfWork,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IContentAnalyzer contentAnalyzer)
     {
         _postRepository = postRepository;
         _tagRepository = tagRepository;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _contentAnalyzer = contentAnalyzer;
     }
 
     public async Task<Result<PostDto>> Handle(
@@ -55,6 +59,10 @@ public class CreatePostCommandHandler
             command.Excerpt,
             command.ContentJson,
             command.ContentHtml);
+
+        // Analyze content and store metadata for frontend conditional rendering
+        var contentMetadata = _contentAnalyzer.Analyze(command.ContentHtml);
+        post.SetContentMetadata(contentMetadata);
 
         // Update featured image (prefer MediaFile reference over URL)
         if (command.FeaturedImageId.HasValue)
@@ -136,8 +144,19 @@ public class CreatePostCommandHandler
             authorName,
             post.ViewCount,
             post.ReadingTimeMinutes,
+            MapContentMetadata(post.ContentMetadata),
             tags,
             post.CreatedAt,
             post.ModifiedAt);
     }
+
+    private static ContentMetadataDto? MapContentMetadata(ContentMetadata? metadata) =>
+        metadata is null
+            ? null
+            : new ContentMetadataDto(
+                metadata.HasCodeBlocks,
+                metadata.HasMathFormulas,
+                metadata.HasMermaidDiagrams,
+                metadata.HasTables,
+                metadata.HasEmbeddedMedia);
 }

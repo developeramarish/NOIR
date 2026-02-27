@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { getCurrentUser, logout as logoutApi } from '@/services/auth'
+import { useBroadcastChannel } from '@/hooks/useBroadcastChannel'
 import type { CurrentUser } from '@/types'
+
+type AuthBroadcastMessage = { type: 'logout' }
 
 interface AuthContextValue {
   user: CurrentUser | null
@@ -47,10 +50,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth()
   }, [checkAuth])
 
+  // Broadcast logout to other tabs so they redirect to login
+  const { postMessage: broadcastAuth } = useBroadcastChannel<AuthBroadcastMessage>(
+    'noir-auth',
+    useCallback((data) => {
+      if (data.type === 'logout') {
+        // Another tab logged out — clear local state and redirect
+        setUser(null)
+        window.location.href = '/login'
+      }
+    }, []),
+  )
+
   const logout = useCallback(async () => {
+    broadcastAuth({ type: 'logout' })
     await logoutApi()
     setUser(null)
-  }, [])
+  }, [broadcastAuth])
 
   return (
     <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, checkAuth, refreshUser, logout }}>

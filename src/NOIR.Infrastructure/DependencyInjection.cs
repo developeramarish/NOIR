@@ -200,6 +200,10 @@ public static class DependencyInjection
         // Register localization startup validator to validate resources at startup
         services.AddHostedService<LocalizationStartupValidator>();
 
+        // Register lifecycle services for graceful shutdown and deploy recovery
+        services.AddHostedService<GracefulShutdownService>();
+        services.AddHostedService<DeployRecoveryService>();
+
         // Configure Hangfire for background jobs (skip in Testing - requires SQL Server)
         if (!isTesting)
         {

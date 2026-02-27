@@ -25,6 +25,7 @@ import {
 } from '@/services/notifications'
 import type { Notification } from '@/types'
 import { useAuthContext } from './AuthContext'
+import { useServerHealthContext } from './ServerHealthContext'
 import { toast } from 'sonner'
 import { isPlatformAdmin } from '@/lib/roles'
 
@@ -104,11 +105,16 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setUnreadCount(count)
   }, [])
 
+  // Wire server health callbacks from ServerHealthContext into SignalR
+  const { handleServerShutdown, handleServerRecovery } = useServerHealthContext()
+
   // SignalR connection (platform admins don't connect)
   const { connectionState } = useSignalR({
     autoConnect: isAuthenticated && !isPlatformAdminUser,
     onNotification: handleNewNotification,
     onUnreadCountUpdate: handleUnreadCountUpdate,
+    onServerShutdown: handleServerShutdown,
+    onServerRecovery: handleServerRecovery,
   })
 
   // Fetch notifications from server

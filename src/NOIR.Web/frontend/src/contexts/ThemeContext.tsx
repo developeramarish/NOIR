@@ -129,6 +129,23 @@ export const ThemeProvider = ({
     }
   }, [theme])
 
+  // Sync theme across tabs via storage events
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY || !event.newValue) return
+
+      const newTheme = event.newValue as Theme
+      setThemeState(newTheme)
+      setHasUserPreference(true)
+      // resolvedTheme and applyTheme will be handled by the existing theme effect above
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
+
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme)
     localStorage.setItem(STORAGE_KEY, newTheme)

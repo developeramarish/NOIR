@@ -116,6 +116,12 @@ public class Post : TenantAggregateRoot<Guid>
     public int ReadingTimeMinutes { get; private set; }
 
     /// <summary>
+    /// Metadata about content features detected during save.
+    /// Used by frontend to conditionally load heavy renderers.
+    /// </summary>
+    public ContentMetadata? ContentMetadata { get; private set; }
+
+    /// <summary>
     /// Navigation property to tag assignments (many-to-many).
     /// </summary>
     public ICollection<PostTagAssignment> TagAssignments { get; private set; } = new List<PostTagAssignment>();
@@ -261,6 +267,14 @@ public class Post : TenantAggregateRoot<Guid>
     public void Archive()
     {
         Status = PostStatus.Archived;
+    }
+
+    /// <summary>
+    /// Sets content metadata detected from HTML analysis.
+    /// </summary>
+    public void SetContentMetadata(ContentMetadata metadata)
+    {
+        ContentMetadata = metadata;
     }
 
     /// <summary>

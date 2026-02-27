@@ -1429,7 +1429,9 @@
     "noRecentOrders": "Chưa có đơn hàng gần đây",
     "noTopProducts": "Chưa có dữ liệu bán hàng",
     "loadError": "Không thể tải bảng điều khiển",
-    "loadErrorDescription": "Đã xảy ra lỗi khi tải dữ liệu bảng điều khiển. Vui lòng thử lại."
+    "loadErrorDescription": "Đã xảy ra lỗi khi tải dữ liệu bảng điều khiển. Vui lòng thử lại.",
+    "comingSoon": "Bảng điều khiển sắp ra mắt",
+    "comingSoonDesc": "Bảng điều khiển đang được xây dựng. Hãy sử dụng thanh bên để điều hướng đến các phần khác."
   },
   "reports": {
     "title": "Báo cáo & Phân tích",
@@ -3529,5 +3531,18 @@
       "Inactive": "Không hoạt động",
       "Suspended": "Bị tạm ngưng"
     }
+  },
+  "serverHealth": {
+    "shuttingDown": "Máy chủ đang khởi động lại...",
+    "recovering": "Máy chủ đã khôi phục. Đang làm mới dữ liệu..."
+  },
+  "pwa": {
+    "updateAvailable": "Có phiên bản mới",
+    "updateNow": "Cập nhật ngay",
+    "dismiss": "Bỏ qua",
+    "installTitle": "Cài đặt NOIR",
+    "installDescription": "Cài đặt NOIR như ứng dụng để truy cập nhanh",
+    "install": "Cài đặt",
+    "offlineReady": "Ứng dụng sẵn sàng sử dụng ngoại tuyến"
   }
 }

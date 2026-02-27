@@ -8500,7 +8500,52 @@ namespace NOIR.Infrastructure.Migrations.App
                         .HasForeignKey("FeaturedImageId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.OwnsOne("NOIR.Domain.ValueObjects.ContentMetadata", "ContentMetadata", b1 =>
+                        {
+                            b1.Property<Guid>("PostId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<bool>("HasCodeBlocks")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("ContentMeta_HasCodeBlocks");
+
+                            b1.Property<bool>("HasEmbeddedMedia")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("ContentMeta_HasEmbeddedMedia");
+
+                            b1.Property<bool>("HasMathFormulas")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("ContentMeta_HasMathFormulas");
+
+                            b1.Property<bool>("HasMermaidDiagrams")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("ContentMeta_HasMermaidDiagrams");
+
+                            b1.Property<bool>("HasTables")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("ContentMeta_HasTables");
+
+                            b1.HasKey("PostId");
+
+                            b1.ToTable("Posts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PostId");
+                        });
+
                     b.Navigation("Category");
+
+                    b.Navigation("ContentMetadata");
 
                     b.Navigation("FeaturedImage");
                 });
