@@ -12,6 +12,7 @@ import {
   CreditCard,
   Truck,
   Blocks,
+  Webhook,
 } from 'lucide-react'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { usePageContext } from '@/hooks/usePageContext'
@@ -27,6 +28,7 @@ import {
   PaymentGatewaysTab,
   ShippingProvidersTab,
   ModulesSettingsTab,
+  WebhooksSettingsTab,
 } from '../../components/tenant-settings'
 
 /**
@@ -93,6 +95,11 @@ export const TenantSettingsPage = () => {
             <Blocks className="h-4 w-4 mr-2" />
             {t('tenantSettings.tabs.modules')}
           </TabsTrigger>
+          {/* Integrations */}
+          <TabsTrigger value="webhooks" className="cursor-pointer">
+            <Webhook className="h-4 w-4 mr-2" />
+            {t('tenantSettings.tabs.webhooks')}
+          </TabsTrigger>
         </TabsList>
 
         {/* Core Identity & Business Info */}
@@ -126,6 +133,10 @@ export const TenantSettingsPage = () => {
         {/* Modules */}
         <TabsContent value="modules">
           <ModulesSettingsTab canEdit={canEdit} />
+        </TabsContent>
+        {/* Integrations */}
+        <TabsContent value="webhooks">
+          <WebhooksSettingsTab canEdit={canEdit} />
         </TabsContent>
       </Tabs>
     </div>
