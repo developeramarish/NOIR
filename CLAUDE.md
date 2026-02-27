@@ -1,6 +1,6 @@
 # NOIR - Claude Code Instructions
 
-> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.1.1 (2026-02-26).
+> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.2 (2026-02-27).
 
 ## SuperClaude Framework
 
@@ -98,7 +98,7 @@ dotnet build src/NOIR.sln
 dotnet run --project src/NOIR.Web
 dotnet watch --project src/NOIR.Web        # hot reload
 
-# Tests (10,889+)
+# Tests (11,341+)
 dotnet test src/NOIR.sln
 dotnet test src/NOIR.sln --collect:"XPlat Code Coverage"
 
@@ -246,7 +246,7 @@ For TanStack Query hooks, React 19 performance patterns (useDeferredValue, useTr
 
 ## Storybook & UIKit
 
-**91 component stories** in `src/uikit/{component}/`. Config: `.storybook/main.ts` (React + Vite + Tailwind CSS 4).
+**97 component stories** in `src/uikit/{component}/`. Config: `.storybook/main.ts` (React + Vite + Tailwind CSS 4).
 
 ```bash
 cd src/NOIR.Web/frontend && pnpm storybook       # Dev: http://localhost:6006
@@ -273,7 +273,14 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Inventory** | `Features/Inventory/` | Receipt system (phieu nhap/xuat). Draft → Confirmed/Cancelled. Types: StockIn (RCV-), StockOut (SHP-). | Complete |
 | **Reviews** | `Features/Reviews/` | Product reviews with moderation. Approve/Reject workflow. | Complete |
 | **Wishlists** | `Features/Wishlists/` | User wishlists with analytics tracking. | Complete |
-| **Dashboard** | `Features/Dashboard/` | 7 metrics via Task.WhenAll(). Revenue excludes Cancelled/Refunded. | Complete |
+| **Dashboard** | `Features/Dashboard/` | 7 metrics via Task.WhenAll(). Revenue excludes Cancelled/Refunded. Frontend: empty placeholder. | Complete |
+| **Customers** | `Features/Customers/` | Customer profiles with addresses, order history. Detail page with timeline. | Complete |
+| **Customer Groups** | `Features/CustomerGroups/` | Segmentation groups with rule-based membership. | Complete |
+| **Promotions** | `Features/Promotions/` | Discount codes, percentage/fixed, usage limits, date ranges. | Complete |
+| **Reports** | `Features/Reports/` | Revenue, orders, inventory, product performance analytics. | Complete |
+| **Webhooks** | `Features/Webhooks/` | Outbound webhook subscriptions with event filtering and delivery tracking. | Complete |
+| **Feature Mgmt** | `Application/Modules/` | 31 modules (8 core + 23 toggleable). Platform availability + tenant enable. | Complete |
+| **SSE** | `Infrastructure/Sse/` | Server-Sent Events for real-time job progress and operation updates. | Complete |
 
 ---
 
@@ -296,4 +303,4 @@ Research reports → `docs/backend/research/` or `docs/frontend/research/`.
 
 ---
 
-> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.1 (2026-02-23).
+> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.2 (2026-02-27).

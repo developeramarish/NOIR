@@ -2,7 +2,7 @@
 
 > **Quick Navigation:** Jump to any part of the codebase with this comprehensive index.
 
-**Last Updated:** 2026-02-23 | **Index Version:** 3.9
+**Last Updated:** 2026-02-27 | **Index Version:** 4.0
 
 ---
 
@@ -20,35 +20,35 @@
 
 ## Project Overview
 
-**NOIR** is an enterprise-ready .NET 10 + React 19 SaaS foundation implementing Clean Architecture with multi-tenancy, comprehensive audit logging, and 10,889+ backend tests.
+**NOIR** is an enterprise-ready .NET 10 + React 19 SaaS foundation implementing Clean Architecture with multi-tenancy, comprehensive audit logging, and 11,341+ backend tests.
 
 ### Key Statistics
 
 | Metric | Count | Notes |
 |--------|-------|-------|
-| **Backend Source Files** | 1,230 | C# files in `src/` (excl. generated) |
-| **Frontend Source Files** | 305 | TypeScript/TSX in `frontend/src/` |
-| **Test Files** | 453 | C# test files in `tests/` |
-| **Total Source Files** | ~1,988 | Combined backend + frontend + tests |
-| **Feature Modules** | 26 | Domain-driven vertical slices |
-| **API Endpoint Groups** | 30 | Minimal API endpoint files |
+| **Backend Source Files** | 1,752 | C# files in `src/` (excl. generated) |
+| **Frontend Source Files** | 638 | TypeScript/TSX in `frontend/src/` |
+| **Test Files** | 747 | C# test files in `tests/` |
+| **Total Source Files** | ~3,137 | Combined backend + frontend + tests |
+| **Feature Modules** | 35 | Domain-driven vertical slices |
+| **API Endpoint Groups** | 41 | Minimal API endpoint files |
 | **Domain Entities** | 50+ | Core business entities |
 | **Aggregate Roots** | 26 | DDD aggregate roots |
 | **CQRS Commands** | 130 | Write operations |
 | **CQRS Queries** | 86 | Read operations |
-| **Repositories** | 28 | Infrastructure repositories |
-| **EF Core Configurations** | 49 | Entity type configurations |
-| **UI Components** | 103 | shadcn/ui + custom components (57 in ui/) |
-| **Storybook Stories** | 91 | Interactive component catalog in `uikit/` |
-| **Custom Hooks** | 27 | React hooks in `hooks/` |
-| **API Services** | 23 | Frontend API clients |
-| **Frontend Pages** | 95+ | React page components |
-| **Documentation Files** | 59 | Markdown docs in `docs/` |
-| **Backend Tests** | 10,889+ | Unit (2,586 + 7,483) + Integration (788) + Architecture (32) |
+| **Repositories** | 35 | Infrastructure repositories |
+| **EF Core Configurations** | 68 | Entity type configurations |
+| **UIKit Component Dirs** | 98 | shadcn/ui + custom components in `uikit/` |
+| **Storybook Stories** | 97 | Interactive component catalog in `uikit/` |
+| **Custom Hooks** | 32 | React hooks in `hooks/` |
+| **API Services** | 36 | Frontend API clients |
+| **Frontend Pages** | 45 | React page components |
+| **Documentation Files** | 48 | Markdown docs in `docs/` |
+| **Backend Tests** | 11,341+ | Domain (2,781) + Application (7,732) + Integration (796) + Architecture (32) |
 | **Database Indexes** | 233+ | Including 14 filtered indexes |
 | **Enums** | 24 | Domain enumerations |
-| **Service Interfaces** | 44 | Application-layer abstractions |
-| **NuGet Packages** | 40+ | Direct package references |
+| **Service Interfaces** | 29 | Application-layer abstractions |
+| **NuGet Packages** | 52+ | Direct package references |
 
 **Technologies:** .NET 10, React 19, SQL Server, EF Core 10, Wolverine, SignalR, Vite, TypeScript 5, Tailwind CSS 4, Zod, Storybook 10.2, pnpm
 
@@ -62,12 +62,12 @@ NOIR/
 │   ├── NOIR.Infrastructure/      # 🔧 Infrastructure and persistence
 │   └── NOIR.Web/                 # 🌐 API endpoints and SPA host
 │       └── frontend/             # ⚛️  React frontend application
-├── tests/                        # ✅ 10,889+ backend tests across 4 test projects
+├── tests/                        # ✅ 11,341+ backend tests across 4 test projects
 │   ├── NOIR.Domain.UnitTests/    # Domain logic tests
 │   ├── NOIR.Application.UnitTests/ # Handler/service/validator tests
 │   ├── NOIR.IntegrationTests/    # API integration tests (requires DB)
 │   └── NOIR.ArchitectureTests/   # Architectural rule tests
-└── docs/                         # 📚 59 documentation files
+└── docs/                         # 📚 48 documentation files
 
 ```
 
@@ -236,7 +236,15 @@ NOIR.Application/
 │   ├── Checkout/                        # Checkout flow (address, shipping, payment)
 │   ├── Orders/                          # Order lifecycle management
 │   ├── Inventory/                       # Stock management
-│   └── Shipping/                        # Shipping provider integration
+│   ├── Shipping/                        # Shipping provider integration
+│   ├── Customers/                       # Customer profile management
+│   ├── CustomerGroups/                  # Customer segmentation
+│   ├── Promotions/                      # Discount and coupon management
+│   ├── Reviews/                         # Product reviews with moderation
+│   ├── Wishlists/                       # User wishlists with analytics
+│   ├── Reports/                         # Business intelligence reports
+│   ├── FeatureManagement/               # 35-module feature flag system
+│   └── Webhooks/                        # Outbound webhook management
 └── Specifications/                      # EF Core query specs
     ├── RefreshTokens/
     ├── Notifications/
@@ -293,6 +301,14 @@ Features/{Feature}/
 | **ProductFilterIndex** | RebuildIndex, SyncIndex | - | Denormalized filter index |
 | **FilterAnalytics** | CreateFilterEvent | GetPopularFilters, GetFilterUsage | Filter usage analytics |
 | **Shipping** | CreateShippingOrder, UpdateTracking | GetShippingProviders, GetShippingRates | Shipping provider integration |
+| **Customers** | CreateCustomer, UpdateCustomer, DeleteCustomer | GetCustomers, GetCustomerById | Customer profile management |
+| **CustomerGroups** | CreateCustomerGroup, UpdateCustomerGroup, DeleteCustomerGroup | GetCustomerGroups, GetCustomerGroupById | Customer segmentation |
+| **Promotions** | CreatePromotion, UpdatePromotion, DeletePromotion, ActivatePromotion | GetPromotions, GetPromotionById | Discount and coupon management |
+| **Reviews** | ApproveReview, RejectReview, DeleteReview | GetReviews, GetProductReviews | Product reviews with moderation |
+| **Wishlists** | AddToWishlist, RemoveFromWishlist | GetWishlists, GetWishlistItems | User wishlists with analytics |
+| **Reports** | - | GetSalesReport, GetProductReport, GetCustomerReport | Business intelligence reports |
+| **FeatureManagement** | EnableModule, DisableModule | GetModules, GetModuleState | 35-module feature flag system |
+| **Webhooks** | CreateWebhook, UpdateWebhook, DeleteWebhook, TestWebhook | GetWebhooks, GetWebhookById, GetWebhookDeliveries | Outbound webhook management |
 
 #### Navigation
 
@@ -458,11 +474,11 @@ NOIR.Web/
     │   ├── layouts/                     # Layout components
     │   │   ├── auth/                    # Auth pages (login, forgot-password, etc.)
     │   │   └── PortalLayout.tsx
-    │   ├── uikit/                       # 72 UI components + stories (@uikit barrel)
+    │   ├── uikit/                       # 98 UI component dirs + stories (@uikit barrel)
     │   ├── components/                  # Shared app-level components
     │   ├── contexts/                    # React contexts (Auth, Theme, Notification, etc.)
-    │   ├── hooks/                       # Shared custom React hooks (27)
-    │   ├── services/                    # API services (23)
+    │   ├── hooks/                       # Shared custom React hooks (32)
+    │   ├── services/                    # API services (36)
     │   ├── types/                       # TypeScript types
     │   └── lib/                         # Utilities
     ├── public/                          # Static assets + locales
@@ -1105,8 +1121,8 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
 ---
 
-**Last Updated:** 2026-02-21
-**Version:** 3.8
+**Last Updated:** 2026-02-27
+**Version:** 4.0
 **Maintainer:** NOIR Team
 **Machine-Readable Index:** [PROJECT_INDEX.json](../PROJECT_INDEX.json)
 

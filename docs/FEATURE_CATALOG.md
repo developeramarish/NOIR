@@ -2,7 +2,7 @@
 
 > **Complete reference of all features, commands, queries, and endpoints in the NOIR platform.**
 
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-02-27
 
 ---
 
@@ -28,6 +28,16 @@
 - [Blog CMS](#blog-cms)
 - [Shipping](#shipping) ⭐
 - [Inventory](#inventory) ⭐
+- [Customers](#customers) ⭐
+- [Customer Groups](#customer-groups) ⭐
+- [Promotions](#promotions) ⭐
+- [Reviews](#reviews) ⭐
+- [Wishlists](#wishlists) ⭐
+- [Reports](#reports) ⭐
+- [Feature Management](#feature-management) ⭐
+- [Outbound Webhooks](#outbound-webhooks) ⭐
+- [Tenant Settings](#tenant-settings) ⭐
+- [Platform Settings](#platform-settings) ⭐
 - [Developer Tools](#developer-tools)
 - [Feature Matrix](#feature-matrix)
 
@@ -2347,6 +2357,1013 @@ Orders integrate with inventory through:
 
 ---
 
+## Customers
+
+**Namespace:** `NOIR.Application.Features.Customers`
+**Endpoint:** `/api/customers`
+**Permissions:** `customers:*`
+
+> Customer lifecycle management with address book, loyalty points, segmentation, and order history.
+
+### Commands
+
+#### Create Customer
+- **Command:** `CreateCustomerCommand`
+- **Endpoint:** `POST /api/customers`
+- **Permission:** `customers:create`
+- **Purpose:** Create a new customer profile (linked to a user account via optional UserId)
+- **Returns:** `CustomerDto`
+- **Validation:**
+  - Email: Required, unique within tenant
+  - FirstName / LastName: Required
+- **Audit:** IAuditableCommand (Create)
+
+**Example Request:**
+```json
+{
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+84901234567",
+  "tags": "vip,wholesale",
+  "notes": "Prefers email contact"
+}
+```
+
+#### Update Customer
+- **Command:** `UpdateCustomerCommand`
+- **Endpoint:** `PUT /api/customers/{id}`
+- **Permission:** `customers:update`
+- **Purpose:** Update customer details, tags, notes, active status
+- **Returns:** `CustomerDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Delete Customer
+- **Command:** `DeleteCustomerCommand`
+- **Endpoint:** `DELETE /api/customers/{id}`
+- **Permission:** `customers:delete`
+- **Purpose:** Soft delete customer
+- **Returns:** Success message
+- **Audit:** IAuditableCommand (Delete)
+
+#### Update Customer Segment
+- **Command:** `UpdateCustomerSegmentCommand`
+- **Endpoint:** `PUT /api/customers/{id}/segment`
+- **Permission:** `customers:update`
+- **Purpose:** Manually override customer segment (New, Regular, VIP, Wholesale)
+- **Returns:** `CustomerDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Add Loyalty Points
+- **Command:** `AddLoyaltyPointsCommand`
+- **Endpoint:** `POST /api/customers/{id}/loyalty/add`
+- **Permission:** `customers:update`
+- **Purpose:** Credit loyalty points to a customer with optional reason
+- **Returns:** `CustomerDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Redeem Loyalty Points
+- **Command:** `RedeemLoyaltyPointsCommand`
+- **Endpoint:** `POST /api/customers/{id}/loyalty/redeem`
+- **Permission:** `customers:update`
+- **Purpose:** Deduct loyalty points (order redemption)
+- **Returns:** `CustomerDto`
+- **Audit:** IAuditableCommand (Update)
+
+### Address Management
+
+#### Add Customer Address
+- **Command:** `AddCustomerAddressCommand`
+- **Endpoint:** `POST /api/customers/{id}/addresses`
+- **Permission:** `customers:update`
+- **Purpose:** Add a new address to a customer's address book
+- **Returns:** `CustomerAddressDto`
+- **Validation:** FullName, Phone, AddressLine1, Province required
+
+#### Update Customer Address
+- **Command:** `UpdateCustomerAddressCommand`
+- **Endpoint:** `PUT /api/customers/{id}/addresses/{addressId}`
+- **Permission:** `customers:update`
+- **Purpose:** Update an address and optionally mark as default
+- **Returns:** `CustomerAddressDto`
+
+#### Delete Customer Address
+- **Command:** `DeleteCustomerAddressCommand`
+- **Endpoint:** `DELETE /api/customers/{id}/addresses/{addressId}`
+- **Permission:** `customers:update`
+- **Purpose:** Remove an address from the address book
+- **Returns:** Success message
+
+### Queries
+
+#### Get Customers
+- **Query:** `GetCustomersQuery`
+- **Endpoint:** `GET /api/customers`
+- **Permission:** `customers:read`
+- **Purpose:** List customers with search, filtering, and pagination
+- **Returns:** `PagedResult<CustomerSummaryDto>`
+- **Query Parameters:**
+  - `search` - Search by email, name, phone
+  - `segment` - Filter by CustomerSegment
+  - `tier` - Filter by CustomerTier
+  - `isActive` - Filter by active status
+
+#### Get Customer By Id
+- **Query:** `GetCustomerByIdQuery`
+- **Endpoint:** `GET /api/customers/{id}`
+- **Permission:** `customers:read`
+- **Purpose:** Get full customer profile including addresses
+- **Returns:** `CustomerDto`
+
+#### Get Customer Orders
+- **Query:** `GetCustomerOrdersQuery`
+- **Endpoint:** `GET /api/customers/{id}/orders`
+- **Permission:** `customers:read`
+- **Purpose:** Get paginated order history for a customer
+- **Returns:** `PagedResult<OrderListDto>`
+
+#### Get Customer Stats
+- **Query:** `GetCustomerStatsQuery`
+- **Endpoint:** `GET /api/customers/stats`
+- **Permission:** `customers:read`
+- **Purpose:** Aggregated statistics for dashboard (totals, segment/tier distribution, top spenders)
+- **Returns:** `CustomerStatsDto`
+
+### Domain Entities
+
+- **Customer** - Aggregate root (Email, FirstName, LastName, Phone, Segment, Tier, LoyaltyPoints, LifetimeLoyaltyPoints, TotalOrders, TotalSpent, AverageOrderValue, Tags, Notes, IsActive)
+- **CustomerAddress** - Address value object (AddressType, FullName, Phone, AddressLine1, Ward, District, Province, PostalCode, IsDefault)
+
+### Enums
+
+| Enum | Values |
+|------|--------|
+| `CustomerSegment` | New, Regular, VIP, Wholesale |
+| `CustomerTier` | Bronze, Silver, Gold, Platinum |
+| `AddressType` | Shipping, Billing |
+
+### Domain Events
+
+- **CustomerCreatedEvent** - Customer profile created
+- **CustomerUpdatedEvent** - Customer profile updated
+- **CustomerDeactivatedEvent** - Customer deactivated
+- **CustomerTierChangedEvent** - Customer tier upgraded/downgraded
+- **CustomerSegmentChangedEvent** - Customer segment changed
+
+---
+
+## Customer Groups
+
+**Namespace:** `NOIR.Application.Features.CustomerGroups`
+**Endpoint:** `/api/customer-groups`
+**Permissions:** `customers:*`
+
+> Segment customers into named groups for targeted promotions, pricing rules, and analytics.
+
+### Commands
+
+#### Create Customer Group
+- **Command:** `CreateCustomerGroupCommand`
+- **Endpoint:** `POST /api/customer-groups`
+- **Permission:** `customers:create`
+- **Purpose:** Create a new customer group
+- **Returns:** `CustomerGroupDto`
+- **Validation:**
+  - Name: Required, max 200 chars, unique within tenant
+  - Slug: Auto-generated from name
+
+#### Update Customer Group
+- **Command:** `UpdateCustomerGroupCommand`
+- **Endpoint:** `PUT /api/customer-groups/{id}`
+- **Permission:** `customers:update`
+- **Purpose:** Update group name, description, active status
+- **Returns:** `CustomerGroupDto`
+
+#### Delete Customer Group
+- **Command:** `DeleteCustomerGroupCommand`
+- **Endpoint:** `DELETE /api/customer-groups/{id}`
+- **Permission:** `customers:delete`
+- **Purpose:** Soft delete customer group
+- **Returns:** Success message
+
+#### Assign Customers to Group
+- **Command:** `AssignCustomersToGroupCommand`
+- **Endpoint:** `POST /api/customer-groups/{id}/members`
+- **Permission:** `customers:update`
+- **Purpose:** Add one or more customers to a group (bulk)
+- **Returns:** Updated member count
+
+#### Remove Customers from Group
+- **Command:** `RemoveCustomersFromGroupCommand`
+- **Endpoint:** `DELETE /api/customer-groups/{id}/members`
+- **Permission:** `customers:update`
+- **Purpose:** Remove customers from a group (bulk)
+- **Returns:** Updated member count
+
+### Queries
+
+#### Get Customer Groups
+- **Query:** `GetCustomerGroupsQuery`
+- **Endpoint:** `GET /api/customer-groups`
+- **Permission:** `customers:read`
+- **Purpose:** List all customer groups with member counts
+- **Returns:** `PagedResult<CustomerGroupListDto>`
+- **Filters:** Search (by name, slug), IsActive
+
+#### Get Customer Group By Id
+- **Query:** `GetCustomerGroupByIdQuery`
+- **Endpoint:** `GET /api/customer-groups/{id}`
+- **Permission:** `customers:read`
+- **Purpose:** Get group details
+- **Returns:** `CustomerGroupDto`
+
+### Domain Entity
+
+- **CustomerGroup** - Aggregate root (Name, Description, Slug, IsActive, MemberCount)
+
+---
+
+## Promotions
+
+**Namespace:** `NOIR.Application.Features.Promotions`
+**Endpoint:** `/api/promotions`
+**Permissions:** `promotions:*`
+
+> Discount and promotion engine supporting percentage/fixed discounts, usage limits, date ranges, and product/category targeting.
+
+### Commands
+
+#### Create Promotion
+- **Command:** `CreatePromotionCommand`
+- **Endpoint:** `POST /api/promotions`
+- **Permission:** `promotions:create`
+- **Purpose:** Create a promotion with a discount code
+- **Returns:** `PromotionDto`
+- **Validation:**
+  - Name: Required
+  - Code: Required, unique within tenant
+  - DiscountValue: Required, positive
+  - StartDate must be before EndDate
+- **Audit:** IAuditableCommand (Create)
+
+**Example Request:**
+```json
+{
+  "name": "Summer Sale 20%",
+  "code": "SUMMER20",
+  "description": "20% off all orders over 500,000 VND",
+  "promotionType": "Discount",
+  "discountType": "Percentage",
+  "discountValue": 20.0,
+  "maxDiscountAmount": 200000,
+  "minOrderValue": 500000,
+  "usageLimitTotal": 1000,
+  "usageLimitPerUser": 1,
+  "startDate": "2026-06-01T00:00:00Z",
+  "endDate": "2026-08-31T23:59:59Z",
+  "applyLevel": "Cart"
+}
+```
+
+#### Update Promotion
+- **Command:** `UpdatePromotionCommand`
+- **Endpoint:** `PUT /api/promotions/{id}`
+- **Permission:** `promotions:update`
+- **Purpose:** Update promotion details (cannot change code)
+- **Returns:** `PromotionDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Delete Promotion
+- **Command:** `DeletePromotionCommand`
+- **Endpoint:** `DELETE /api/promotions/{id}`
+- **Permission:** `promotions:delete`
+- **Purpose:** Soft delete a promotion
+- **Returns:** Success message
+- **Audit:** IAuditableCommand (Delete)
+
+#### Activate Promotion
+- **Command:** `ActivatePromotionCommand`
+- **Endpoint:** `POST /api/promotions/{id}/activate`
+- **Permission:** `promotions:update`
+- **Purpose:** Set promotion to active status
+- **Returns:** `PromotionDto`
+
+#### Deactivate Promotion
+- **Command:** `DeactivatePromotionCommand`
+- **Endpoint:** `POST /api/promotions/{id}/deactivate`
+- **Permission:** `promotions:update`
+- **Purpose:** Set promotion to inactive status
+- **Returns:** `PromotionDto`
+
+#### Apply Promotion
+- **Command:** `ApplyPromotionCommand`
+- **Endpoint:** Internal (invoked during checkout)
+- **Purpose:** Apply a promotion code to a cart/order and record usage
+- **Returns:** Discount amount applied
+
+### Queries
+
+#### Get Promotions
+- **Query:** `GetPromotionsQuery`
+- **Endpoint:** `GET /api/promotions`
+- **Permission:** `promotions:read`
+- **Purpose:** List promotions with filtering
+- **Returns:** `PagedResult<PromotionDto>`
+- **Filters:** Search (name, code), Status, IsActive, date range
+
+#### Get Promotion By Id
+- **Query:** `GetPromotionByIdQuery`
+- **Endpoint:** `GET /api/promotions/{id}`
+- **Permission:** `promotions:read`
+- **Purpose:** Get promotion details with usage stats and recent usages
+- **Returns:** `PromotionDto`
+
+#### Validate Promo Code
+- **Query:** `ValidatePromoCodeQuery`
+- **Endpoint:** `POST /api/promotions/validate`
+- **Permission:** Authenticated users
+- **Purpose:** Validate a promo code against the current cart (used at checkout)
+- **Returns:** `PromoCodeValidationDto` (IsValid, DiscountAmount, message)
+
+### Domain Entities
+
+- **Promotion** - Aggregate root (Name, Code, PromotionType, DiscountType, DiscountValue, MaxDiscountAmount, MinOrderValue, UsageLimitTotal, UsageLimitPerUser, CurrentUsageCount, StartDate, EndDate, IsActive, Status, ApplyLevel, ProductIds, CategoryIds)
+- **PromotionUsage** - Tracks per-user usage (PromotionId, UserId, OrderId, DiscountAmount, UsedAt)
+
+### Enums
+
+| Enum | Values |
+|------|--------|
+| `PromotionType` | Discount, FreeShipping, BuyXGetY |
+| `DiscountType` | Percentage, FixedAmount |
+| `PromotionApplyLevel` | Cart, Product, Category |
+| `PromotionStatus` | Draft, Active, Inactive, Expired |
+
+---
+
+## Reviews
+
+**Namespace:** `NOIR.Application.Features.Reviews`
+**Endpoint:** `/api/reviews`
+**Permissions:** `reviews:*`
+
+> Product review system with star ratings, media attachments, moderation workflow, admin responses, and helpfulness voting.
+
+### Commands
+
+#### Create Review
+- **Command:** `CreateReviewCommand`
+- **Endpoint:** `POST /api/reviews`
+- **Permission:** Authenticated users
+- **Purpose:** Submit a product review with rating, title, content, and optional media
+- **Returns:** `ReviewDto`
+- **Validation:**
+  - ProductId: Required, must exist
+  - Rating: 1–5
+  - Content: Required
+  - IsVerifiedPurchase: Checked against order history
+
+#### Approve Review
+- **Command:** `ApproveReviewCommand`
+- **Endpoint:** `POST /api/reviews/{id}/approve`
+- **Permission:** `reviews:moderate`
+- **Purpose:** Approve a pending review for public display
+- **Returns:** `ReviewDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Reject Review
+- **Command:** `RejectReviewCommand`
+- **Endpoint:** `POST /api/reviews/{id}/reject`
+- **Permission:** `reviews:moderate`
+- **Purpose:** Reject a review (hidden from public)
+- **Returns:** `ReviewDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Bulk Approve Reviews
+- **Command:** `BulkApproveReviewsCommand`
+- **Endpoint:** `POST /api/reviews/bulk-approve`
+- **Permission:** `reviews:moderate`
+- **Purpose:** Approve multiple pending reviews at once
+- **Returns:** Count of approved reviews
+
+#### Bulk Reject Reviews
+- **Command:** `BulkRejectReviewsCommand`
+- **Endpoint:** `POST /api/reviews/bulk-reject`
+- **Permission:** `reviews:moderate`
+- **Purpose:** Reject multiple pending reviews at once
+- **Returns:** Count of rejected reviews
+
+#### Add Admin Response
+- **Command:** `AddAdminResponseCommand`
+- **Endpoint:** `POST /api/reviews/{id}/response`
+- **Permission:** `reviews:moderate`
+- **Purpose:** Add or update the merchant's official response to a review
+- **Returns:** `ReviewDto`
+
+#### Vote Review
+- **Command:** `VoteReviewCommand`
+- **Endpoint:** `POST /api/reviews/{id}/vote`
+- **Permission:** Authenticated users
+- **Purpose:** Mark a review as helpful or not helpful
+- **Returns:** Updated vote counts
+
+### Queries
+
+#### Get Reviews
+- **Query:** `GetReviewsQuery`
+- **Endpoint:** `GET /api/reviews`
+- **Permission:** `reviews:read`
+- **Purpose:** List all reviews with filtering (admin moderation queue)
+- **Returns:** `PagedResult<ReviewDto>`
+- **Filters:** Status (Pending, Approved, Rejected), ProductId, Rating, DateRange
+
+#### Get Product Reviews
+- **Query:** `GetProductReviewsQuery`
+- **Endpoint:** `GET /api/reviews/products/{productId}`
+- **Permission:** Public (approved reviews only) / `reviews:read` (all statuses)
+- **Purpose:** Get paginated approved reviews for a specific product
+- **Returns:** `PagedResult<ReviewDto>`
+
+#### Get Review By Id
+- **Query:** `GetReviewByIdQuery`
+- **Endpoint:** `GET /api/reviews/{id}`
+- **Permission:** `reviews:read`
+- **Purpose:** Get full review details including media
+- **Returns:** `ReviewDetailDto`
+
+#### Get Review Stats
+- **Query:** `GetReviewStatsQuery`
+- **Endpoint:** `GET /api/reviews/products/{productId}/stats`
+- **Permission:** Public
+- **Purpose:** Get aggregated rating statistics for a product (average, distribution)
+- **Returns:** `ReviewStatsDto`
+
+### Domain Entities
+
+- **ProductReview** - Aggregate root (ProductId, UserId, OrderId, Rating, Title, Content, Status, IsVerifiedPurchase, HelpfulVotes, NotHelpfulVotes, AdminResponse, AdminRespondedAt)
+- **ReviewMedia** - Media attachment (MediaUrl, MediaType, DisplayOrder)
+
+### Enums
+
+| Enum | Values |
+|------|--------|
+| `ReviewStatus` | Pending, Approved, Rejected |
+| `ReviewMediaType` | Image, Video |
+
+---
+
+## Wishlists
+
+**Namespace:** `NOIR.Application.Features.Wishlists`
+**Endpoint:** `/api/wishlists`
+**Permissions:** Authenticated users
+
+> Multi-wishlist management with sharing, item priorities, cart migration, and analytics tracking.
+
+### Commands
+
+#### Create Wishlist
+- **Command:** `CreateWishlistCommand`
+- **Endpoint:** `POST /api/wishlists`
+- **Permission:** Authenticated users
+- **Purpose:** Create a new named wishlist (users can have multiple)
+- **Returns:** `WishlistDto`
+- **Validation:** Name: Required, max 100 chars
+
+#### Update Wishlist
+- **Command:** `UpdateWishlistCommand`
+- **Endpoint:** `PUT /api/wishlists/{id}`
+- **Permission:** Owner
+- **Purpose:** Update wishlist name and public/private setting
+- **Returns:** `WishlistDto`
+
+#### Delete Wishlist
+- **Command:** `DeleteWishlistCommand`
+- **Endpoint:** `DELETE /api/wishlists/{id}`
+- **Permission:** Owner
+- **Purpose:** Delete a wishlist
+- **Returns:** Success message
+
+#### Add to Wishlist
+- **Command:** `AddToWishlistCommand`
+- **Endpoint:** `POST /api/wishlists/{id}/items`
+- **Permission:** Owner
+- **Purpose:** Add a product (with optional variant) to a wishlist
+- **Returns:** `WishlistDetailDto`
+- **Validation:** ProductId required; ProductVariantId optional; Note optional
+
+#### Remove From Wishlist
+- **Command:** `RemoveFromWishlistCommand`
+- **Endpoint:** `DELETE /api/wishlists/{id}/items/{itemId}`
+- **Permission:** Owner
+- **Purpose:** Remove an item from a wishlist
+- **Returns:** Success message
+
+#### Update Wishlist Item Priority
+- **Command:** `UpdateWishlistItemPriorityCommand`
+- **Endpoint:** `PUT /api/wishlists/{id}/items/{itemId}/priority`
+- **Permission:** Owner
+- **Purpose:** Set priority (Low, Normal, High, MustHave) for a wishlist item
+- **Returns:** `WishlistDetailDto`
+
+#### Move to Cart
+- **Command:** `MoveToCartCommand`
+- **Endpoint:** `POST /api/wishlists/{id}/items/{itemId}/move-to-cart`
+- **Permission:** Owner
+- **Purpose:** Transfer a wishlist item to the shopping cart
+- **Returns:** `CartDto`
+
+#### Share Wishlist
+- **Command:** `ShareWishlistCommand`
+- **Endpoint:** `POST /api/wishlists/{id}/share`
+- **Permission:** Owner
+- **Purpose:** Generate a public share URL for a wishlist
+- **Returns:** Share URL
+
+### Queries
+
+#### Get Wishlists
+- **Query:** `GetWishlistsQuery`
+- **Endpoint:** `GET /api/wishlists`
+- **Permission:** Authenticated users (own wishlists only)
+- **Purpose:** List all wishlists owned by the current user
+- **Returns:** `List<WishlistDto>`
+
+#### Get Wishlist By Id
+- **Query:** `GetWishlistByIdQuery`
+- **Endpoint:** `GET /api/wishlists/{id}`
+- **Permission:** Owner (or public if IsPublic = true)
+- **Purpose:** Get wishlist with all items and product details
+- **Returns:** `WishlistDetailDto`
+
+#### Get Shared Wishlist
+- **Query:** `GetSharedWishlistQuery`
+- **Endpoint:** `GET /api/wishlists/shared/{shareToken}`
+- **Permission:** Public (if wishlist is public)
+- **Purpose:** View a shared wishlist via share token
+- **Returns:** `WishlistDetailDto`
+
+#### Get Wishlist Analytics
+- **Query:** `GetWishlistAnalyticsQuery`
+- **Endpoint:** `GET /api/wishlists/analytics`
+- **Permission:** `reports:read`
+- **Purpose:** Most wishlisted products, wishlist-to-cart conversion rates
+- **Returns:** Analytics data
+
+### Domain Entities
+
+- **Wishlist** - Aggregate root (UserId, Name, IsDefault, IsPublic, ShareToken)
+- **WishlistItem** - Product reference (ProductId, ProductVariantId, Note, Priority, IsInStock, AddedAt)
+
+### Enums
+
+| Enum | Values |
+|------|--------|
+| `WishlistItemPriority` | Low, Normal, High, MustHave |
+
+---
+
+## Reports
+
+**Namespace:** `NOIR.Application.Features.Reports`
+**Endpoint:** `/api/reports`
+**Permissions:** `reports:*`
+
+> Business analytics and reporting covering revenue, best sellers, inventory health, customer metrics, and CSV export.
+
+### Queries
+
+#### Get Revenue Report
+- **Query:** `GetRevenueReportQuery`
+- **Endpoint:** `GET /api/reports/revenue`
+- **Permission:** `reports:read`
+- **Purpose:** Revenue analytics for a period with daily breakdown, category breakdown, and payment method breakdown
+- **Returns:** `RevenueReportDto`
+- **Query Parameters:**
+  - `period` - daily, weekly, monthly, yearly (default: monthly)
+  - `startDate` / `endDate` - Custom date range (overrides period)
+- **Includes:**
+  - Total revenue, total orders, average order value
+  - Revenue by day (`DailyRevenueDto[]`)
+  - Revenue by category (`CategoryRevenueDto[]`)
+  - Revenue by payment method (`PaymentMethodRevenueDto[]`)
+  - Comparison to previous period (`RevenueComparisonDto`)
+
+#### Get Best Sellers Report
+- **Query:** `GetBestSellersReportQuery`
+- **Endpoint:** `GET /api/reports/best-sellers`
+- **Permission:** `reports:read`
+- **Purpose:** Top-selling products ranked by units sold with revenue contribution
+- **Returns:** `BestSellersReportDto`
+- **Query Parameters:** `period`, `startDate`, `endDate`, `limit` (top N products)
+
+#### Get Inventory Report
+- **Query:** `GetInventoryReportQuery`
+- **Endpoint:** `GET /api/reports/inventory`
+- **Permission:** `reports:read`
+- **Purpose:** Inventory health: low-stock alerts, stock valuation, dead-stock identification
+- **Returns:** `InventoryReportDto`
+- **Includes:**
+  - Low-stock products (`LowStockDto[]`)
+  - Total product and variant counts
+  - Total stock value
+
+#### Get Customer Report
+- **Query:** `GetCustomerReportQuery`
+- **Endpoint:** `GET /api/reports/customers`
+- **Permission:** `reports:read`
+- **Purpose:** Customer metrics: new vs returning, segment distribution, top spenders, churn rate
+- **Returns:** Customer analytics data
+
+#### Export Report
+- **Command:** `ExportReportCommand`
+- **Endpoint:** `POST /api/reports/export`
+- **Permission:** `reports:export`
+- **Purpose:** Export a report as CSV download
+- **Returns:** File stream (CSV)
+- **Supported Reports:** Revenue, BestSellers, Inventory, Customers
+
+### Domain
+
+- **Service:** `IReportQueryService` (Application interface) — implemented in Infrastructure
+- **Architecture:** Delegates to service interface; no EF Core dependency in Application layer
+
+---
+
+## Feature Management
+
+**Namespace:** `NOIR.Application.Features.FeatureManagement`
+**Endpoint:** `/api/features`
+**Permissions:** `system:admin` (platform operations), `settings:read` (tenant view)
+
+> Two-layer module gating system: platform controls availability, tenants control enablement. 31 module definitions (8 core + 23 toggleable) with endpoint-level and command-level enforcement.
+
+### Architecture
+
+- **Module Registry:** Defined in `Application/Modules/` — 31 module definitions as `IModuleDefinition` implementations
+- **Two-Layer Override:**
+  - Platform admin: `IsAvailable` — controls whether a tenant CAN use the module
+  - Tenant admin: `IsEnabled` — controls whether the tenant HAS turned it on
+  - Computed: `IsEffective = IsAvailable && IsEnabled`
+- **Enforcement:**
+  - Endpoints: `.RequireFeature(ModuleNames.X.Y)` on endpoint groups
+  - Commands: `[RequiresFeature]` attribute + `FeatureCheckMiddleware` (Wolverine middleware, cached via `ConcurrentDictionary`)
+- **Caching:** FusionCache (5-minute TTL) + per-request dictionary cache via `IFeatureChecker`
+- **Fail-closed:** Unknown features → disabled
+- **Background Jobs:** `ITenantJobRunner` iterates active tenants, sets Finbuckle context, respects feature flags
+
+### Module Categories
+
+| Category | Core? | Modules |
+|----------|-------|---------|
+| Core Platform | Yes (8) | UserManagement, RoleManagement, AuditLog, Notifications, Media, EmailTemplates, LegalPages, DeveloperLogs |
+| E-commerce | No (23) | Products, ProductAttributes, Brands, Cart, Checkout, Orders, Payments, Shipping, Inventory, Reviews, Wishlists, Customers, CustomerGroups, Promotions, Reports, Dashboard, Blog, Webhooks, FilterAnalytics, etc. |
+
+### Commands
+
+#### Set Module Availability (Platform Admin)
+- **Command:** `SetModuleAvailabilityCommand`
+- **Endpoint:** `PUT /api/features/tenants/{tenantId}/availability`
+- **Permission:** `system:admin`
+- **Purpose:** Platform admin enables or disables a module for a specific tenant
+- **Returns:** `TenantFeatureStateDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Toggle Module (Tenant Admin)
+- **Command:** `ToggleModuleCommand`
+- **Endpoint:** `PUT /api/features/modules/{featureName}/toggle`
+- **Permission:** `settings:update`
+- **Purpose:** Tenant admin enables or disables a module (subject to platform availability)
+- **Returns:** `TenantFeatureStateDto`
+- **Validation:** Module must be available (IsAvailable = true) before enabling
+
+### Queries
+
+#### Get Module Catalog
+- **Query:** `GetModuleCatalogQuery`
+- **Endpoint:** `GET /api/features/catalog`
+- **Permission:** `system:admin`
+- **Purpose:** List all 31 module definitions with descriptions, icons, and default state
+- **Returns:** `ModuleCatalogDto`
+
+#### Get Tenant Feature States
+- **Query:** `GetTenantFeatureStatesQuery`
+- **Endpoint:** `GET /api/features/tenants/{tenantId}/states`
+- **Permission:** `system:admin`
+- **Purpose:** Get per-module IsAvailable/IsEnabled/IsEffective state for a tenant
+- **Returns:** `List<TenantFeatureStateDto>`
+
+#### Get Current Tenant Features
+- **Query:** `GetCurrentTenantFeaturesQuery`
+- **Endpoint:** `GET /api/features/current`
+- **Permission:** Authenticated users
+- **Purpose:** Get the current tenant's effective feature flags (used by frontend `useFeatures()`)
+- **Returns:** `List<TenantFeatureStateDto>`
+
+### Domain Entities
+
+- **TenantModuleState** (`TenantEntity`) - Stores per-tenant overrides (FeatureName, IsAvailable, IsEnabled); extends `TenantEntity` (not `AggregateRoot`)
+
+### Frontend Integration
+
+- **Hook:** `useFeatures()` — fetches current tenant feature states, cached
+- **Component:** `<FeatureGuard featureName="..." />` — conditionally renders children
+- **Sidebar:** Filters navigation items based on effective module state
+- **Admin UI:** Modules tab in Tenant Settings (toggle per module), Modules tab in Platform Admin
+
+---
+
+## Outbound Webhooks
+
+**Namespace:** `NOIR.Application.Features.Webhooks`
+**Endpoint:** `/api/webhooks`
+**Permissions:** `webhooks:*`
+
+> Tenant-configurable outbound webhook subscriptions with HMAC-SHA256 signature, event pattern filtering, delivery tracking, retry logic, and secret rotation.
+
+### Architecture
+
+- **Event Source:** `WebhookEventTypeRegistry` maps 40+ domain events to webhook-friendly string names (e.g. `order.created`, `payment.succeeded`)
+- **Dispatcher:** `WebhookDispatcher` — Wolverine handler listening to `IDomainEvent`; queries active subscriptions matching event pattern; enqueues `DeliverWebhookCommand` per subscription
+- **Delivery:** `DeliverWebhookCommand` — HTTP POST with HMAC-SHA256 signature header (`X-NOIR-Signature`), configurable timeout and retry count
+- **Retry Logic:** Exponential backoff; `NextRetryAt` computed on failure; `AttemptNumber` tracked per log entry
+- **Signature:** `HMAC-SHA256(secret, payload)` — consumers verify using stored secret
+
+### Registered Event Categories
+
+| Category | Events |
+|----------|--------|
+| Products | `product.created`, `product.published`, `product.archived`, `product.updated`, `product.stock_changed` |
+| Product Categories | `product_category.created`, `product_category.updated`, `product_category.deleted` |
+| Brands | `brand.created`, `brand.updated`, `brand.deleted` |
+| Orders | `order.created`, `order.confirmed`, `order.shipped`, `order.delivered`, `order.completed`, `order.cancelled`, `order.refunded`, `order.returned` |
+| Payments | `payment.created`, `payment.succeeded`, `payment.failed`, `payment.refund_completed`, `payment.cod_collected` |
+| Cart | `cart.abandoned`, `cart.converted` |
+| Checkout | `checkout.completed` |
+| Customers | `customer.created`, `customer.updated`, `customer.deactivated`, `customer.tier_changed`, `customer.segment_changed` |
+| Inventory | `inventory.receipt_confirmed` |
+| Reviews | `review.created`, `review.approved`, `review.rejected` |
+
+### Commands
+
+#### Create Webhook Subscription
+- **Command:** `CreateWebhookSubscriptionCommand`
+- **Endpoint:** `POST /api/webhooks/subscriptions`
+- **Permission:** `webhooks:create`
+- **Purpose:** Register a new outbound webhook endpoint
+- **Returns:** `WebhookSubscriptionDto`
+- **Validation:**
+  - Name: Required
+  - Url: Required, valid HTTPS URL
+  - EventPatterns: Required (comma-separated event type strings or wildcard `*`)
+  - MaxRetries: 0–10 (default 5)
+  - TimeoutSeconds: 5–120 (default 30)
+- **Audit:** IAuditableCommand (Create)
+
+**Example Request:**
+```json
+{
+  "name": "ERP Order Sync",
+  "url": "https://erp.example.com/webhooks/noir",
+  "eventPatterns": "order.created,order.confirmed,order.shipped",
+  "description": "Sync orders to ERP system",
+  "maxRetries": 5,
+  "timeoutSeconds": 30
+}
+```
+
+#### Update Webhook Subscription
+- **Command:** `UpdateWebhookSubscriptionCommand`
+- **Endpoint:** `PUT /api/webhooks/subscriptions/{id}`
+- **Permission:** `webhooks:update`
+- **Purpose:** Update subscription URL, event patterns, or settings
+- **Returns:** `WebhookSubscriptionDto`
+- **Audit:** IAuditableCommand (Update)
+
+#### Delete Webhook Subscription
+- **Command:** `DeleteWebhookSubscriptionCommand`
+- **Endpoint:** `DELETE /api/webhooks/subscriptions/{id}`
+- **Permission:** `webhooks:delete`
+- **Purpose:** Soft delete a webhook subscription
+- **Returns:** Success message
+- **Audit:** IAuditableCommand (Delete)
+
+#### Activate Webhook Subscription
+- **Command:** `ActivateWebhookSubscriptionCommand`
+- **Endpoint:** `POST /api/webhooks/subscriptions/{id}/activate`
+- **Permission:** `webhooks:update`
+- **Purpose:** Enable a paused subscription
+- **Returns:** `WebhookSubscriptionDto`
+
+#### Deactivate Webhook Subscription
+- **Command:** `DeactivateWebhookSubscriptionCommand`
+- **Endpoint:** `POST /api/webhooks/subscriptions/{id}/deactivate`
+- **Permission:** `webhooks:update`
+- **Purpose:** Pause a subscription without deleting it
+- **Returns:** `WebhookSubscriptionDto`
+
+#### Rotate Webhook Secret
+- **Command:** `RotateWebhookSecretCommand`
+- **Endpoint:** `POST /api/webhooks/subscriptions/{id}/rotate-secret`
+- **Permission:** `webhooks:update`
+- **Purpose:** Generate a new HMAC secret (one-time display only)
+- **Returns:** `WebhookSecretDto` (new secret — shown once)
+- **Security:** Old secret is invalidated immediately
+
+#### Test Webhook Subscription
+- **Command:** `TestWebhookSubscriptionCommand`
+- **Endpoint:** `POST /api/webhooks/subscriptions/{id}/test`
+- **Permission:** `webhooks:update`
+- **Purpose:** Send a test payload to verify the endpoint is reachable
+- **Returns:** Delivery log entry
+
+#### Deliver Webhook (Internal)
+- **Command:** `DeliverWebhookCommand`
+- **Purpose:** Internal Wolverine handler — performs the actual HTTP delivery and logs result
+- **Triggered by:** `WebhookDispatcher` upon domain event
+
+### Queries
+
+#### Get Webhook Subscriptions
+- **Query:** `GetWebhookSubscriptionsQuery`
+- **Endpoint:** `GET /api/webhooks/subscriptions`
+- **Permission:** `webhooks:read`
+- **Purpose:** List all subscriptions with delivery statistics
+- **Returns:** `PagedResult<WebhookSubscriptionSummaryDto>`
+
+#### Get Webhook Subscription By Id
+- **Query:** `GetWebhookSubscriptionByIdQuery`
+- **Endpoint:** `GET /api/webhooks/subscriptions/{id}`
+- **Permission:** `webhooks:read`
+- **Purpose:** Get subscription details with aggregated delivery counts
+- **Returns:** `WebhookSubscriptionDto`
+
+#### Get Webhook Delivery Logs
+- **Query:** `GetWebhookDeliveryLogsQuery`
+- **Endpoint:** `GET /api/webhooks/subscriptions/{id}/logs`
+- **Permission:** `webhooks:read`
+- **Purpose:** Paginated delivery history for a subscription
+- **Returns:** `PagedResult<WebhookDeliveryLogDto>`
+- **Includes:** Request URL, HTTP status, attempt number, duration, error message, NextRetryAt
+
+#### Get Webhook Event Types
+- **Query:** `GetWebhookEventTypesQuery`
+- **Endpoint:** `GET /api/webhooks/event-types`
+- **Permission:** `webhooks:read`
+- **Purpose:** List all available event types from the registry (grouped by category)
+- **Returns:** `List<WebhookEventTypeDto>`
+
+### Domain Entities
+
+- **WebhookSubscription** - Aggregate root (Name, Url, EventPatterns, IsActive, MaxRetries, TimeoutSeconds, Status, LastDeliveryAt, Secret)
+- **WebhookDeliveryLog** - Delivery attempt record (EventType, EventId, ResponseStatusCode, Status, AttemptNumber, NextRetryAt, DurationMs, ErrorMessage)
+
+### Enums
+
+| Enum | Values |
+|------|--------|
+| `WebhookSubscriptionStatus` | Active, Paused, Failed |
+| `WebhookDeliveryStatus` | Pending, Delivered, Failed, Retrying |
+
+---
+
+## Tenant Settings
+
+**Namespace:** `NOIR.Application.Features.TenantSettings`
+**Endpoint:** `/api/tenant-settings`
+**Permissions:** `settings:*`
+
+> Per-tenant configuration for branding, contact info, regional preferences, and SMTP email. Accessed via the Tenant Settings portal page with tabbed navigation.
+
+### Commands
+
+#### Update Branding Settings
+- **Command:** `UpdateBrandingSettingsCommand`
+- **Endpoint:** `PUT /api/tenant-settings/branding`
+- **Permission:** `settings:update`
+- **Purpose:** Set tenant logo, favicon, primary/secondary brand colors, and dark mode default
+- **Returns:** `BrandingSettingsDto`
+
+#### Update Contact Settings
+- **Command:** `UpdateContactSettingsCommand`
+- **Endpoint:** `PUT /api/tenant-settings/contact`
+- **Permission:** `settings:update`
+- **Purpose:** Set tenant contact email, phone, and address
+- **Returns:** `ContactSettingsDto`
+
+#### Update Regional Settings
+- **Command:** `UpdateRegionalSettingsCommand`
+- **Endpoint:** `PUT /api/tenant-settings/regional`
+- **Permission:** `settings:update`
+- **Purpose:** Set timezone, language, and date format
+- **Returns:** `RegionalSettingsDto`
+
+#### Update Tenant SMTP Settings
+- **Command:** `UpdateTenantSmtpSettingsCommand`
+- **Endpoint:** `PUT /api/tenant-settings/smtp`
+- **Permission:** `settings:update`
+- **Purpose:** Configure tenant-specific outbound SMTP server (overrides platform defaults)
+- **Returns:** `TenantSmtpSettingsDto`
+
+#### Revert Tenant SMTP Settings
+- **Command:** `RevertTenantSmtpSettingsCommand`
+- **Endpoint:** `DELETE /api/tenant-settings/smtp`
+- **Permission:** `settings:update`
+- **Purpose:** Delete tenant SMTP override and fall back to platform SMTP settings
+- **Returns:** Success message
+
+#### Test Tenant SMTP Connection
+- **Command:** `TestTenantSmtpConnectionCommand`
+- **Endpoint:** `POST /api/tenant-settings/smtp/test`
+- **Permission:** `settings:update`
+- **Purpose:** Send a test email using the current SMTP configuration
+- **Returns:** Success or error detail
+
+### Queries
+
+#### Get Branding Settings
+- **Query:** `GetBrandingSettingsQuery`
+- **Endpoint:** `GET /api/tenant-settings/branding`
+- **Permission:** `settings:read`
+- **Returns:** `BrandingSettingsDto` (LogoUrl, FaviconUrl, PrimaryColor, SecondaryColor, DarkModeDefault)
+
+#### Get Contact Settings
+- **Query:** `GetContactSettingsQuery`
+- **Endpoint:** `GET /api/tenant-settings/contact`
+- **Permission:** `settings:read`
+- **Returns:** `ContactSettingsDto` (Email, Phone, Address)
+
+#### Get Regional Settings
+- **Query:** `GetRegionalSettingsQuery`
+- **Endpoint:** `GET /api/tenant-settings/regional`
+- **Permission:** `settings:read`
+- **Returns:** `RegionalSettingsDto` (Timezone, Language, DateFormat)
+
+#### Get Tenant SMTP Settings
+- **Query:** `GetTenantSmtpSettingsQuery`
+- **Endpoint:** `GET /api/tenant-settings/smtp`
+- **Permission:** `settings:read`
+- **Returns:** `TenantSmtpSettingsDto` (Host, Port, Username, IsInherited flag)
+
+### Frontend Tabs
+
+The Tenant Settings portal page (`/portal/settings`) is organized into tabs:
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Branding + contact settings |
+| **Regional** | Timezone, language, date format |
+| **Email** | SMTP configuration + test connection |
+| **Payment Gateways** | Configure Stripe, MoMo, VNPay, COD, etc. (via Payments feature) |
+| **Shipping Providers** | Configure GHTK, GHN, J&T, etc. (via Shipping feature) |
+| **Email Templates** | Template customization (via Email Templates feature) |
+| **Legal Pages** | Terms / Privacy edit (via Legal Pages feature) |
+| **Modules** | Toggle enabled feature modules (via Feature Management) |
+
+---
+
+## Platform Settings
+
+**Namespace:** `NOIR.Application.Features.PlatformSettings`
+**Endpoint:** `/api/platform-settings`
+**Permissions:** `system:admin`
+
+> System-wide configuration for the NOIR platform, accessible only to platform administrators. Covers global SMTP settings.
+
+### Commands
+
+#### Update SMTP Settings
+- **Command:** `UpdateSmtpSettingsCommand`
+- **Endpoint:** `PUT /api/platform-settings/smtp`
+- **Permission:** `system:admin`
+- **Purpose:** Configure the platform-wide outbound SMTP server (used by all tenants unless overridden)
+- **Returns:** `SmtpSettingsDto`
+- **Settings:** Host, Port, Username, Password, EnableSsl, FromName, FromEmail
+
+#### Test SMTP Connection
+- **Command:** `TestSmtpConnectionCommand`
+- **Endpoint:** `POST /api/platform-settings/smtp/test`
+- **Permission:** `system:admin`
+- **Purpose:** Send a test email using the current platform SMTP settings
+- **Returns:** Success or error detail
+
+### Queries
+
+#### Get SMTP Settings
+- **Query:** `GetSmtpSettingsQuery`
+- **Endpoint:** `GET /api/platform-settings/smtp`
+- **Permission:** `system:admin`
+- **Purpose:** Retrieve current platform SMTP configuration (password masked)
+- **Returns:** `SmtpSettingsDto`
+
+### Multi-Tenancy
+
+- Platform SMTP settings act as the default for all tenants
+- Individual tenants can override via **Tenant Settings → Email** (see `TenantSmtpSettings`)
+- When a tenant has no override, emails are sent via the platform SMTP server
+
+---
+
 ## Developer Tools
 
 **Namespace:** `NOIR.Application.Features.DeveloperLogs`
@@ -2745,6 +3762,16 @@ Orders integrate with inventory through:
 | **Shipping** | ✅ All tenants | ✅ Own tenant | ✅ Own orders |
 | **Inventory** | ✅ All tenants | ✅ Own tenant | ❌ |
 | **Dashboard** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Customers** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Customer Groups** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Promotions** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Reviews** | ✅ All tenants | ✅ Own tenant | ✅ Own reviews |
+| **Wishlists** | ✅ All tenants | ✅ Own tenant | ✅ Own wishlists |
+| **Reports** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Feature Management** | ✅ Platform + tenant control | ✅ Tenant toggle | ❌ |
+| **Outbound Webhooks** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Tenant Settings** | ✅ All tenants | ✅ Own tenant | ❌ |
+| **Platform Settings** | ✅ | ❌ | ❌ |
 | **Developer Logs** | ✅ | ❌ | ❌ |
 | **Hangfire Dashboard** | ✅ | ❌ | ❌ |
 
@@ -2774,8 +3801,19 @@ Orders integrate with inventory through:
 | `/api/shipping-providers` | 4 | ⭐ **NEW:** Provider configuration |
 | `/api/inventory` | 7 | ⭐ **NEW:** Stock movements, receipts CRUD, confirm, cancel |
 | `/api/blog/tags` | 4 | Tag CRUD |
-| `/api/dashboard` | 1 | ⭐ **NEW:** Aggregated metrics |
-| **Total** | **121** | |
+| `/api/dashboard` | 1 | Aggregated metrics |
+| `/api/customers` | 12 | Customer CRUD, addresses, loyalty points, order history, stats |
+| `/api/customer-groups` | 7 | Group CRUD, member assignment/removal |
+| `/api/promotions` | 8 | Promotion CRUD, activate/deactivate, validate promo code |
+| `/api/reviews` | 10 | Review CRUD, approve/reject, bulk moderation, admin response, voting |
+| `/api/wishlists` | 10 | Wishlist CRUD, item management, sharing, analytics, move-to-cart |
+| `/api/reports` | 5 | Revenue, best sellers, inventory, customers, export |
+| `/api/features` | 5 | Module catalog, tenant states, toggle, set availability |
+| `/api/webhooks/subscriptions` | 8 | Subscription CRUD, activate/deactivate, rotate secret, test, delivery logs |
+| `/api/webhooks/event-types` | 1 | Registered event type catalog |
+| `/api/tenant-settings` | 10 | Branding, contact, regional, SMTP settings |
+| `/api/platform-settings` | 3 | Platform SMTP settings |
+| **Total** | **200** | |
 
 ### Commands vs Queries
 
@@ -2802,8 +3840,18 @@ Orders integrate with inventory through:
 | **Shipping** | **3** | **5** | **8** |
 | **Inventory** | **4** | **3** | **7** |
 | **Dashboard** | **0** | **1** | **1** |
+| **Customers** | **8** | **4** | **12** |
+| **Customer Groups** | **5** | **2** | **7** |
+| **Promotions** | **6** | **3** | **9** |
+| **Reviews** | **7** | **4** | **11** |
+| **Wishlists** | **8** | **4** | **12** |
+| **Reports** | **1** | **4** | **5** |
+| **Feature Management** | **2** | **3** | **5** |
+| **Outbound Webhooks** | **7** | **4** | **11** |
+| **Tenant Settings** | **5** | **4** | **9** |
+| **Platform Settings** | **2** | **1** | **3** |
 | Developer Logs | 0 | 1 | 1 |
-| **Total** | **80** | **57** | **137** |
+| **Total** | **131** | **92** | **223** |
 
 ---
 
@@ -2817,13 +3865,28 @@ Orders integrate with inventory through:
 
 ---
 
-**Last Updated:** 2026-02-18
-**Version:** 2.6
+**Last Updated:** 2026-02-27
+**Version:** 3.0
 **Maintainer:** NOIR Team
 
 ---
 
 ## Changelog
+
+### Version 3.0 (2026-02-27)
+- Added **Customers** feature section (8 commands, 4 queries — CRUD, addresses, loyalty points, order history, stats)
+- Added **Customer Groups** feature section (5 commands, 2 queries — CRUD, bulk member management)
+- Added **Promotions** feature section (6 commands, 3 queries — discount codes, percentage/fixed, usage limits)
+- Added **Reviews** feature section (7 commands, 4 queries — star ratings, moderation, bulk approve/reject, voting)
+- Added **Wishlists** feature section (8 commands, 4 queries — multi-wishlist, sharing, priorities, cart migration, analytics)
+- Added **Reports** feature section (1 command, 4 queries — revenue, best sellers, inventory, customers, CSV export)
+- Added **Feature Management** feature section (2 commands, 3 queries — 31 modules, two-layer override, endpoint/command gating)
+- Added **Outbound Webhooks** feature section (7 commands, 4 queries — 40+ event types, HMAC-SHA256, retry logic)
+- Added **Tenant Settings** feature section (5 commands, 4 queries — branding, contact, regional, SMTP)
+- Added **Platform Settings** feature section (2 commands, 1 query — platform SMTP)
+- Updated Feature Matrix with all new features
+- Updated API Endpoints Summary: 121 → 200 total endpoints
+- Updated Commands vs Queries: 137 → 223 total
 
 ### Version 2.6 (2026-02-18)
 - Added **Dashboard** feature section (1 query, 7 metric categories, parallel aggregation)

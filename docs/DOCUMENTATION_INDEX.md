@@ -2,7 +2,7 @@
 
 > Your guide to navigating all NOIR documentation.
 
-**Last Updated:** 2026-02-23
+**Last Updated:** 2026-02-27
 
 ---
 
@@ -63,14 +63,9 @@
 | Document | Topic |
 |----------|-------|
 | [cache-busting-best-practices.md](backend/research/cache-busting-best-practices.md) | Cache invalidation |
-| [ecommerce-ux-patterns-2026.md](backend/research/ecommerce-ux-patterns-2026.md) | E-commerce UX |
-| [feature-management-design.md](backend/research/feature-management-design.md) | Feature management architecture |
-| [feature-management-requirements.md](backend/research/feature-management-requirements.md) | Feature toggle requirements |
-| [feature-management-workflow.md](backend/research/feature-management-workflow.md) | Implementation workflow |
 | [hierarchical-audit-logging-comparison-2025.md](backend/research/hierarchical-audit-logging-comparison-2025.md) | Audit design |
 | [role-permission-system-research.md](backend/research/role-permission-system-research.md) | RBAC/ReBAC patterns (Consolidated) |
 | [seo-meta-and-hint-text-best-practices.md](backend/research/seo-meta-and-hint-text-best-practices.md) | SEO best practices |
-| [module-feature-management-systems.md](backend/research/module-feature-management-systems.md) | Comparative feature systems analysis |
 | [validation-unification-plan.md](backend/research/validation-unification-plan.md) | Validation strategy |
 | [vietnam-shipping-integration-2026.md](backend/research/vietnam-shipping-integration-2026.md) | Vietnam shipping providers |
 
@@ -138,25 +133,6 @@
 
 ---
 
-## Roadmaps (`plans/`)
-
-| Document | Status |
-|----------|--------|
-| [feature-roadmap-basic.md](plans/feature-roadmap-basic.md) | Phases 1-4 Complete |
-| [feature-roadmap-ecommerce.md](plans/feature-roadmap-ecommerce.md) | Complete |
-
----
-
-## Research (`research/`)
-
-| Document | Topic |
-|----------|-------|
-| [admin-portal-features-2026.md](research/admin-portal-features-2026.md) | Admin portal features |
-| [essential-erp-cms-features-2026.md](research/essential-erp-cms-features-2026.md) | ERP/CMS features |
-| [admin-portal-ux-research.md](research/admin-portal-ux-research.md) | Admin portal UX patterns |
-
----
-
 ## Designs (`designs/`)
 
 | Document | Status |
@@ -178,18 +154,16 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Docs** | 59 |
+| **Total Docs** | 48 |
 | **Backend Patterns** | 11 |
 | **Backend Architecture** | 2 |
-| **Backend Research** | 7 |
+| **Backend Research** | 6 |
 | **Frontend Guides** | 13 |
 | **Testing Docs** | 1 |
 | **ADRs** | 3 |
-| **Plans** | 2 |
-| **Research (General)** | 3 |
 | **Designs** | 1 |
 | **Backend Tests** | 10,889+ |
 
 ---
 
-**Version:** 3.5 (Updated 2026-02-23 - Synced test counts 10,889+, Storybook stories 91, docs total 59)
+**Version:** 3.6 (Updated 2026-02-27 - Removed 11 stale/deleted docs; total 48)

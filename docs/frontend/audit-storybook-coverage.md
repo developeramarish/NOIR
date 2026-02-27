@@ -1,6 +1,6 @@
 # Storybook Coverage Audit Report
 
-**Date:** 2026-02-23 (Updated from 2026-02-20)
+**Date:** 2026-02-27 (Updated from 2026-02-23)
 **Storybook Version:** @storybook/react-vite v10.2.8
 **Framework:** React + Vite + Tailwind CSS 4
 **Build Status:** SUCCESS (0 errors)
@@ -9,15 +9,15 @@
 
 ## Executive Summary
 
-| Metric | Previous (2026-02-20) | Current (2026-02-23) | Delta |
+| Metric | Previous (2026-02-23) | Current (2026-02-27) | Delta |
 |--------|-----------------------|----------------------|-------|
-| Total uikit directories | 73 (72 component + 1 utility) | 93 (92 component + 1 utility) | +20 |
-| Story files | 72 | **91** | +19 |
-| Coverage | 100% | **99%** (1 utility dir) | ~ |
+| Total uikit directories | 93 (92 component + 1 utility) | 98 (97 component + 1 utility) | +5 |
+| Story files | 91 | **97** | +6 |
+| Coverage | 99% | **99%** (1 utility dir) | ~ |
 
-**20 new component directories** have been added since the last audit, with 19 new story files covering additional UI components.
+**5 new component directories** added since last audit (code-block, math-block, mermaid-block + 2 others), with 6 new story files.
 
-The uikit library maintains **near-100% Storybook coverage** across 92 component directories with 91 stories.
+The uikit library maintains **near-100% Storybook coverage** across 97 component directories with 97 stories.
 
 ---
 

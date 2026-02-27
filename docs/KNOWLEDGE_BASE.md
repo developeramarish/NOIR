@@ -1,7 +1,7 @@
 # NOIR Knowledge Base
 
-**Last Updated:** 2026-02-18
-**Version:** 3.0
+**Last Updated:** 2026-02-27
+**Version:** 3.1
 
 A comprehensive cross-referenced guide to the NOIR codebase, patterns, and architecture.
 
@@ -25,6 +25,45 @@ A comprehensive cross-referenced guide to the NOIR codebase, patterns, and archi
 ---
 
 ## Recent Fixes & Improvements
+
+**Last Session:** 2026-02-27
+
+### Feature Additions (2026-02-23 → 2026-02-27)
+
+**Feature Management System**
+- 35 module definitions (8 core + 27 toggleable). Two-layer override: Platform `IsAvailable` + Tenant `IsEnabled` → `IsEffective`.
+- `FeatureCheckMiddleware` in Wolverine pipeline; FusionCache (5-min TTL) + per-request dict cache; fails closed.
+- Frontend: `useFeatures()`, `FeatureGuard`, sidebar filtering, ModulesSettingsTab.
+
+**Outbound Webhooks**
+- Tenant-configurable outbound webhooks with per-event-type filtering and delivery tracking.
+- Domain events trigger webhook dispatch; retry logic + dead-letter handling; webhook logs in Tenant Settings.
+
+**PWA Support**
+- `vite-plugin-pwa` with `public/manifest.json`; offline fallback page; service worker pre-caching.
+
+**Multi-Tab Session Sync**
+- `BroadcastChannel` API syncs auth state (login/logout/token refresh) across browser tabs without polling.
+
+**Rich Content Rendering**
+- Mermaid diagrams, KaTeX math, and Shiki syntax highlighting rendered client-side in blog/legal content views.
+
+**SSE Real-Time Events**
+- `/api/sse/events` endpoint streams domain events to authenticated clients; `useSSE()` hook on frontend.
+
+**Deploy Recovery**
+- Graceful shutdown signal detection on backend; frontend `RecoveryBanner` component appears on 503 and reconnects automatically.
+
+**Route Prefetch on Hover**
+- TanStack Router `preload="intent"` — data fetching starts on link hover, reducing perceived navigation latency.
+
+**Virtualized Developer Logs**
+- `@tanstack/react-virtual` row virtualization in Developer Logs page; handles 10,000+ log entries without DOM bloat.
+
+**Dashboard Simplified**
+- Dashboard page replaced with an empty placeholder pending redesign. Backend `GetDashboardMetricsQuery` still exists.
+
+---
 
 **Last Session:** 2026-02-01
 
@@ -1317,6 +1356,41 @@ public class ActiveUsersSpec : Specification<User>
 | `LoggingMiddleware` | Request/response logging |
 | `PerformanceMiddleware` | Performance metrics |
 
+**Wolverine Pipeline Order (per command):**
+```
+HTTP Request → Permission Check → Feature Check (FeatureCheckMiddleware) → Handler → Audit Logging
+```
+
+- `FeatureCheckMiddleware` sits between Permission Check and Handler — commands decorated with `[RequiresFeature]` are rejected early if the module is disabled for the current tenant.
+
+### Feature Management
+
+**Path:** `Application/Modules/`
+
+Two-layer override system: Platform `IsAvailable` + Tenant `IsEnabled` → effective state.
+
+- **35 module definitions** (core + toggleable) with `ModuleNames.*` constants
+- **FusionCache** (5-min TTL) + per-request dictionary cache; fails closed for unknown features
+- **Endpoint gating:** `.RequireFeature(ModuleNames.X.Y)` on endpoint groups
+- **Command gating:** `[RequiresFeature]` attribute + `FeatureCheckMiddleware` (cached reflection via `ConcurrentDictionary`)
+- **Frontend:** `useFeatures()` hook + `FeatureGuard` component + sidebar filtering + ModulesSettingsTab
+
+### Outbound Webhooks
+
+**Path:** `Application/Features/Webhooks/`
+
+Tenant-configurable outbound webhooks with delivery tracking:
+- Event filtering per webhook endpoint (subscribe to specific domain events)
+- Delivery queue with retry logic and dead-letter handling
+- Webhook logs visible in Tenant Settings → Webhooks tab
+
+### SSE (Server-Sent Events)
+
+Real-time push from backend to frontend without WebSockets:
+- Used for deploy recovery notifications and live status updates
+- Endpoint: `/api/sse/events` (tenant-scoped)
+- Frontend: `useSSE()` hook subscribes and dispatches typed events
+
 ### Common Interfaces
 
 **Path:** `Common/Interfaces/`
@@ -2189,11 +2263,11 @@ new Error(ErrorCodes.Auth.DuplicateEmail, "This email address is already in use.
 
 | Project | Tests | Purpose |
 |---------|-------|---------|
-| `NOIR.Domain.UnitTests` | 2,586 | Domain entity tests |
-| `NOIR.Application.UnitTests` | 7,483 | Handler, specification, validator tests |
+| `NOIR.Domain.UnitTests` | 2,781 | Domain entity tests |
+| `NOIR.Application.UnitTests` | 7,732 | Handler, specification, validator tests |
 | `NOIR.ArchitectureTests` | 32 | Dependency constraints |
-| `NOIR.IntegrationTests` | 788 | API integration tests |
-| **Total** | **10,889+** | |
+| `NOIR.IntegrationTests` | 796 | API integration tests |
+| **Total** | **11,341+** | |
 
 ### Test Patterns
 
@@ -2261,7 +2335,6 @@ dotnet test --collect:"XPlat Code Coverage"
 | Audit Logging Comparison | `docs/backend/research/hierarchical-audit-logging-comparison-2025.md` | Technology comparison |
 | Role & Permission Systems | `docs/backend/research/role-permission-system-research.md` | RBAC/ReBAC patterns (Consolidated) |
 | Cache Busting | `docs/backend/research/cache-busting-best-practices.md` | Frontend cache strategies |
-| E-commerce UX Patterns | `docs/backend/research/ecommerce-ux-patterns-2026.md` | E-commerce UX best practices |
 | SEO Best Practices | `docs/backend/research/seo-meta-and-hint-text-best-practices.md` | SEO meta and hint text |
 | Validation Unification | `docs/backend/research/validation-unification-plan.md` | Unified validation strategy |
 | Vietnam Shipping | `docs/backend/research/vietnam-shipping-integration-2026.md` | Vietnam shipping providers |
@@ -2353,4 +2426,4 @@ docker-compose up -d  # Start SQL Server + MailHog
 
 ---
 
-*Updated: 2026-02-23 | Total Tests: 10,889+ | Features: 34 | Endpoints: 200+ | Entities: 50+*
+*Updated: 2026-02-27 | Total Tests: 11,341+ | Backend: ~1,752 C# | Frontend: ~638 TS/TSX | Tests: ~747 files | UIKit: 98 dirs, 97 stories | Hooks: 32 | API Services: 36 | Pages: 45 | Feature Modules: 35 | Endpoints: 41 groups | EF Configs: 68 | Repos: 35*

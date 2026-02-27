@@ -4,7 +4,7 @@
 
 **Enterprise-ready .NET 10 + React 19 SaaS Foundation**
 
-*Multi-tenancy • E-commerce • Clean Architecture • 10,889+ Tests*
+*Multi-tenancy • E-commerce • Clean Architecture • 11,341+ Tests*
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
@@ -116,8 +116,11 @@ dotnet run --project src/NOIR.Web -c Release
 ### 🔔 Real-Time Communication
 
 - **SignalR Hubs** - Notifications and log streaming
+- **Server-Sent Events (SSE)** - Job progress and operation updates
+- **Multi-Tab Session Sync** - Auth, theme, and language sync via BroadcastChannel
 - **Push Notifications** - Real-time user notifications
 - **Live Updates** - WebSocket-based instant updates
+- **Deploy Recovery** - Graceful shutdown with client reconnection
 
 ### 📧 Email System
 
@@ -141,13 +144,19 @@ dotnet run --project src/NOIR.Web -c Release
 - **Type-Safe API** - Auto-generated TypeScript types
 - **Form Validation** - React Hook Form + Zod schemas
 
-### 🛒 E-commerce (Phase 8 Complete)
+### 🛒 E-commerce
 
 - **Product Catalog** - Products with variants, SKUs, and hierarchical categories
 - **Shopping Cart** - Guest and authenticated user support with cart merge
 - **Checkout Flow** - Hybrid accordion pattern (Address → Shipping → Payment)
 - **Order Management** - Full lifecycle with inventory integration
 - **Inventory Tracking** - Real-time stock with reservation system
+- **Customer Management** - Profiles, addresses, order history, detail pages
+- **Customer Groups** - Segmentation with rule-based membership
+- **Reviews & Ratings** - Product reviews with moderation workflow
+- **Wishlists** - User wishlists with analytics tracking
+- **Promotions** - Discount codes, percentage/fixed, usage limits, date ranges
+- **Reports** - Revenue, orders, inventory, product performance analytics
 
 ### 💳 Payment Processing
 
@@ -161,15 +170,36 @@ dotnet run --project src/NOIR.Web -c Release
 ### 📦 Content Management
 
 - **Blog CMS** - Posts, categories, tags with rich editor
+- **Rich Content Rendering** - Syntax highlighting (Shiki), math formulas (KaTeX), diagrams (Mermaid)
 - **Media Management** - Image upload with processing
 - **File Storage** - Local, Azure Blob, or AWS S3 support
+
+### 🔌 Feature Management
+
+- **Module System** - 31 modules (8 core + 23 toggleable)
+- **Two-Layer Override** - Platform availability + tenant enable → effective state
+- **Endpoint & Command Gating** - Feature-check middleware with caching
+- **Frontend Integration** - `useFeatures()` hook, `FeatureGuard` component, sidebar filtering
+
+### 🔗 Webhooks & Events
+
+- **Outbound Webhooks** - Subscription management with event filtering
+- **Delivery Tracking** - Retry logic, delivery status monitoring
+- **Domain Events** - Event notification handlers for system-wide reactivity
+
+### 📱 Progressive Web App
+
+- **Installable** - iOS, Android, and Desktop via `vite-plugin-pwa`
+- **Offline Support** - Static offline page with retry capability
+- **Auto-Update** - Service worker update prompts
+- **Smart Caching** - NetworkFirst for API, CacheFirst for assets
 
 ### 🔧 Developer Experience
 
 - **Hot Reload** - Backend and frontend live reloading
 - **Type Generation** - Swagger → TypeScript types
-- **Storybook** - 91 interactive component stories with UIKit catalog
-- **10,889+ Tests** - Unit, Integration, Architecture
+- **Storybook** - 97 interactive component stories with UIKit catalog
+- **11,341+ Tests** - Unit, Integration, Architecture
 - **Architecture Tests** - Enforce layer boundaries
 - **Comprehensive Docs** - 15,000+ lines of documentation
 - **AI-Assisted** - SuperClaude Framework integration
@@ -283,8 +313,8 @@ NOIR/
 │   └── NOIR.Web/              # 🌐 API endpoints, middleware, SPA host
 │       └── frontend/          # ⚛️  React application (pnpm)
 │           ├── .storybook/    # 📖 Storybook configuration
-│           └── src/uikit/     # 📚 91 component stories
-├── ✅ tests/                  # 10,889+ tests (Unit, Integration, Architecture)
+│           └── src/uikit/     # 📚 97 component stories
+├── ✅ tests/                  # 11,341+ tests (Unit, Integration, Architecture)
 ├── 📚 docs/                   # 15,000+ lines of documentation
 └── ⚙️  .github/               # CI/CD workflows and templates
 ```
@@ -297,11 +327,11 @@ NOIR/
 
 | Test Type | Project | Count | Coverage |
 |-----------|---------|-------|----------|
-| **Unit Tests** | Domain.UnitTests | 2,586 | Domain logic, business rules |
-| **Unit Tests** | Application.UnitTests | 7,483 | CQRS handlers, validators |
-| **Integration** | IntegrationTests | 788 | API endpoints with database |
+| **Unit Tests** | Domain.UnitTests | 2,781 | Domain logic, business rules |
+| **Unit Tests** | Application.UnitTests | 7,732 | CQRS handlers, validators |
+| **Integration** | IntegrationTests | 796 | API endpoints with database |
 | **Architecture** | ArchitectureTests | 32 | Layer dependency rules |
-| **Total** | **All Projects** | **10,889+** | **Comprehensive coverage** |
+| **Total** | **All Projects** | **11,341+** | **Comprehensive coverage** |
 
 ### Running Tests
 
@@ -473,7 +503,7 @@ NOIR builds on the shoulders of giants:
 
 | Aspect | NOIR Advantage |
 |--------|----------------|
-| **Production-Ready** | Battle-tested patterns, 10,889+ tests, security built-in |
+| **Production-Ready** | Battle-tested patterns, 11,341+ tests, security built-in |
 | **E-commerce Ready** | Products, cart, checkout, orders, payments - all included |
 | **Developer-Friendly** | Hot reload, type generation, extensive docs, AI-assisted development |
 | **Performance** | Source generators, compiled queries, hybrid caching, optimized builds |
