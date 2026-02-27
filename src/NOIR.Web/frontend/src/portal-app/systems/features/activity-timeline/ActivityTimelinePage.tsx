@@ -317,7 +317,7 @@ export const ActivityTimelinePage = () => {
   })
 
   return (
-    <div className="container max-w-6xl py-6 space-y-6">
+    <div className="container max-w-full py-6 space-y-6">
       <PageHeader
         icon={Activity}
         title={t('activityTimeline.title', 'Activity Timeline')}
