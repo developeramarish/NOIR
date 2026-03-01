@@ -4067,14 +4067,15 @@
     "dashboard": {
       "overview": "CRM Overview",
       "pipelineValue": "Pipeline Value",
-      "conversion": "Conversion Rate",
+      "activePipeline": "Active Pipeline",
+      "conversion": "Conversion",
       "totalContacts": "Total Contacts",
       "totalCompanies": "Total Companies",
       "activeDeals": "Active Deals",
-      "totalPipelineValue": "Total Pipeline Value",
+      "totalPipelineValue": "Pipeline Value",
       "wonThisMonth": "Won This Month",
       "lostThisMonth": "Lost This Month",
-      "conversionRate": "Conversion Rate"
+      "conversionRate": "Conversion Rate (90d)"
     }
   },
   "pm": {
@@ -4142,7 +4143,16 @@
     "deleteConfirmation": "Are you sure you want to delete this project? This action cannot be undone.",
     "deleteTaskConfirmation": "Are you sure you want to delete this task?",
     "archiveConfirmation": "Are you sure you want to archive this project?",
-    "deleteColumnConfirmation": "Deleting this column will move all its tasks to another column."
+    "deleteColumnConfirmation": "Deleting this column will move all its tasks to another column.",
+    "taskList": "Task List",
+    "moreMembers": "+{{count}} more",
+    "columnSettings": "Column Settings",
+    "labelManager": "Label Manager",
+    "editLabel": "Edit Label",
+    "deleteLabel": "Delete Label",
+    "deleteLabelConfirm": "Are you sure you want to delete this label?",
+    "noLabels": "No labels yet",
+    "columnName": "Column Name"
   },
   "statuses": {
     "todo": "To Do",

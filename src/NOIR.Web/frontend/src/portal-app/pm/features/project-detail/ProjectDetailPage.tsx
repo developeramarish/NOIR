@@ -19,7 +19,10 @@ import { KanbanBoard } from '@/portal-app/pm/components/KanbanBoard'
 import { TaskDialog } from '@/portal-app/pm/components/TaskDialog'
 import { MembersManager } from '@/portal-app/pm/components/MembersManager'
 import { ColumnManager } from '@/portal-app/pm/components/ColumnManager'
+import { LabelManager } from '@/portal-app/pm/components/LabelManager'
+import { ProjectMemberAvatars } from '@/portal-app/pm/components/ProjectMemberAvatars'
 import { ProjectDialog } from '@/portal-app/pm/components/ProjectDialog'
+import { TaskListView } from './TaskListView'
 import type { ProjectStatus } from '@/types/pm'
 
 const statusColorMap: Record<ProjectStatus, 'green' | 'blue' | 'gray' | 'yellow'> = {
@@ -86,13 +89,21 @@ export const ProjectDetailPage = () => {
             {t(`statuses.${project.status.toLowerCase()}`, { defaultValue: project.status })}
           </Badge>
         </div>
-        <Button
-          variant="outline"
-          className="cursor-pointer"
-          onClick={() => setEditDialogOpen(true)}
-        >
-          {t('pm.editProject')}
-        </Button>
+        <div className="flex items-center gap-4">
+          {project.members.length > 0 && (
+            <ProjectMemberAvatars
+              members={project.members}
+              onClickMore={() => handleTabChange('settings')}
+            />
+          )}
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            {t('pm.editProject')}
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -112,9 +123,7 @@ export const ProjectDetailPage = () => {
           </TabsContent>
 
           <TabsContent value="list" className="mt-6">
-            <div className="text-sm text-muted-foreground">
-              {t('pm.listView')} - {t('pm.noTasksFound', { defaultValue: 'Coming soon' })}
-            </div>
+            <TaskListView projectId={project.id} />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6 space-y-8">
@@ -131,6 +140,9 @@ export const ProjectDetailPage = () => {
 
             {/* Columns */}
             <ColumnManager projectId={project.id} columns={project.columns} />
+
+            {/* Labels */}
+            <LabelManager projectId={project.id} />
           </TabsContent>
         </div>
       </Tabs>

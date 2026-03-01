@@ -4067,14 +4067,15 @@
     "dashboard": {
       "overview": "Tổng quan CRM",
       "pipelineValue": "Giá trị Pipeline",
+      "activePipeline": "Pipeline hoạt động",
       "conversion": "Tỷ lệ chuyển đổi",
       "totalContacts": "Tổng liên hệ",
       "totalCompanies": "Tổng công ty",
-      "activeDeals": "Deal đang hoạt động",
-      "totalPipelineValue": "Tổng giá trị Pipeline",
+      "activeDeals": "Giao dịch đang mở",
+      "totalPipelineValue": "Giá trị Pipeline",
       "wonThisMonth": "Thắng tháng này",
       "lostThisMonth": "Thua tháng này",
-      "conversionRate": "Tỷ lệ chuyển đổi"
+      "conversionRate": "Tỷ lệ chuyển đổi (90 ngày)"
     }
   },
   "pm": {
@@ -4142,7 +4143,16 @@
     "deleteConfirmation": "Bạn có chắc muốn xóa dự án này? Hành động không thể hoàn tác.",
     "deleteTaskConfirmation": "Bạn có chắc muốn xóa công việc này?",
     "archiveConfirmation": "Bạn có chắc muốn lưu trữ dự án này?",
-    "deleteColumnConfirmation": "Xóa cột này sẽ chuyển tất cả công việc sang cột khác."
+    "deleteColumnConfirmation": "Xóa cột này sẽ chuyển tất cả công việc sang cột khác.",
+    "taskList": "Danh sách tác vụ",
+    "moreMembers": "+{{count}} thêm",
+    "columnSettings": "Cài đặt cột",
+    "labelManager": "Quản lý nhãn",
+    "editLabel": "Sửa nhãn",
+    "deleteLabel": "Xóa nhãn",
+    "deleteLabelConfirm": "Bạn có chắc muốn xóa nhãn này?",
+    "noLabels": "Chưa có nhãn nào",
+    "columnName": "Tên cột"
   },
   "statuses": {
     "todo": "Cần làm",

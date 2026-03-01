@@ -24,6 +24,7 @@ const BlogWidgetGroup = lazy(() =>
 const InventoryWidgetGroup = lazy(() =>
   import('./components/InventoryWidgetGroup').then((m) => ({ default: m.InventoryWidgetGroup }))
 )
+const CrmWidgetGroup = lazy(() => import('./components/CrmWidgetGroup'))
 
 export const DashboardPage = () => {
   const { t } = useTranslation('common')
@@ -33,6 +34,7 @@ export const DashboardPage = () => {
   const { isEnabled: isEcommerceEnabled } = useFeature('Ecommerce.Orders')
   const { isEnabled: isBlogEnabled } = useFeature('Content.Blog')
   const { isEnabled: isInventoryEnabled } = useFeature('Ecommerce.Inventory')
+  const { isEnabled: isCrmEnabled } = useFeature('Erp.Crm')
 
   return (
     <div className="py-6 space-y-6">
@@ -61,6 +63,12 @@ export const DashboardPage = () => {
         {isInventoryEnabled && (
           <Suspense fallback={<DashboardSkeleton count={3} />}>
             <InventoryWidgetGroup />
+          </Suspense>
+        )}
+
+        {isCrmEnabled && (
+          <Suspense fallback={<DashboardSkeleton count={3} />}>
+            <CrmWidgetGroup />
           </Suspense>
         )}
       </div>

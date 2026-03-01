@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Plus, Trash2, Loader2, GripVertical } from 'lucide-react'
+import { Plus, Trash2, Loader2, GripVertical, Settings2 } from 'lucide-react'
 import {
   Button,
   Credenza,
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@uikit'
 import { useCreateColumn, useUpdateColumn, useDeleteColumn } from '@/portal-app/pm/queries'
+import { ColumnSettingsDialog } from './ColumnSettingsDialog'
 import type { ProjectColumnDto } from '@/types/pm'
 
 interface ColumnManagerProps {
@@ -42,6 +43,7 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
 
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+  const [settingsColumn, setSettingsColumn] = useState<ProjectColumnDto | null>(null)
 
   const handleCreate = () => {
     if (!newName.trim()) return
@@ -145,21 +147,32 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
                   </span>
                 )}
               </div>
-              {columns.length > 1 && (
+              <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-red-500 cursor-pointer"
-                  onClick={() => {
-                    setDeleteColumnId(column.id)
-                    const firstOther = columns.find(c => c.id !== column.id)
-                    setMoveToColumnId(firstOther?.id ?? '')
-                  }}
-                  aria-label={`${t('pm.deleteColumn')} ${column.name}`}
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                  onClick={() => setSettingsColumn(column)}
+                  aria-label={`${t('pm.columnSettings')} ${column.name}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Settings2 className="h-4 w-4" />
                 </Button>
-              )}
+                {columns.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-red-500 cursor-pointer"
+                    onClick={() => {
+                      setDeleteColumnId(column.id)
+                      const firstOther = columns.find(c => c.id !== column.id)
+                      setMoveToColumnId(firstOther?.id ?? '')
+                    }}
+                    aria-label={`${t('pm.deleteColumn')} ${column.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
       </div>
@@ -213,6 +226,14 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
           </CredenzaFooter>
         </CredenzaContent>
       </Credenza>
+
+      {/* Column settings dialog */}
+      <ColumnSettingsDialog
+        open={!!settingsColumn}
+        onOpenChange={(open) => !open && setSettingsColumn(null)}
+        projectId={projectId}
+        column={settingsColumn}
+      />
 
       {/* Delete column confirmation */}
       <Credenza open={!!deleteColumnId} onOpenChange={(open) => !open && setDeleteColumnId(null)}>
