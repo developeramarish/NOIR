@@ -6,7 +6,7 @@
 
 ## Testing at a Glance
 
-### Backend Testing (11,341+ tests)
+### Backend Testing (11,974 tests)
 
 ```bash
 # Run all backend tests
@@ -20,10 +20,10 @@ dotnet test tests/NOIR.ArchitectureTests
 ```
 
 **Coverage:**
-- 2,781 domain unit tests
-- 7,732 application unit tests (handlers, validators, services)
-- 796 integration tests (API endpoints with database)
-- 32 architecture tests (dependency rules, naming conventions)
+- 2,963 domain unit tests
+- 8,163 application unit tests (handlers, validators, services)
+- 803 integration tests (API endpoints with database)
+- 45 architecture tests (dependency rules, naming conventions)
 
 **Execution Time:** ~2 minutes for full suite
 
@@ -196,7 +196,7 @@ Tests run automatically on every push to `main` branch via GitHub Actions.
 
 **Backend Tests Workflow:**
 - Builds solution
-- Runs all 11,341+ tests
+- Runs all 11,974 tests
 - Fails build if any test fails
 - Execution time: ~3 minutes
 
@@ -244,5 +244,5 @@ Tests run automatically on every push to `main` branch via GitHub Actions.
 ---
 
 **Last Updated:** 2026-02-27
-**Test Count:** 11,341+ tests
+**Test Count:** 11,974 tests
 **Focus:** Backend unit, integration, and architecture testing

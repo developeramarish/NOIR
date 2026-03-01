@@ -1,6 +1,6 @@
 # NOIR - Claude Code Instructions
 
-> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.3 (2026-02-28).
+> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.4 (2026-03-01).
 
 ## SuperClaude Framework
 
@@ -98,7 +98,7 @@ dotnet build src/NOIR.sln
 dotnet run --project src/NOIR.Web
 dotnet watch --project src/NOIR.Web        # hot reload
 
-# Tests (11,341+)
+# Tests (11,974)
 dotnet test src/NOIR.sln
 dotnet test src/NOIR.sln --collect:"XPlat Code Coverage"
 
@@ -273,7 +273,7 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Inventory** | `Features/Inventory/` | Receipt system (phieu nhap/xuat). Draft → Confirmed/Cancelled. Types: StockIn (RCV-), StockOut (SHP-). | Complete |
 | **Reviews** | `Features/Reviews/` | Product reviews with moderation. Approve/Reject workflow. | Complete |
 | **Wishlists** | `Features/Wishlists/` | User wishlists with analytics tracking. | Complete |
-| **Dashboard** | `Features/Dashboard/` | 7 metrics via Task.WhenAll(). Revenue excludes Cancelled/Refunded. Frontend: empty placeholder. | Complete |
+| **Dashboard** | `Features/Dashboard/` | 7 metrics via Task.WhenAll(). Revenue excludes Cancelled/Refunded. 4 widget groups (E-commerce, CRM, feature-gated). | Complete |
 | **Customers** | `Features/Customers/` | Customer profiles with addresses, order history. Detail page with timeline. | Complete |
 | **Customer Groups** | `Features/CustomerGroups/` | Segmentation groups with rule-based membership. | Complete |
 | **Promotions** | `Features/Promotions/` | Discount codes, percentage/fixed, usage limits, date ranges. | Complete |
@@ -281,6 +281,17 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Webhooks** | `Features/Webhooks/` | Outbound webhook subscriptions with event filtering and delivery tracking. | Complete |
 | **Feature Mgmt** | `Application/Modules/` | 31 modules (8 core + 23 toggleable). Platform availability + tenant enable. | Complete |
 | **SSE** | `Infrastructure/Sse/` | Server-Sent Events for real-time job progress and operation updates. | Complete |
+
+---
+
+## ERP Module Map
+
+| Module | Location | Key Entities | Status |
+|--------|----------|-------------|--------|
+| **HR** | `Features/Hr/` | Employee (auto-code EMP-), Department (tree), EmployeeTag (7 categories). Org chart, bulk ops, import/export, reports. | Complete |
+| **CRM** | `Features/Crm/` | Contact, Company, Lead, Pipeline, Stage, Activity. Kanban board, dashboard widgets, domain events. | Complete |
+| **PM** | `Features/Pm/` | Project (auto-code PRJ-), ProjectColumn, ProjectTask, Label, Comment, Attachment. Kanban, task list, subtasks. | Complete |
+| **Calendar** | — | CalendarEvent, Attendee, RecurrenceRule. Shared calendars, resource booking. | Design Ready |
 
 ---
 
@@ -293,12 +304,10 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Backend Patterns** | `docs/backend/patterns/` |
 | **Frontend Guide** | `docs/frontend/` |
 | **Architecture Decisions** | `docs/decisions/` |
-| **Designs** | `docs/designs/` |
+| **Module Designs** | `docs/designs/` (HR, CRM, PM, Calendar) |
 | **Roadmap** | `docs/roadmap.md` |
 
 Research reports → `docs/backend/research/`.
-
-**Wiki:** Auto-synced from `docs/` via `.github/workflows/sync-wiki.yml` on push to main.
 
 ## File Boundaries
 
@@ -307,4 +316,4 @@ Research reports → `docs/backend/research/`.
 
 ---
 
-> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.4 (2026-02-28).
+> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.4 (2026-03-01).

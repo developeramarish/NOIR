@@ -2,7 +2,7 @@
 
 > **Start Here:** [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 
 ## Core Documentation
 
@@ -70,17 +70,11 @@ docs/
 │   ├── 002-frontend-ui-stack.md
 │   └── 003-vertical-slice-cqrs.md
 │
-├── designs/ (11 files)               # Feature designs
-│   ├── admin-portal-enhancement-v28-feb.md
-│   ├── admin-portal-enhancement-v28-feb-design.md
-│   ├── admin-portal-workflow.md
-│   ├── module-hr.md
-│   ├── module-crm.md
-│   ├── module-pm.md
-│   ├── module-calendar.md
-│   ├── module-support-center.md
-│   ├── module-chat.md
-│   └── module-marketplace.md
+├── designs/ (4 files)                # ERP module designs
+│   ├── module-hr.md                  # HR (Implemented)
+│   ├── module-crm.md                 # CRM (Implemented)
+│   ├── module-pm.md                  # PM (Implemented)
+│   └── module-calendar.md            # Calendar (Ready)
 │
 ├── roadmap.md                        # Product roadmap (Now/Next/Later)
 │
@@ -91,7 +85,7 @@ docs/
     └── README.md
 ```
 
-**Total: ~55 documentation files**
+**Total: 45 documentation files**
 
 ## Quick Links
 
@@ -118,10 +112,12 @@ docs/
 - [Role Permission System](backend/research/role-permission-system-research.md)
 - [Vietnam Shipping Integration](backend/research/vietnam-shipping-integration-2026.md)
 
-### Designs
+### Module Designs
 
-- [Admin Portal Enhancement](designs/admin-portal-enhancement-v28-feb.md)
-- [ERP Module Designs](designs/module-pm.md) (PM, CRM, HR, Helpdesk, DMS, Accounting, Calendar, Chat, Billing, Marketplace)
+- [HR Module](designs/module-hr.md) (Implemented)
+- [CRM Module](designs/module-crm.md) (Implemented)
+- [PM Module](designs/module-pm.md) (Implemented)
+- [Calendar Module](designs/module-calendar.md) (Ready)
 
 ### Architecture Decisions
 

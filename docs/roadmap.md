@@ -16,10 +16,9 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 
 | Horizon | Theme | Status |
 |---------|-------|--------|
-| **Done** | Core Foundation + E-commerce + Admin Portal + HR Module | Shipped |
-| **Now** | CRM Module (second ERP module) | Design Ready |
-| **Later** | PM → Calendar → Support Center | Designs in Draft |
-| **Future** | Marketplace, Chat, Mobile, Plugin Ecosystem | Aspirational |
+| **Done** | Core Foundation + E-commerce + Admin Portal + HR + CRM + PM | Shipped |
+| **Now** | Calendar Module (fourth ERP module) | Design Ready |
+| **Future** | Mobile, Plugin Ecosystem | Aspirational |
 
 ---
 
@@ -36,7 +35,7 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 - Email system with database-driven templates
 - React 19 SPA + 98 UIKit components + Storybook (674/674 stories)
 - PWA + SignalR + SSE + multi-tab session sync
-- 11,341+ automated tests
+- 11,974 automated tests
 
 ### E-commerce Platform
 
@@ -61,11 +60,9 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 - Import/Export (CSV + Excel) for products, orders, customers
 - Bulk actions across 6 entity list pages with shared infrastructure
 
-**Design Docs:** [Enhancement Plan](designs/admin-portal-enhancement-v28-feb.md) | [Design Spec](designs/admin-portal-enhancement-v28-feb-design.md)
-
 ### HR Module (First ERP Module)
 
-> **Outcome:** Define "who is in the organization and where they sit" — the prerequisite for all people-dependent modules (CRM, PM, Support Center).
+> **Outcome:** Define "who is in the organization and where they sit" — the prerequisite for all people-dependent modules (CRM, PM).
 
 - Employee profiles (CRUD, auto-code, hierarchy validation, User account sync)
 - Department hierarchy (tree, self-referencing, manager, reorder)
@@ -74,40 +71,51 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 - Bulk operations (assign tags, change department)
 - Import/Export (CSV import, Excel/CSV export)
 - HR reports (headcount, tag distribution, employment type, status breakdown)
-- 11,639 backend tests
 
-**Design Doc:** [module-hr.md](designs/module-hr.md)
+**Design Doc:** [module-hr.md](designs/module-hr.md) — Score: 100/100
 
----
-
-## Now — CRM Module (Second ERP Module)
+### CRM Module (Second ERP Module)
 
 > **Outcome:** Sales teams can manage contacts, leads, and deal pipelines — building on HR's employee/department foundation.
 
-**Design Doc:** [module-crm.md](designs/module-crm.md) — Design Ready.
+- Contacts, Companies, Leads with full CRUD and search
+- Pipeline Kanban board with drag-and-drop stage progression
+- Activities (calls, meetings, emails, tasks) per contact/company/lead
+- CRM dashboard widgets (contacts, active pipeline, conversion rate)
+- Domain events for webhook integration
+- Default pipeline seeding for new tenants
+
+**Design Doc:** [module-crm.md](designs/module-crm.md) — Score: 100/100
+
+### PM Module (Third ERP Module)
+
+> **Outcome:** Teams can manage projects, track tasks, and collaborate — building on HR's employee foundation.
+
+- Projects with auto-code (PRJ-YYYYMMDD-NNNNNN), status lifecycle, member management
+- Kanban board with columns, WIP limits, drag-and-drop
+- Tasks with priority, labels, comments, subtasks (depth ≤ 3), attachments
+- Task list view, project member avatars, column settings, label manager
+- Domain events for webhook integration (ProjectCreated, TaskMoved)
+
+**Design Doc:** [module-pm.md](designs/module-pm.md) — Score: 100/100
 
 ---
 
-## Later — ERP Module Expansion
+## Now — Calendar Module (Fourth ERP Module)
 
-> **Outcome:** Expand from e-commerce into full enterprise operations — project management, scheduling, and support.
+> **Outcome:** Teams need event scheduling, resource booking, and shared calendars.
 
-### Module Pipeline
+**Design Doc:** [module-calendar.md](designs/module-calendar.md) — Design Ready.
 
-| # | Module | Problem It Solves | Depends On | Design | Design Doc |
-|---|--------|-------------------|------------|--------|------------|
-| 3 | **Project Management** | Teams need to track tasks, milestones, and deadlines | HR | Ready | [module-pm.md](designs/module-pm.md) |
-| 4 | **Calendar** | Teams need event scheduling and resource booking | Standalone | Ready | [module-calendar.md](designs/module-calendar.md) |
-| 5 | **Support Center** | Unified helpdesk ticketing + knowledge base for self-service and support | HR, Customers | Draft | [module-support-center.md](designs/module-support-center.md) |
+---
 
 ### Dependency Graph
 
 ```
-HR (Done) ─────────┬──→ CRM (Now)
-                   ├──→ Project Management
-                   └──→ Support Center (+ Customers)
+HR (Done) ──────────┬──→ CRM (Done)
+                    └──→ PM (Done)
 
-Standalone ────────┴──→ Calendar
+Standalone ─────────────→ Calendar (Now)
 ```
 
 ### Design Status Legend
@@ -121,12 +129,10 @@ Standalone ────────┴──→ Calendar
 
 ## Future — Platform Ecosystem
 
-> **Outcome:** Transform from a single product into a platform — third-party extensions, multi-vendor marketplace, and mobile apps.
+> **Outcome:** Transform from a single product into a platform — third-party extensions and mobile apps.
 
 | Module | Problem It Solves | Design |
 |--------|-------------------|--------|
-| **Chat** | Internal teams need real-time messaging and channels | [Ready](designs/module-chat.md) |
-| **Marketplace** | Vendors need multi-store management with commission tracking | [Draft](designs/module-marketplace.md) |
 | Plugin ecosystem | Tenants need custom extensions without forking | Not Started |
 | Third-party integrations | Connect to Zapier, external APIs, and webhooks | Not Started |
 | White-label | Tenants need custom branding and domain mapping | Not Started |
@@ -154,7 +160,7 @@ Addressed continuously across all horizons:
 - **Future** = aspirational, no commitments, shaped by market needs
 - Items move left as they become clearer: Future → Later → Next → Now → Done
 - Each module design doc lives in `docs/designs/module-*.md`
-- All modules use the [feature management system](designs/admin-portal-gaps.md) for tenant-level enable/disable
+- All modules use the feature management system for tenant-level enable/disable
 
 ---
 

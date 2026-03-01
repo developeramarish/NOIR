@@ -2,7 +2,7 @@
 
 > Your guide to navigating all NOIR documentation.
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 
 ---
 
@@ -100,13 +100,13 @@
 |----------|---------|
 | [README.md](testing/README.md) | Testing overview, conventions, and running tests |
 
-### Test Coverage Summary (2026-02-27)
+### Test Coverage Summary (2026-03-01)
 
-**Backend Tests:** 11,341+ tests across 4 test projects
-- 2,781 Domain unit tests
-- 7,732 Application unit tests
-- 796 Integration tests
-- 32 Architecture tests
+**Backend Tests:** 11,974 tests across 4 test projects
+- 2,963 Domain unit tests
+- 8,163 Application unit tests
+- 803 Integration tests
+- 45 Architecture tests
 
 ---
 
@@ -124,25 +124,14 @@
 
 ## Designs (`designs/`)
 
-### Admin Portal Enhancement
-
-| Document | Purpose |
-|----------|--------|
-| [admin-portal-enhancement-v28-feb.md](designs/admin-portal-enhancement-v28-feb.md) | Admin portal enhancement plan (Dashboard widgets, Media Manager, Search, Import/Export, Bulk Actions) |
-| [admin-portal-enhancement-v28-feb-design.md](designs/admin-portal-enhancement-v28-feb-design.md) | Detailed design spec with wireframes and component specs |
-| [admin-portal-workflow.md](designs/admin-portal-workflow.md) | Admin portal workflow design |
-
 ### ERP Module Designs
 
-| Document | Purpose |
-|----------|--------|
-| [module-hr.md](designs/module-hr.md) | HR management module design (Ready) |
-| [module-crm.md](designs/module-crm.md) | CRM module design |
-| [module-pm.md](designs/module-pm.md) | Project Management module design |
-| [module-calendar.md](designs/module-calendar.md) | Calendar module design |
-| [module-support-center.md](designs/module-support-center.md) | Support Center (Knowledge Base + Helpdesk) module design |
-| [module-chat.md](designs/module-chat.md) | Chat/messaging module design |
-| [module-marketplace.md](designs/module-marketplace.md) | Marketplace module design |
+| Document | Purpose | Status |
+|----------|--------|--------|
+| [module-hr.md](designs/module-hr.md) | HR management module design | Implemented |
+| [module-crm.md](designs/module-crm.md) | CRM module design | Implemented |
+| [module-pm.md](designs/module-pm.md) | Project Management module design | Implemented |
+| [module-calendar.md](designs/module-calendar.md) | Calendar module design | Ready |
 
 ---
 
@@ -167,16 +156,16 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Docs** | ~55 |
+| **Total Docs** | 45 |
 | **Backend Patterns** | 11 |
 | **Backend Architecture** | 2 |
 | **Backend Research** | 5 |
-| **Frontend Guides** | 9 |
+| **Frontend Guides** | 8 |
 | **Testing Docs** | 1 |
 | **ADRs** | 3 |
-| **Designs** | 13 |
-| **Backend Tests** | 11,341+ |
+| **Module Designs** | 4 |
+| **Backend Tests** | 11,974 |
 
 ---
 
-**Version:** 3.8 (Updated 2026-02-28 — Added all 13 design docs to index; total ~55)
+**Version:** 4.0 (Updated 2026-03-01 — Removed obsolete design docs, updated test counts, accurate file inventory)

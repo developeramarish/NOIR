@@ -1,7 +1,7 @@
 # NOIR Knowledge Base
 
-**Last Updated:** 2026-02-27
-**Version:** 3.1
+**Last Updated:** 2026-03-01
+**Version:** 3.2
 
 A comprehensive cross-referenced guide to the NOIR codebase, patterns, and architecture.
 
@@ -2263,11 +2263,11 @@ new Error(ErrorCodes.Auth.DuplicateEmail, "This email address is already in use.
 
 | Project | Tests | Purpose |
 |---------|-------|---------|
-| `NOIR.Domain.UnitTests` | 2,781 | Domain entity tests |
-| `NOIR.Application.UnitTests` | 7,732 | Handler, specification, validator tests |
-| `NOIR.ArchitectureTests` | 32 | Dependency constraints |
-| `NOIR.IntegrationTests` | 796 | API integration tests |
-| **Total** | **11,341+** | |
+| `NOIR.Domain.UnitTests` | 2,963 | Domain entity tests |
+| `NOIR.Application.UnitTests` | 8,163 | Handler, specification, validator tests |
+| `NOIR.ArchitectureTests` | 45 | Dependency constraints |
+| `NOIR.IntegrationTests` | 803 | API integration tests |
+| **Total** | **11,974** | |
 
 ### Test Patterns
 
@@ -2418,4 +2418,4 @@ docker-compose up -d  # Start SQL Server + MailHog
 
 ---
 
-*Updated: 2026-02-27 | Total Tests: 11,341+ | Backend: ~1,752 C# | Frontend: ~638 TS/TSX | Tests: ~747 files | UIKit: 98 dirs, 97 stories | Hooks: 32 | API Services: 36 | Pages: 45 | Feature Modules: 35 | Endpoints: 41 groups | EF Configs: 68 | Repos: 35*
+*Updated: 2026-03-01 | Total Tests: 11,974 | Backend: ~2,191 C# | Frontend: ~750 TS/TSX | Tests: ~879 files | UIKit: 98 dirs, 97 stories | Hooks: 35 | API Services: 40 | Pages: 56 | Feature Modules: 39 | Endpoints: 52 groups | EF Configs: 85 | Repos: 44*

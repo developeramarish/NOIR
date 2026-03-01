@@ -2,7 +2,7 @@
 
 > **Quick Navigation:** Jump to any part of the codebase with this comprehensive index.
 
-**Last Updated:** 2026-02-27 | **Index Version:** 4.0
+**Last Updated:** 2026-03-01 | **Index Version:** 4.1
 
 ---
 
@@ -20,35 +20,27 @@
 
 ## Project Overview
 
-**NOIR** is an enterprise-ready .NET 10 + React 19 SaaS foundation implementing Clean Architecture with multi-tenancy, comprehensive audit logging, and 11,341+ backend tests.
+**NOIR** is an enterprise-ready .NET 10 + React 19 SaaS foundation implementing Clean Architecture with multi-tenancy, comprehensive audit logging, and 11,974 backend tests.
 
 ### Key Statistics
 
 | Metric | Count | Notes |
 |--------|-------|-------|
-| **Backend Source Files** | 1,752 | C# files in `src/` (excl. generated) |
-| **Frontend Source Files** | 638 | TypeScript/TSX in `frontend/src/` |
-| **Test Files** | 747 | C# test files in `tests/` |
-| **Total Source Files** | ~3,137 | Combined backend + frontend + tests |
-| **Feature Modules** | 35 | Domain-driven vertical slices |
-| **API Endpoint Groups** | 41 | Minimal API endpoint files |
-| **Domain Entities** | 50+ | Core business entities |
-| **Aggregate Roots** | 26 | DDD aggregate roots |
-| **CQRS Commands** | 130 | Write operations |
-| **CQRS Queries** | 86 | Read operations |
-| **Repositories** | 35 | Infrastructure repositories |
-| **EF Core Configurations** | 68 | Entity type configurations |
+| **Backend Source Files** | 2,191 | C# files in `src/` (excl. generated) |
+| **Frontend Source Files** | 750 | TypeScript/TSX in `frontend/src/` |
+| **Test Files** | 879 | C# test files in `tests/` |
+| **Total Source Files** | ~3,820 | Combined backend + frontend + tests |
+| **Feature Modules** | 39 | Domain-driven vertical slices |
+| **API Endpoint Groups** | 52 | Minimal API endpoint files |
+| **Repositories** | 44 | Infrastructure repositories |
+| **EF Core Configurations** | 85 | Entity type configurations |
 | **UIKit Component Dirs** | 98 | shadcn/ui + custom components in `uikit/` |
 | **Storybook Stories** | 97 | Interactive component catalog in `uikit/` |
-| **Custom Hooks** | 32 | React hooks in `hooks/` |
-| **API Services** | 36 | Frontend API clients |
-| **Frontend Pages** | 45 | React page components |
-| **Documentation Files** | 48 | Markdown docs in `docs/` |
-| **Backend Tests** | 11,341+ | Domain (2,781) + Application (7,732) + Integration (796) + Architecture (32) |
-| **Database Indexes** | 233+ | Including 14 filtered indexes |
-| **Enums** | 24 | Domain enumerations |
-| **Service Interfaces** | 29 | Application-layer abstractions |
-| **NuGet Packages** | 52+ | Direct package references |
+| **Custom Hooks** | 35 | React hooks in `hooks/` |
+| **API Services** | 40 | Frontend API clients |
+| **Frontend Pages** | 56 | React page components |
+| **Documentation Files** | 45 | Markdown docs in `docs/` |
+| **Backend Tests** | 11,974 | Domain (2,963) + Application (8,163) + Integration (803) + Architecture (45) |
 
 **Technologies:** .NET 10, React 19, SQL Server, EF Core 10, Wolverine, SignalR, Vite, TypeScript 5, Tailwind CSS 4, Zod, Storybook 10.2, pnpm
 
@@ -62,12 +54,12 @@ NOIR/
 │   ├── NOIR.Infrastructure/      # 🔧 Infrastructure and persistence
 │   └── NOIR.Web/                 # 🌐 API endpoints and SPA host
 │       └── frontend/             # ⚛️  React frontend application
-├── tests/                        # ✅ 11,341+ backend tests across 4 test projects
+├── tests/                        # ✅ 11,974 backend tests across 4 test projects
 │   ├── NOIR.Domain.UnitTests/    # Domain logic tests
 │   ├── NOIR.Application.UnitTests/ # Handler/service/validator tests
 │   ├── NOIR.IntegrationTests/    # API integration tests (requires DB)
 │   └── NOIR.ArchitectureTests/   # Architectural rule tests
-└── docs/                         # 📚 48 documentation files
+└── docs/                         # 📚 45 documentation files
 
 ```
 

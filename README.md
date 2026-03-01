@@ -4,13 +4,13 @@
 
 **Enterprise-ready .NET 10 + React 19 SaaS Foundation**
 
-*Multi-tenancy | E-commerce | Clean Architecture | 11,341+ Tests*
+*Multi-tenancy | E-commerce | ERP Modules | Clean Architecture | 11,974 Tests*
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-11341+-green.svg?style=flat-square)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-11974-green.svg?style=flat-square)](tests/)
 [![AI-Coded](https://img.shields.io/badge/AI--Coded-100%25-blueviolet?style=flat-square&logo=anthropic)](CLAUDE.md)
 
 [Features](#features) | [Quick Start](#quick-start) | [Documentation](#documentation) | [Tech Stack](#tech-stack) | [Contributing](#contributing)
@@ -190,6 +190,12 @@ dotnet run --project src/NOIR.Web -c Release
 - **Delivery Tracking** - Retry logic, delivery status monitoring
 - **Domain Events** - Event notification handlers for system-wide reactivity
 
+### ERP Modules
+
+- **HR Management** - Employees (auto-code), departments (tree), tags (7 categories), org chart, bulk ops, import/export
+- **CRM** - Contacts, companies, leads, pipeline Kanban, activities, dashboard widgets
+- **Project Management** - Projects (auto-code), Kanban board, tasks with subtasks/labels/comments, task list view
+
 ### Progressive Web App
 
 - **Installable** - iOS, Android, and Desktop via `vite-plugin-pwa`
@@ -202,7 +208,7 @@ dotnet run --project src/NOIR.Web -c Release
 - **Hot Reload** - Backend and frontend live reloading
 - **Type Generation** - Swagger → TypeScript types
 - **Storybook** - 97 interactive component stories with UIKit catalog
-- **11,341+ Tests** - Unit, Integration, Architecture
+- **11,974 Tests** - Unit, Integration, Architecture
 - **Architecture Tests** - Enforce layer boundaries
 - **Comprehensive Docs** - 15,000+ lines of documentation
 - **AI-Assisted** - SuperClaude Framework integration
@@ -250,12 +256,15 @@ dotnet run --project src/NOIR.Web -c Release
 </tr>
 </table>
 
-### Roadmap & Designs
+### Roadmap & Module Designs
 
 | Document | Description |
 |----------|-------------|
-| [Admin Portal Enhancement](docs/designs/admin-portal-enhancement-v28-feb.md) | Dashboard widgets, Media Manager, Global Search, Import/Export, Bulk Actions |
-| [Product Roadmap](docs/roadmap/README.md) | 5-phase plan: Core → E-commerce → Admin Enhancement → ERP Modules → Marketplace |
+| [Product Roadmap](docs/roadmap.md) | Now/Next/Later framework with module status |
+| [HR Module](docs/designs/module-hr.md) | Employee, Department, Tags — Implemented |
+| [CRM Module](docs/designs/module-crm.md) | Contacts, Companies, Leads, Pipeline — Implemented |
+| [PM Module](docs/designs/module-pm.md) | Projects, Tasks, Kanban — Implemented |
+| [Calendar Module](docs/designs/module-calendar.md) | Events, Attendees, Recurring — Design Ready |
 
 ### AI Assistant Guides
 
@@ -323,8 +332,8 @@ NOIR/
 │       └── frontend/          # React application (pnpm)
 │           ├── .storybook/    # Storybook configuration
 │           └── src/uikit/     # 97 component stories
-├── tests/                     # 11,341+ tests (Unit, Integration, Architecture)
-├── docs/                      # 15,000+ lines of documentation
+├── tests/                     # 11,974 tests (Unit, Integration, Architecture)
+├── docs/                      # 45 documentation files
 └── .github/                   # CI/CD workflows and templates
 ```
 
@@ -336,11 +345,11 @@ NOIR/
 
 | Test Type | Project | Count | Coverage |
 |-----------|---------|-------|----------|
-| **Unit Tests** | Domain.UnitTests | 2,781 | Domain logic, business rules |
-| **Unit Tests** | Application.UnitTests | 7,732 | CQRS handlers, validators |
-| **Integration** | IntegrationTests | 796 | API endpoints with database |
-| **Architecture** | ArchitectureTests | 32 | Layer dependency rules |
-| **Total** | **All Projects** | **11,341+** | **Comprehensive coverage** |
+| **Unit Tests** | Domain.UnitTests | 2,963 | Domain logic, business rules |
+| **Unit Tests** | Application.UnitTests | 8,163 | CQRS handlers, validators |
+| **Integration** | IntegrationTests | 803 | API endpoints with database |
+| **Architecture** | ArchitectureTests | 45 | Layer dependency rules |
+| **Total** | **All Projects** | **11,974** | **Comprehensive coverage** |
 
 ### Running Tests
 
@@ -494,7 +503,7 @@ NOIR builds on the shoulders of giants:
 
 | Aspect | NOIR Advantage |
 |--------|----------------|
-| **Production-Ready** | Battle-tested patterns, 11,341+ tests, security built-in |
+| **Production-Ready** | Battle-tested patterns, 11,974 tests, security built-in |
 | **E-commerce Ready** | Products, cart, checkout, orders, payments - all included |
 | **Developer-Friendly** | Hot reload, type generation, extensive docs, AI-assisted development |
 | **Performance** | Source generators, compiled queries, hybrid caching, optimized builds |
