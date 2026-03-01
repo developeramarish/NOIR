@@ -22,7 +22,7 @@ public class ModuleCatalogTests
         var modules = _catalog.GetAllModules();
 
         // Assert
-        modules.Should().HaveCount(33);
+        modules.Should().HaveCount(34);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class ModuleCatalogTests
         var toggleable = _catalog.GetAllModules().Where(m => !m.IsCore).ToList();
 
         // Assert
-        toggleable.Should().HaveCount(25);
+        toggleable.Should().HaveCount(26);
     }
 
     [Fact]

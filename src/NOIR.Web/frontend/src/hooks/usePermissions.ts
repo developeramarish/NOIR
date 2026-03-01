@@ -288,6 +288,12 @@ export const Permissions = {
   CrmActivitiesCreate: 'crm:activities:create',
   CrmActivitiesUpdate: 'crm:activities:update',
   CrmActivitiesDelete: 'crm:activities:delete',
+  // PM - Projects
+  PmProjectsRead: 'pm:projects:read',
+  PmProjectsCreate: 'pm:projects:create',
+  PmProjectsUpdate: 'pm:projects:update',
+  PmProjectsDelete: 'pm:projects:delete',
+  PmProjectsManage: 'pm:projects:manage',
 } as const
 
 export type PermissionKey = (typeof Permissions)[keyof typeof Permissions]

@@ -221,6 +221,22 @@ public static class Permissions
     public const string CrmActivitiesUpdate = "crm-activities:update";
     public const string CrmActivitiesDelete = "crm-activities:delete";
 
+    // PM - Projects
+    public const string PmProjectsRead = "pm-projects:read";
+    public const string PmProjectsCreate = "pm-projects:create";
+    public const string PmProjectsUpdate = "pm-projects:update";
+    public const string PmProjectsDelete = "pm-projects:delete";
+
+    // PM - Tasks
+    public const string PmTasksRead = "pm-tasks:read";
+    public const string PmTasksCreate = "pm-tasks:create";
+    public const string PmTasksUpdate = "pm-tasks:update";
+    public const string PmTasksDelete = "pm-tasks:delete";
+    public const string PmTasksManage = "pm-tasks:manage";
+
+    // PM - Members
+    public const string PmMembersManage = "pm-members:manage";
+
     // Search
     public const string SearchGlobal = "search:global";
 
@@ -338,6 +354,15 @@ public static class Permissions
         public static readonly IReadOnlyList<string> CrmActivities =
             [CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete];
 
+        public static readonly IReadOnlyList<string> PmProjects =
+            [PmProjectsRead, PmProjectsCreate, PmProjectsUpdate, PmProjectsDelete];
+
+        public static readonly IReadOnlyList<string> PmTasks =
+            [PmTasksRead, PmTasksCreate, PmTasksUpdate, PmTasksDelete, PmTasksManage];
+
+        public static readonly IReadOnlyList<string> PmMembers =
+            [PmMembersManage];
+
         public static readonly IReadOnlyList<string> Dashboard =
             [DashboardRead];
 
@@ -396,6 +421,11 @@ public static class Permissions
         CrmLeadsRead, CrmLeadsCreate, CrmLeadsUpdate, CrmLeadsManage,
         CrmPipelineManage,
         CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete,
+
+        // ── PM ────────────────────────────────────────────────────────
+        PmProjectsRead, PmProjectsCreate, PmProjectsUpdate, PmProjectsDelete,
+        PmTasksRead, PmTasksCreate, PmTasksUpdate, PmTasksDelete, PmTasksManage,
+        PmMembersManage,
 
         // ── Content ────────────────────────────────────────────────────
         BlogPostsRead, BlogPostsCreate, BlogPostsUpdate, BlogPostsDelete, BlogPostsPublish,
@@ -515,7 +545,11 @@ public static class Permissions
         CrmCompaniesRead, CrmCompaniesCreate, CrmCompaniesUpdate, CrmCompaniesDelete,
         CrmLeadsRead, CrmLeadsCreate, CrmLeadsUpdate, CrmLeadsManage,
         CrmPipelineManage,
-        CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete
+        CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete,
+        // PM within tenant
+        PmProjectsRead, PmProjectsCreate, PmProjectsUpdate, PmProjectsDelete,
+        PmTasksRead, PmTasksCreate, PmTasksUpdate, PmTasksDelete, PmTasksManage,
+        PmMembersManage
     ];
 
     /// <summary>
@@ -703,7 +737,18 @@ public static class Permissions
             CrmActivitiesRead,
             CrmActivitiesCreate,
             CrmActivitiesUpdate,
-            CrmActivitiesDelete
+            CrmActivitiesDelete,
+            // PM within tenant
+            PmProjectsRead,
+            PmProjectsCreate,
+            PmProjectsUpdate,
+            PmProjectsDelete,
+            PmTasksRead,
+            PmTasksCreate,
+            PmTasksUpdate,
+            PmTasksDelete,
+            PmTasksManage,
+            PmMembersManage
         };
 
         /// <summary>

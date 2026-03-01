@@ -501,6 +501,8 @@ app.MapCrmActivityEndpoints();
 app.MapEmployeeEndpoints();
 app.MapDepartmentEndpoints();
 app.MapEmployeeTagEndpoints();
+app.MapProjectEndpoints();
+app.MapTaskEndpoints();
 
 // Dev-only endpoints for E2E testing (not available in production)
 if (app.Environment.IsDevelopment())

@@ -239,6 +239,7 @@ global using NOIR.Domain.Entities.Shipping;
 global using NOIR.Domain.Entities.Webhook;
 global using NOIR.Domain.Entities.Hr;
 global using NOIR.Domain.Entities.Crm;
+global using NOIR.Domain.Entities.Pm;
 global using NOIR.Domain.Events.Cart;
 global using NOIR.Domain.Events.Checkout;
 global using NOIR.Domain.Events.Order;

@@ -140,6 +140,31 @@ public interface IApplicationDbContext
     DbSet<CrmActivity> CrmActivities { get; }
 
     /// <summary>
+    /// PM project members DbSet for non-aggregate entity CRUD.
+    /// </summary>
+    DbSet<ProjectMember> ProjectMembers { get; }
+
+    /// <summary>
+    /// PM project columns DbSet for non-aggregate entity CRUD.
+    /// </summary>
+    DbSet<ProjectColumn> ProjectColumns { get; }
+
+    /// <summary>
+    /// PM task labels DbSet for non-aggregate entity CRUD.
+    /// </summary>
+    DbSet<TaskLabel> TaskLabels { get; }
+
+    /// <summary>
+    /// PM task comments DbSet for non-aggregate entity CRUD.
+    /// </summary>
+    DbSet<TaskComment> TaskComments { get; }
+
+    /// <summary>
+    /// PM task-label junction DbSet for non-aggregate entity CRUD.
+    /// </summary>
+    DbSet<ProjectTaskLabel> ProjectTaskLabels { get; }
+
+    /// <summary>
     /// Attaches an entity to the context for tracking.
     EntityEntry<TEntity> Attach<TEntity>(TEntity entity) where TEntity : class;
 

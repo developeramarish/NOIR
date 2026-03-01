@@ -49,6 +49,7 @@ import {
   GitBranch,
   Contact,
   Kanban,
+  FolderKanban,
 } from 'lucide-react'
 import {
   Badge,
@@ -163,6 +164,13 @@ const navSections: NavSection[] = [
       { titleKey: 'crm.contacts.title', icon: Contact, path: '/portal/crm/contacts', permission: Permissions.CrmContactsRead, feature: 'Erp.Crm' },
       { titleKey: 'crm.companies.title', icon: Building2, path: '/portal/crm/companies', permission: Permissions.CrmCompaniesRead, feature: 'Erp.Crm' },
       { titleKey: 'crm.pipeline.title', icon: Kanban, path: '/portal/crm/pipeline', permission: Permissions.CrmLeadsRead, feature: 'Erp.Crm' },
+    ],
+  },
+  {
+    // PM - Project Management
+    labelKey: 'nav.projectManagement',
+    items: [
+      { titleKey: 'pm.projects', icon: FolderKanban, path: '/portal/projects', permission: Permissions.PmProjectsRead, feature: 'Erp.Pm' },
     ],
   },
   {

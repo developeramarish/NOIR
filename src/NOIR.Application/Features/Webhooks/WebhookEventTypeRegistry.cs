@@ -95,6 +95,12 @@ public sealed class WebhookEventTypeRegistry : ISingletonService
         { typeof(EmployeeDepartmentChangedEvent), "hr.employee_department_changed" },
         { typeof(DepartmentCreatedEvent), "hr.department_created" },
         { typeof(DepartmentUpdatedEvent), "hr.department_updated" },
+
+        // PM
+        { typeof(ProjectArchivedEvent), "pm.project_archived" },
+        { typeof(ProjectCompletedEvent), "pm.project_completed" },
+        { typeof(TaskCompletedEvent), "pm.task_completed" },
+        { typeof(TaskAssignedEvent), "pm.task_assigned" },
     };
 
     /// <summary>

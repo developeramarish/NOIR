@@ -206,6 +206,8 @@ public class LayerDependencyTests
             .DoNotResideInNamespace("NOIR.Application.Features.Crm.Queries.GetCrmDashboard")
             .And()
             .DoNotResideInNamespace("NOIR.Application.Features.Crm.Commands.UpdatePipeline")
+            .And()
+            .DoNotResideInNamespace("NOIR.Application.Features.Pm")
             .ShouldNot()
             .HaveDependencyOn("Microsoft.EntityFrameworkCore")
             .GetResult();

@@ -363,6 +363,15 @@ public static class DependencyInjection
             NOIR.Application.Features.Crm.Queries.GetActivityById.GetActivityByIdQuery>(
             targetId => new NOIR.Application.Features.Crm.Queries.GetActivityById.GetActivityByIdQuery(Guid.Parse(targetId.ToString()!)));
 
+        // PM before-state resolvers
+        services.AddBeforeStateResolver<NOIR.Application.Features.Pm.DTOs.ProjectDto,
+            NOIR.Application.Features.Pm.Queries.GetProjectById.GetProjectByIdQuery>(
+            targetId => new NOIR.Application.Features.Pm.Queries.GetProjectById.GetProjectByIdQuery(Guid.Parse(targetId.ToString()!)));
+
+        services.AddBeforeStateResolver<NOIR.Application.Features.Pm.DTOs.TaskDto,
+            NOIR.Application.Features.Pm.Queries.GetTaskById.GetTaskByIdQuery>(
+            targetId => new NOIR.Application.Features.Pm.Queries.GetTaskById.GetTaskByIdQuery(Guid.Parse(targetId.ToString()!)));
+
         // Settings DTOs use parameterless query resolvers (tenant-scoped singletons, no ID needed)
         services.AddSettingsBeforeStateResolver<SmtpSettingsDto, GetSmtpSettingsQuery>();
         services.AddSettingsBeforeStateResolver<BrandingSettingsDto, GetBrandingSettingsQuery>();

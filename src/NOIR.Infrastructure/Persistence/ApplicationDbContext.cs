@@ -145,6 +145,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Pipeline> Pipelines => Set<Pipeline>();
     public DbSet<CrmActivity> CrmActivities => Set<CrmActivity>();
 
+    // ERP - PM entities
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
+    public DbSet<ProjectColumn> ProjectColumns => Set<ProjectColumn>();
+    public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
+    public DbSet<TaskLabel> TaskLabels => Set<TaskLabel>();
+    public DbSet<ProjectTaskLabel> ProjectTaskLabels => Set<ProjectTaskLabel>();
+    public DbSet<TaskComment> TaskComments => Set<TaskComment>();
+
     /// <summary>
     /// Configures global type conventions.
     /// This reduces repetitive configuration and ensures consistency.
