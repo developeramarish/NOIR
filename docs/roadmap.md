@@ -74,7 +74,7 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 |-------------|--------|------|
 | Employee profiles (CRUD, auto-code, User account sync) | Ready | **Phase 1 Done** |
 | Department hierarchy (tree, self-referencing, manager) | Ready | **Phase 1 Done** |
-| Employee tags with categories (Team/Skill/Project/etc.) | Ready | Not Started (Phase 2) |
+| Employee tags with categories (Team/Skill/Project/etc.) | Ready | **Phase 2 Done** |
 | Org chart visualization | Ready | Not Started (Phase 3) |
 
 **Design Doc:** [module-hr.md](designs/module-hr.md) — 100% complete (DTOs, sequence diagrams, NOIR pattern compliance, edge cases).
