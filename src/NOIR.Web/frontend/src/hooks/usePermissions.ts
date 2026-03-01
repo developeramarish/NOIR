@@ -253,6 +253,16 @@ export const Permissions = {
   MediaManage: 'media:manage',
   // Search
   SearchGlobal: 'search:global',
+  // HR - Employees
+  HrEmployeesRead: 'hr-employees:read',
+  HrEmployeesCreate: 'hr-employees:create',
+  HrEmployeesUpdate: 'hr-employees:update',
+  HrEmployeesDelete: 'hr-employees:delete',
+  // HR - Departments
+  HrDepartmentsRead: 'hr-departments:read',
+  HrDepartmentsCreate: 'hr-departments:create',
+  HrDepartmentsUpdate: 'hr-departments:update',
+  HrDepartmentsDelete: 'hr-departments:delete',
 } as const
 
 export type PermissionKey = (typeof Permissions)[keyof typeof Permissions]

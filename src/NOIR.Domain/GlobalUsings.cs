@@ -31,6 +31,7 @@ global using NOIR.Domain.Entities.Promotion;
 global using NOIR.Domain.Entities.Shipping;
 global using NOIR.Domain.Entities.Webhook;
 global using NOIR.Domain.Entities.Wishlist;
+global using NOIR.Domain.Entities.Hr;
 global using NOIR.Domain.Enums;
 global using NOIR.Domain.Events.Blog;
 global using NOIR.Domain.Events.Cart;
@@ -45,6 +46,7 @@ global using NOIR.Domain.Events.Inventory;
 global using NOIR.Domain.Events.Review;
 global using NOIR.Domain.Events.Wishlist;
 global using NOIR.Domain.Events.Promotion;
+global using NOIR.Domain.Events.Hr;
 global using NOIR.Domain.Specifications;
 global using NOIR.Domain.ValueObjects;
 

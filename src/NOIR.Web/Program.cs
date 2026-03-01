@@ -493,6 +493,8 @@ app.MapWishlistEndpoints();
 app.MapReviewEndpoints();
 app.MapWebhookEndpoints();
 app.MapSseEndpoints();
+app.MapEmployeeEndpoints();
+app.MapDepartmentEndpoints();
 
 // Dev-only endpoints for E2E testing (not available in production)
 if (app.Environment.IsDevelopment())

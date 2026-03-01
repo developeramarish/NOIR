@@ -1,0 +1,182 @@
+namespace NOIR.Application.Features.Hr.DTOs;
+
+/// <summary>
+/// Full employee details for detail view.
+/// </summary>
+public sealed record EmployeeDto(
+    Guid Id,
+    string EmployeeCode,
+    string FirstName,
+    string LastName,
+    string Email,
+    string? Phone,
+    string? AvatarUrl,
+    Guid DepartmentId,
+    string DepartmentName,
+    string? Position,
+    Guid? ManagerId,
+    string? ManagerName,
+    string? UserId,
+    bool HasUserAccount,
+    DateTimeOffset JoinDate,
+    DateTimeOffset? EndDate,
+    EmployeeStatus Status,
+    EmploymentType EmploymentType,
+    string? Notes,
+    IReadOnlyList<DirectReportDto> DirectReports,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? LastModifiedAt);
+
+/// <summary>
+/// Simplified employee for list/table views.
+/// </summary>
+public sealed record EmployeeListDto(
+    Guid Id,
+    string EmployeeCode,
+    string FirstName,
+    string LastName,
+    string Email,
+    string? AvatarUrl,
+    string DepartmentName,
+    string? Position,
+    string? ManagerName,
+    EmployeeStatus Status,
+    EmploymentType EmploymentType);
+
+/// <summary>
+/// Lightweight employee for autocomplete search.
+/// </summary>
+public sealed record EmployeeSearchDto(
+    Guid Id,
+    string EmployeeCode,
+    string FullName,
+    string? AvatarUrl,
+    string? Position,
+    string DepartmentName);
+
+/// <summary>
+/// Direct report summary nested in EmployeeDto.
+/// </summary>
+public sealed record DirectReportDto(
+    Guid Id,
+    string EmployeeCode,
+    string FullName,
+    string? AvatarUrl,
+    string? Position,
+    EmployeeStatus Status);
+
+/// <summary>
+/// Full department details.
+/// </summary>
+public sealed record DepartmentDto(
+    Guid Id,
+    string Name,
+    string Code,
+    string? Description,
+    Guid? ManagerId,
+    string? ManagerName,
+    Guid? ParentDepartmentId,
+    string? ParentDepartmentName,
+    int SortOrder,
+    bool IsActive,
+    int EmployeeCount,
+    IReadOnlyList<DepartmentTreeNodeDto> SubDepartments);
+
+/// <summary>
+/// Department node for tree structure.
+/// </summary>
+public sealed record DepartmentTreeNodeDto(
+    Guid Id,
+    string Name,
+    string Code,
+    string? ManagerName,
+    int EmployeeCount,
+    bool IsActive,
+    IReadOnlyList<DepartmentTreeNodeDto> Children);
+
+/// <summary>
+/// Org chart node (can represent either a Department or an Employee).
+/// </summary>
+public sealed record OrgChartNodeDto(
+    Guid Id,
+    OrgChartNodeType Type,
+    string Name,
+    string? Subtitle,
+    string? AvatarUrl,
+    int? EmployeeCount,
+    EmployeeStatus? Status,
+    IReadOnlyList<OrgChartNodeDto> Children);
+
+/// <summary>
+/// Type of node in the org chart.
+/// </summary>
+public enum OrgChartNodeType
+{
+    Department = 0,
+    Employee = 1
+}
+
+/// <summary>
+/// Request body for creating an employee.
+/// </summary>
+public sealed record CreateEmployeeRequest(
+    string FirstName,
+    string LastName,
+    string Email,
+    Guid DepartmentId,
+    DateTimeOffset JoinDate,
+    EmploymentType EmploymentType,
+    string? Phone = null,
+    string? AvatarUrl = null,
+    string? Position = null,
+    Guid? ManagerId = null,
+    string? UserId = null,
+    string? Notes = null);
+
+/// <summary>
+/// Request body for updating an employee.
+/// </summary>
+public sealed record UpdateEmployeeRequest(
+    string FirstName,
+    string LastName,
+    string Email,
+    Guid DepartmentId,
+    EmploymentType EmploymentType,
+    string? Phone = null,
+    string? AvatarUrl = null,
+    string? Position = null,
+    Guid? ManagerId = null,
+    string? Notes = null);
+
+/// <summary>
+/// Request body for creating a department.
+/// </summary>
+public sealed record CreateDepartmentRequest(
+    string Name,
+    string Code,
+    string? Description = null,
+    Guid? ParentDepartmentId = null,
+    Guid? ManagerId = null);
+
+/// <summary>
+/// Request body for updating a department.
+/// </summary>
+public sealed record UpdateDepartmentRequest(
+    string Name,
+    string Code,
+    string? Description = null,
+    Guid? ManagerId = null,
+    Guid? ParentDepartmentId = null);
+
+/// <summary>
+/// Request body for reordering departments.
+/// </summary>
+public sealed record ReorderDepartmentsRequest(
+    List<ReorderItem> Items);
+
+/// <summary>
+/// Single item in a reorder operation.
+/// </summary>
+public sealed record ReorderItem(
+    Guid Id,
+    int SortOrder);

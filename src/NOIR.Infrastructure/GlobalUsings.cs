@@ -181,6 +181,8 @@ global using NOIR.Application.Features.Reports;
 global using NOIR.Application.Features.Reports.DTOs;
 global using NOIR.Application.Features.Wishlists.DTOs;
 global using NOIR.Application.Features.Wishlists.Queries.GetWishlistById;
+global using NOIR.Application.Features.Hr.DTOs;
+global using NOIR.Application.Features.Hr.Specifications;
 global using NOIR.Application.Features.Dashboard;
 global using NOIR.Application.Features.Dashboard.DTOs;
 
@@ -232,6 +234,7 @@ global using NOIR.Domain.Entities.Inventory;
 global using NOIR.Domain.Entities.Review;
 global using NOIR.Domain.Entities.Shipping;
 global using NOIR.Domain.Entities.Webhook;
+global using NOIR.Domain.Entities.Hr;
 global using NOIR.Domain.Events.Cart;
 global using NOIR.Domain.Events.Checkout;
 global using NOIR.Domain.Events.Order;

@@ -178,6 +178,18 @@ public static class Permissions
     public const string WebhooksManage = "webhooks:manage";
     public const string WebhooksTest = "webhooks:test";
 
+    // HR Employees
+    public const string HrEmployeesRead = "hr-employees:read";
+    public const string HrEmployeesCreate = "hr-employees:create";
+    public const string HrEmployeesUpdate = "hr-employees:update";
+    public const string HrEmployeesDelete = "hr-employees:delete";
+
+    // HR Departments
+    public const string HrDepartmentsRead = "hr-departments:read";
+    public const string HrDepartmentsCreate = "hr-departments:create";
+    public const string HrDepartmentsUpdate = "hr-departments:update";
+    public const string HrDepartmentsDelete = "hr-departments:delete";
+
     // Search
     public const string SearchGlobal = "search:global";
 
@@ -271,6 +283,12 @@ public static class Permissions
         public static readonly IReadOnlyList<string> Webhooks =
             [WebhooksRead, WebhooksManage, WebhooksTest];
 
+        public static readonly IReadOnlyList<string> HrEmployees =
+            [HrEmployeesRead, HrEmployeesCreate, HrEmployeesUpdate, HrEmployeesDelete];
+
+        public static readonly IReadOnlyList<string> HrDepartments =
+            [HrDepartmentsRead, HrDepartmentsCreate, HrDepartmentsUpdate, HrDepartmentsDelete];
+
         public static readonly IReadOnlyList<string> Dashboard =
             [DashboardRead];
 
@@ -317,6 +335,10 @@ public static class Permissions
         BrandsRead, BrandsCreate, BrandsUpdate, BrandsDelete,
         AttributesRead, AttributesCreate, AttributesUpdate, AttributesDelete,
         MediaRead, MediaCreate, MediaUpdate, MediaDelete, MediaManage,
+
+        // ── HR ────────────────────────────────────────────────────────
+        HrEmployeesRead, HrEmployeesCreate, HrEmployeesUpdate, HrEmployeesDelete,
+        HrDepartmentsRead, HrDepartmentsCreate, HrDepartmentsUpdate, HrDepartmentsDelete,
 
         // ── Content ────────────────────────────────────────────────────
         BlogPostsRead, BlogPostsCreate, BlogPostsUpdate, BlogPostsDelete, BlogPostsPublish,
@@ -426,7 +448,10 @@ public static class Permissions
         PaymentsRead, PaymentsCreate, PaymentsManage, PaymentGatewaysRead, PaymentGatewaysManage,
         PaymentRefundsRead, PaymentRefundsManage, PaymentWebhooksRead,
         // Webhooks within tenant
-        WebhooksRead, WebhooksManage, WebhooksTest
+        WebhooksRead, WebhooksManage, WebhooksTest,
+        // HR within tenant
+        HrEmployeesRead, HrEmployeesCreate, HrEmployeesUpdate, HrEmployeesDelete,
+        HrDepartmentsRead, HrDepartmentsCreate, HrDepartmentsUpdate, HrDepartmentsDelete
     ];
 
     /// <summary>
@@ -585,7 +610,16 @@ public static class Permissions
             // Webhooks within tenant
             WebhooksRead,
             WebhooksManage,
-            WebhooksTest
+            WebhooksTest,
+            // HR within tenant
+            HrEmployeesRead,
+            HrEmployeesCreate,
+            HrEmployeesUpdate,
+            HrEmployeesDelete,
+            HrDepartmentsRead,
+            HrDepartmentsCreate,
+            HrDepartmentsUpdate,
+            HrDepartmentsDelete
         };
 
         /// <summary>

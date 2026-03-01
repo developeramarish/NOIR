@@ -16,9 +16,9 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 
 | Horizon | Theme | Status |
 |---------|-------|--------|
-| **Done** | Core Foundation + E-commerce Platform | Shipped |
-| **Now** | Admin Portal Enhancement | In Progress |
-| **Next** | HR Module (first ERP module) | Design Ready |
+| **Done** | Core Foundation + E-commerce + Admin Portal | Shipped |
+| **Now** | HR Module (first ERP module) | Design Ready |
+| **Next** | CRM Module | Design Draft |
 | **Later** | CRM → PM → Calendar → Support Center | Designs in Draft |
 | **Future** | Marketplace, Chat, Mobile, Plugin Ecosystem | Aspirational |
 
@@ -52,35 +52,30 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 
 ---
 
-## Now — Admin Portal Enhancement
+### Admin Portal Enhancement
 
 > **Outcome:** Make the admin portal productive for daily operations — fast search, bulk actions, data import/export.
 
-| Deliverable | Status |
-|-------------|--------|
-| Dashboard widgets with real-time metrics | In Progress |
-| Media Manager with drag-and-drop upload | Not Started |
-| Global search with keyboard navigation (Cmd+K) | Not Started |
-| Import/Export (CSV, Excel) for products, orders, customers | Not Started |
-| Bulk actions across all entity lists | Not Started |
+- Dashboard widgets with real-time metrics (4 feature-gated groups, recharts)
+- Media Manager with drag-and-drop upload, grid/list views, bulk delete
+- Global search with Cmd+K content search across 5 entity types
+- Import/Export (CSV + Excel) for products, orders, customers
+- Bulk actions across 6 entity list pages with shared infrastructure
 
-**Design Docs:**
-- [Enhancement Plan](designs/admin-portal-enhancement-v28-feb.md)
-- [Detailed Design Spec](designs/admin-portal-enhancement-v28-feb-design.md)
-- [Workflow Design](designs/admin-portal-workflow.md)
+**Design Docs:** [Enhancement Plan](designs/admin-portal-enhancement-v28-feb.md) | [Design Spec](designs/admin-portal-enhancement-v28-feb-design.md)
 
 ---
 
-## Next — HR Module (First ERP Module)
+## Now — HR Module (First ERP Module)
 
 > **Outcome:** Define "who is in the organization and where they sit" — the prerequisite for all people-dependent modules (CRM, PM, Support Center).
 
 | Deliverable | Design | Impl |
 |-------------|--------|------|
-| Employee profiles (CRUD, auto-code, User account sync) | Ready | Not Started |
-| Department hierarchy (tree, self-referencing, manager) | Ready | Not Started |
-| Employee tags with categories (Team/Skill/Project/etc.) | Ready | Not Started |
-| Org chart visualization | Ready | Not Started |
+| Employee profiles (CRUD, auto-code, User account sync) | Ready | **Phase 1 Done** |
+| Department hierarchy (tree, self-referencing, manager) | Ready | **Phase 1 Done** |
+| Employee tags with categories (Team/Skill/Project/etc.) | Ready | Not Started (Phase 2) |
+| Org chart visualization | Ready | Not Started (Phase 3) |
 
 **Design Doc:** [module-hr.md](designs/module-hr.md) — 100% complete (DTOs, sequence diagrams, NOIR pattern compliance, edge cases).
 

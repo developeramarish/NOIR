@@ -16,13 +16,13 @@ public class ModuleCatalogTests
     }
 
     [Fact]
-    public void GetAllModules_ShouldReturn31Modules()
+    public void GetAllModules_ShouldReturn32Modules()
     {
         // Act
         var modules = _catalog.GetAllModules();
 
         // Assert
-        modules.Should().HaveCount(31);
+        modules.Should().HaveCount(32);
     }
 
     [Fact]
@@ -47,13 +47,13 @@ public class ModuleCatalogTests
     }
 
     [Fact]
-    public void GetAllModules_ShouldHave23ToggleableModules()
+    public void GetAllModules_ShouldHave24ToggleableModules()
     {
         // Act
         var toggleable = _catalog.GetAllModules().Where(m => !m.IsCore).ToList();
 
         // Assert
-        toggleable.Should().HaveCount(23);
+        toggleable.Should().HaveCount(24);
     }
 
     [Fact]

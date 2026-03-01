@@ -143,6 +143,14 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    // HR - Human Resources
+    labelKey: 'nav.hr',
+    items: [
+      { titleKey: 'hr.employees', icon: Users, path: '/portal/hr/employees', permission: Permissions.HrEmployeesRead, feature: 'Erp.Hr' },
+      { titleKey: 'hr.departments', icon: Building2, path: '/portal/hr/departments', permission: Permissions.HrDepartmentsRead, feature: 'Erp.Hr' },
+    ],
+  },
+  {
     // Catalog - Product management
     labelKey: 'nav.catalog',
     items: [

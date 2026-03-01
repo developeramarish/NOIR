@@ -78,6 +78,7 @@ global using NOIR.Application.Features.Auth.Queries.GetCurrentUser;
 // NOIR Domain
 global using NOIR.Domain.Common;
 global using NOIR.Domain.Entities;
+global using NOIR.Domain.Entities.Hr;
 global using NOIR.Domain.Entities.Review;
 global using NOIR.Domain.Enums;
 global using NOIR.Domain.Interfaces;
@@ -166,6 +167,10 @@ global using NOIR.Application.Features.Reports.Queries.ExportReport;
 
 // NOIR Application - Shipping
 global using NOIR.Application.Features.Shipping.DTOs;
+
+// NOIR Application - HR
+global using NOIR.Application.Features.Hr.DTOs;
+global using NOIR.Application.Features.Hr.Specifications;
 
 // NOIR Application - Dashboard
 global using NOIR.Application.Features.Dashboard.DTOs;

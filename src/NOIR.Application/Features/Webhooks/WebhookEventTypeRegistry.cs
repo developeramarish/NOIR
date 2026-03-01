@@ -82,6 +82,14 @@ public sealed class WebhookEventTypeRegistry : ISingletonService
         { typeof(PostCreatedEvent), "blog.post_created" },
         { typeof(PostPublishedEvent), "blog.post_published" },
         { typeof(PostUnpublishedEvent), "blog.post_unpublished" },
+
+        // HR
+        { typeof(EmployeeCreatedEvent), "hr.employee_created" },
+        { typeof(EmployeeUpdatedEvent), "hr.employee_updated" },
+        { typeof(EmployeeDeactivatedEvent), "hr.employee_deactivated" },
+        { typeof(EmployeeDepartmentChangedEvent), "hr.employee_department_changed" },
+        { typeof(DepartmentCreatedEvent), "hr.department_created" },
+        { typeof(DepartmentUpdatedEvent), "hr.department_updated" },
     };
 
     /// <summary>

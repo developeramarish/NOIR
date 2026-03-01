@@ -313,6 +313,28 @@ public class PermissionsTests
         Permissions.Groups.Search.Should().Contain(Permissions.SearchGlobal);
     }
 
+    [Fact]
+    public void Groups_HrEmployees_ShouldContainAllHrEmployeePermissions()
+    {
+        // Assert
+        Permissions.Groups.HrEmployees.Should().HaveCount(4);
+        Permissions.Groups.HrEmployees.Should().Contain(Permissions.HrEmployeesRead);
+        Permissions.Groups.HrEmployees.Should().Contain(Permissions.HrEmployeesCreate);
+        Permissions.Groups.HrEmployees.Should().Contain(Permissions.HrEmployeesUpdate);
+        Permissions.Groups.HrEmployees.Should().Contain(Permissions.HrEmployeesDelete);
+    }
+
+    [Fact]
+    public void Groups_HrDepartments_ShouldContainAllHrDepartmentPermissions()
+    {
+        // Assert
+        Permissions.Groups.HrDepartments.Should().HaveCount(4);
+        Permissions.Groups.HrDepartments.Should().Contain(Permissions.HrDepartmentsRead);
+        Permissions.Groups.HrDepartments.Should().Contain(Permissions.HrDepartmentsCreate);
+        Permissions.Groups.HrDepartments.Should().Contain(Permissions.HrDepartmentsUpdate);
+        Permissions.Groups.HrDepartments.Should().Contain(Permissions.HrDepartmentsDelete);
+    }
+
     #endregion
 
     #region All Permissions Tests
@@ -350,7 +372,9 @@ public class PermissionsTests
             + Permissions.Groups.Features.Count
             + Permissions.Groups.Webhooks.Count
             + Permissions.Groups.Dashboard.Count
-            + Permissions.Groups.Search.Count;
+            + Permissions.Groups.Search.Count
+            + Permissions.Groups.HrEmployees.Count
+            + Permissions.Groups.HrDepartments.Count;
 
         // Assert
         Permissions.All.Should().HaveCount(expectedCount);
@@ -448,6 +472,26 @@ public class PermissionsTests
     {
         // Assert
         foreach (var permission in Permissions.Groups.Search)
+        {
+            Permissions.All.Should().Contain(permission);
+        }
+    }
+
+    [Fact]
+    public void All_ShouldContainAllHrEmployeePermissions()
+    {
+        // Assert
+        foreach (var permission in Permissions.Groups.HrEmployees)
+        {
+            Permissions.All.Should().Contain(permission);
+        }
+    }
+
+    [Fact]
+    public void All_ShouldContainAllHrDepartmentPermissions()
+    {
+        // Assert
+        foreach (var permission in Permissions.Groups.HrDepartments)
         {
             Permissions.All.Should().Contain(permission);
         }

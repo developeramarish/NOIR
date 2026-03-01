@@ -1,0 +1,194 @@
+namespace NOIR.Application.Features.Hr.Specifications;
+
+/// <summary>
+/// Get employee by ID with tracking for mutations.
+/// </summary>
+public sealed class EmployeeByIdSpec : Specification<Employee>
+{
+    public EmployeeByIdSpec(Guid id)
+    {
+        Query.Where(e => e.Id == id)
+             .Include(e => e.Department!)
+             .Include(e => e.Manager!)
+             .AsTracking()
+             .TagWith("EmployeeById");
+    }
+}
+
+/// <summary>
+/// Get employee by ID read-only (for queries).
+/// </summary>
+public sealed class EmployeeByIdReadOnlySpec : Specification<Employee>
+{
+    public EmployeeByIdReadOnlySpec(Guid id)
+    {
+        Query.Where(e => e.Id == id)
+             .Include(e => e.Department!)
+             .Include(e => e.Manager!)
+             .Include(e => e.DirectReports)
+             .TagWith("EmployeeByIdReadOnly");
+    }
+}
+
+/// <summary>
+/// Paginated, filterable employee list.
+/// </summary>
+public sealed class EmployeesFilterSpec : Specification<Employee>
+{
+    public EmployeesFilterSpec(
+        string? search = null,
+        Guid? departmentId = null,
+        EmployeeStatus? status = null,
+        EmploymentType? employmentType = null,
+        int? skip = null,
+        int? take = null)
+    {
+        if (!string.IsNullOrEmpty(search))
+        {
+            Query.Where(e =>
+                e.FirstName.Contains(search) ||
+                e.LastName.Contains(search) ||
+                e.Email.Contains(search) ||
+                e.EmployeeCode.Contains(search) ||
+                (e.Position != null && e.Position.Contains(search)));
+        }
+
+        if (departmentId.HasValue)
+        {
+            Query.Where(e => e.DepartmentId == departmentId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            Query.Where(e => e.Status == status.Value);
+        }
+
+        if (employmentType.HasValue)
+        {
+            Query.Where(e => e.EmploymentType == employmentType.Value);
+        }
+
+        Query.Include(e => e.Department!)
+             .Include(e => e.Manager!)
+             .OrderByDescending(e => e.CreatedAt)
+             .ThenBy(e => e.LastName);
+
+        if (skip.HasValue) Query.Skip(skip.Value);
+        if (take.HasValue) Query.Take(take.Value);
+
+        Query.TagWith("GetEmployees");
+    }
+}
+
+/// <summary>
+/// Count employees matching filters (without pagination).
+/// </summary>
+public sealed class EmployeesCountSpec : Specification<Employee>
+{
+    public EmployeesCountSpec(
+        string? search = null,
+        Guid? departmentId = null,
+        EmployeeStatus? status = null,
+        EmploymentType? employmentType = null)
+    {
+        if (!string.IsNullOrEmpty(search))
+        {
+            Query.Where(e =>
+                e.FirstName.Contains(search) ||
+                e.LastName.Contains(search) ||
+                e.Email.Contains(search) ||
+                e.EmployeeCode.Contains(search) ||
+                (e.Position != null && e.Position.Contains(search)));
+        }
+
+        if (departmentId.HasValue)
+        {
+            Query.Where(e => e.DepartmentId == departmentId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            Query.Where(e => e.Status == status.Value);
+        }
+
+        if (employmentType.HasValue)
+        {
+            Query.Where(e => e.EmploymentType == employmentType.Value);
+        }
+
+        Query.TagWith("CountEmployees");
+    }
+}
+
+/// <summary>
+/// Check if a department has employees (for delete validation).
+/// </summary>
+public sealed class EmployeesByDepartmentSpec : Specification<Employee>
+{
+    public EmployeesByDepartmentSpec(Guid departmentId)
+    {
+        Query.Where(e => e.DepartmentId == departmentId)
+             .TagWith("EmployeesByDepartment");
+    }
+}
+
+/// <summary>
+/// Check email uniqueness per tenant.
+/// </summary>
+public sealed class EmployeeByEmailSpec : Specification<Employee>
+{
+    public EmployeeByEmailSpec(string email, string? tenantId, Guid? excludeId = null)
+    {
+        Query.Where(e => e.Email == email.ToLowerInvariant())
+             .Where(e => tenantId == null || e.TenantId == tenantId)
+             .Where(e => excludeId == null || e.Id != excludeId)
+             .TagWith("EmployeeByEmail");
+    }
+}
+
+/// <summary>
+/// Check user link uniqueness per tenant.
+/// </summary>
+public sealed class EmployeeByUserIdSpec : Specification<Employee>
+{
+    public EmployeeByUserIdSpec(string userId, Guid? excludeId = null)
+    {
+        Query.Where(e => e.UserId == userId)
+             .Where(e => excludeId == null || e.Id != excludeId)
+             .TagWith("EmployeeByUserId");
+    }
+}
+
+/// <summary>
+/// Get direct reports of a manager (for deactivation cascade).
+/// </summary>
+public sealed class EmployeesByManagerIdSpec : Specification<Employee>
+{
+    public EmployeesByManagerIdSpec(Guid managerId)
+    {
+        Query.Where(e => e.ManagerId == managerId)
+             .AsTracking()
+             .TagWith("EmployeesByManagerId");
+    }
+}
+
+/// <summary>
+/// Lightweight search for autocomplete.
+/// </summary>
+public sealed class EmployeeSearchSpec : Specification<Employee>
+{
+    public EmployeeSearchSpec(string searchText, int take = 10)
+    {
+        Query.Where(e =>
+                e.FirstName.Contains(searchText) ||
+                e.LastName.Contains(searchText) ||
+                e.Email.Contains(searchText) ||
+                e.EmployeeCode.Contains(searchText))
+             .Where(e => e.Status == EmployeeStatus.Active)
+             .Include(e => e.Department!)
+             .Take(take)
+             .OrderBy(e => e.LastName)
+             .ThenBy(e => e.FirstName)
+             .TagWith("SearchEmployees");
+    }
+}

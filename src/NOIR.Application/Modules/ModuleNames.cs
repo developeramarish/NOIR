@@ -60,6 +60,11 @@ public static class ModuleNames
         public const string Webhooks = "Integrations.Webhooks";
     }
 
+    public static class Erp
+    {
+        public const string Hr = "Erp.Hr";
+    }
+
     public static class Dashboard
     {
         public const string Core = "Dashboard.Core";

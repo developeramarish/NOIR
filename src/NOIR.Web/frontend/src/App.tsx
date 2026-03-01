@@ -67,6 +67,10 @@ const ReviewsPage = lazy(() => import('@/portal-app/reviews/features/review-list
 // Wishlists
 const WishlistAnalyticsPage = lazy(() => import('@/portal-app/wishlists/features/wishlist-analytics/WishlistAnalyticsPage'))
 const WishlistPage = lazy(() => import('@/portal-app/wishlists/features/wishlist-page/WishlistPage'))
+// HR
+const EmployeesPage = lazy(() => import('@/portal-app/hr/features/employee-list/EmployeesPage'))
+const EmployeeDetailPage = lazy(() => import('@/portal-app/hr/features/employee-detail/EmployeeDetailPage'))
+const DepartmentsPage = lazy(() => import('@/portal-app/hr/features/department-list/DepartmentsPage'))
 // Marketing
 const PromotionsPage = lazy(() => import('@/portal-app/promotions/features/promotion-list/PromotionsPage'))
 const ReportsPage = lazy(() => import('@/portal-app/reports/features/reports-page/ReportsPage'))
@@ -186,6 +190,10 @@ export const App = () => {
                         {/* Wishlists */}
                         <Route path="ecommerce/wishlists" element={<Suspense fallback={<LazyFallback />}><WishlistAnalyticsPage /></Suspense>} />
                         <Route path="ecommerce/wishlists/manage" element={<Suspense fallback={<LazyFallback />}><WishlistPage /></Suspense>} />
+                        {/* HR */}
+                        <Route path="hr/employees" element={<Suspense fallback={<LazyFallback />}><EmployeesPage /></Suspense>} />
+                        <Route path="hr/employees/:id" element={<Suspense fallback={<LazyFallback />}><EmployeeDetailPage /></Suspense>} />
+                        <Route path="hr/departments" element={<Suspense fallback={<LazyFallback />}><DepartmentsPage /></Suspense>} />
                         {/* Marketing */}
                         <Route path="marketing/promotions" element={<Suspense fallback={<LazyFallback />}><PromotionsPage /></Suspense>} />
                         <Route path="marketing/reports" element={<Suspense fallback={<LazyFallback />}><ReportsPage /></Suspense>} />
