@@ -199,6 +199,57 @@ public sealed class CustomersByIdsSpec : Specification<Domain.Entities.Customer.
 }
 
 /// <summary>
+/// Specification to load customers for export with optional filters.
+/// </summary>
+public sealed class CustomersForExportSpec : Specification<Domain.Entities.Customer.Customer>
+{
+    public CustomersForExportSpec(
+        string? search = null,
+        CustomerSegment? segment = null,
+        CustomerTier? tier = null,
+        bool? isActive = null)
+    {
+        if (!string.IsNullOrEmpty(search))
+            Query.Where(c => c.Email.Contains(search) || c.FirstName.Contains(search) || c.LastName.Contains(search));
+
+        if (segment.HasValue)
+            Query.Where(c => c.Segment == segment.Value);
+
+        if (tier.HasValue)
+            Query.Where(c => c.Tier == tier.Value);
+
+        if (isActive.HasValue)
+            Query.Where(c => c.IsActive == isActive.Value);
+
+        Query.OrderByDescending(c => c.CreatedAt)
+            .TagWith("CustomersForExport");
+    }
+}
+
+/// <summary>
+/// Specification to find customers by a list of IDs for bulk update (with tracking).
+/// </summary>
+public sealed class CustomersByIdsForUpdateSpec : Specification<Domain.Entities.Customer.Customer>
+{
+    public CustomersByIdsForUpdateSpec(List<Guid> ids)
+    {
+        Query.Where(c => ids.Contains(c.Id)).AsTracking().TagWith("CustomersByIdsForUpdate");
+    }
+}
+
+/// <summary>
+/// Specification to check if customer emails already exist (for bulk import dedup).
+/// </summary>
+public sealed class CustomersEmailCheckSpec : Specification<Domain.Entities.Customer.Customer>
+{
+    public CustomersEmailCheckSpec(List<string> emails)
+    {
+        Query.Where(c => emails.Contains(c.Email))
+            .TagWith("CustomersEmailCheck");
+    }
+}
+
+/// <summary>
 /// Specification to load all active customers for batch segmentation.
 /// Uses AsTracking for mutation via EF change tracking.
 /// </summary>

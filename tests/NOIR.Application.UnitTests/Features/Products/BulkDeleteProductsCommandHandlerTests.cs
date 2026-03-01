@@ -202,7 +202,7 @@ public class BulkDeleteProductsCommandHandlerTests
         result.Value.Success.Should().Be(1);
         result.Value.Failed.Should().Be(1);
         result.Value.Errors.Should().HaveCount(1);
-        result.Value.Errors[0].ProductId.Should().Be(nonExistentId);
+        result.Value.Errors[0].EntityId.Should().Be(nonExistentId);
         result.Value.Errors[0].Message.Should().Contain("not found");
     }
 

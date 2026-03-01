@@ -305,6 +305,14 @@ public class PermissionsTests
         Permissions.Groups.Webhooks.Should().Contain(Permissions.WebhooksTest);
     }
 
+    [Fact]
+    public void Groups_Search_ShouldContainAllSearchPermissions()
+    {
+        // Assert
+        Permissions.Groups.Search.Should().HaveCount(1);
+        Permissions.Groups.Search.Should().Contain(Permissions.SearchGlobal);
+    }
+
     #endregion
 
     #region All Permissions Tests
@@ -329,6 +337,7 @@ public class PermissionsTests
             + Permissions.Groups.ProductCategories.Count
             + Permissions.Groups.Brands.Count
             + Permissions.Groups.Attributes.Count
+            + Permissions.Groups.Media.Count
             + Permissions.Groups.Reviews.Count
             + Permissions.Groups.Orders.Count
             + Permissions.Groups.Promotions.Count
@@ -339,7 +348,9 @@ public class PermissionsTests
             + Permissions.Groups.Customers.Count
             + Permissions.Groups.CustomerGroups.Count
             + Permissions.Groups.Features.Count
-            + Permissions.Groups.Webhooks.Count;
+            + Permissions.Groups.Webhooks.Count
+            + Permissions.Groups.Dashboard.Count
+            + Permissions.Groups.Search.Count;
 
         // Assert
         Permissions.All.Should().HaveCount(expectedCount);
@@ -427,6 +438,16 @@ public class PermissionsTests
     {
         // Assert
         foreach (var permission in Permissions.Groups.Reports)
+        {
+            Permissions.All.Should().Contain(permission);
+        }
+    }
+
+    [Fact]
+    public void All_ShouldContainAllSearchPermissions()
+    {
+        // Assert
+        foreach (var permission in Permissions.Groups.Search)
         {
             Permissions.All.Should().Contain(permission);
         }

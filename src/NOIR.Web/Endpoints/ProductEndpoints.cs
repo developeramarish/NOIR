@@ -15,6 +15,7 @@ using NOIR.Application.Features.Products.Commands.BulkArchiveProducts;
 using NOIR.Application.Features.Products.Commands.BulkDeleteProducts;
 using NOIR.Application.Features.Products.Commands.BulkImportProducts;
 using NOIR.Application.Features.Products.Queries.ExportProducts;
+using NOIR.Application.Features.Products.Queries.ExportProductsFile;
 using NOIR.Application.Features.Products.Commands.BulkPublishProducts;
 using NOIR.Application.Features.Products.Commands.CreateProduct;
 using NOIR.Application.Features.Products.Commands.DeleteProduct;
@@ -361,6 +362,33 @@ public static class ProductEndpoints
         .WithSummary("Export products")
         .WithDescription("Export products as flat rows for CSV. Each variant becomes a separate row. Includes images as pipe-separated URLs and dynamic attribute columns.")
         .Produces<ExportProductsResultDto>(StatusCodes.Status200OK);
+
+        // Export products as downloadable file (CSV or Excel)
+        group.MapGet("/export/file", async (
+            [FromQuery] ExportFormat? format,
+            [FromQuery] string? categoryId,
+            [FromQuery] string? status,
+            [FromQuery] bool includeAttributes,
+            [FromQuery] bool includeImages,
+            IMessageBus bus,
+            CancellationToken ct) =>
+        {
+            var query = new ExportProductsFileQuery(
+                format ?? ExportFormat.CSV,
+                categoryId,
+                status,
+                includeAttributes,
+                includeImages);
+            var result = await bus.InvokeAsync<Result<ExportResultDto>>(query, ct);
+            if (result.IsFailure)
+                return result.ToHttpResult();
+            return Results.File(result.Value.FileBytes, result.Value.ContentType, result.Value.FileName);
+        })
+        .RequireAuthorization(Permissions.ProductsRead)
+        .WithName("ExportProductsFile")
+        .WithSummary("Export products as file")
+        .WithDescription("Export products as a downloadable CSV or Excel file.")
+        .Produces<byte[]>(StatusCodes.Status200OK);
 
         // Bulk publish products
         group.MapPost("/bulk-publish", async (

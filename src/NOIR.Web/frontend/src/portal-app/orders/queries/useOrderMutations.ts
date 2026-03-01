@@ -11,6 +11,8 @@ import {
   addOrderNote,
   deleteOrderNote,
   manualCreateOrder,
+  bulkConfirmOrders,
+  bulkCancelOrders,
   type ManualCreateOrderRequest,
 } from '@/services/orders'
 import { orderKeys } from './queryKeys'
@@ -105,6 +107,26 @@ export const useManualCreateOrderMutation = () => {
     mutationFn: (request: ManualCreateOrderRequest) => manualCreateOrder(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+    },
+  })
+}
+
+export const useBulkConfirmOrders = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkConfirmOrders(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    },
+  })
+}
+
+export const useBulkCancelOrders = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ ids, reason }: { ids: string[]; reason?: string }) => bulkCancelOrders(ids, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
     },
   })
 }

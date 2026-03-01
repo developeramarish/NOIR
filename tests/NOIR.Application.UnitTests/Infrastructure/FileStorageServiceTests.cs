@@ -434,6 +434,100 @@ public class FileStorageServiceTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public void GetPublicUrl_WithPublicBaseUrl_ShouldReturnAbsoluteCloudUrl()
+    {
+        // Arrange
+        var settings = new StorageSettings
+        {
+            MediaUrlPrefix = "/media",
+            PublicBaseUrl = "https://mybucket.s3.amazonaws.com"
+        };
+        var settingsMock = new Mock<IOptions<StorageSettings>>();
+        settingsMock.Setup(x => x.Value).Returns(settings);
+        var sut = new FileStorageService(_storageMock.Object, settingsMock.Object, _loggerMock.Object);
+
+        // Act
+        var result = sut.GetPublicUrl("products/product-123/hero-banner-thumb.webp");
+
+        // Assert
+        result.Should().Be("https://mybucket.s3.amazonaws.com/products/product-123/hero-banner-thumb.webp");
+    }
+
+    [Fact]
+    public void GetPublicUrl_WithPublicBaseUrlTrailingSlash_ShouldNormalize()
+    {
+        // Arrange
+        var settings = new StorageSettings
+        {
+            MediaUrlPrefix = "/media",
+            PublicBaseUrl = "https://mybucket.s3.amazonaws.com/"
+        };
+        var settingsMock = new Mock<IOptions<StorageSettings>>();
+        settingsMock.Setup(x => x.Value).Returns(settings);
+        var sut = new FileStorageService(_storageMock.Object, settingsMock.Object, _loggerMock.Object);
+
+        // Act
+        var result = sut.GetPublicUrl("test.txt");
+
+        // Assert
+        result.Should().Be("https://mybucket.s3.amazonaws.com/test.txt");
+    }
+
+    [Fact]
+    public void GetPublicUrl_WithoutPublicBaseUrl_ShouldReturnRelativeUrl()
+    {
+        // Act (default _sut has no PublicBaseUrl)
+        var result = _sut.GetPublicUrl("products/product-123/hero.webp");
+
+        // Assert
+        result.Should().Be("/media/products/product-123/hero.webp");
+    }
+
+    #endregion
+
+    #region GetStoragePath with Cloud URL Tests
+
+    [Fact]
+    public void GetStoragePath_WithCloudUrl_ShouldExtractPath()
+    {
+        // Arrange
+        var settings = new StorageSettings
+        {
+            MediaUrlPrefix = "/media",
+            PublicBaseUrl = "https://mybucket.s3.amazonaws.com"
+        };
+        var settingsMock = new Mock<IOptions<StorageSettings>>();
+        settingsMock.Setup(x => x.Value).Returns(settings);
+        var sut = new FileStorageService(_storageMock.Object, settingsMock.Object, _loggerMock.Object);
+
+        // Act
+        var result = sut.GetStoragePath("https://mybucket.s3.amazonaws.com/products/hero.webp");
+
+        // Assert
+        result.Should().Be("products/hero.webp");
+    }
+
+    [Fact]
+    public void GetStoragePath_WithCloudUrl_NotMatching_ShouldReturnNull()
+    {
+        // Arrange
+        var settings = new StorageSettings
+        {
+            MediaUrlPrefix = "/media",
+            PublicBaseUrl = "https://mybucket.s3.amazonaws.com"
+        };
+        var settingsMock = new Mock<IOptions<StorageSettings>>();
+        settingsMock.Setup(x => x.Value).Returns(settings);
+        var sut = new FileStorageService(_storageMock.Object, settingsMock.Object, _loggerMock.Object);
+
+        // Act
+        var result = sut.GetStoragePath("https://other-bucket.s3.amazonaws.com/test.webp");
+
+        // Assert
+        result.Should().BeNull();
+    }
+
     #endregion
 
     #region Constructor Tests

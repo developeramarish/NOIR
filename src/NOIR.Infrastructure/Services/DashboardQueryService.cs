@@ -1,7 +1,3 @@
-using NOIR.Application.Features.Dashboard;
-using NOIR.Application.Features.Dashboard.DTOs;
-using NOIR.Infrastructure.Persistence;
-
 namespace NOIR.Infrastructure.Services;
 
 /// <summary>

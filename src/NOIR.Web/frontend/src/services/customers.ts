@@ -4,6 +4,7 @@
  * Provides methods for managing customers, loyalty points, and addresses.
  */
 import { apiClient } from './apiClient'
+import { downloadFileExport } from '@/lib/fileExport'
 import type {
   CustomerDto,
   CustomerPagedResult,
@@ -130,3 +131,71 @@ export const deleteCustomerAddress = async (customerId: string, addressId: strin
     method: 'DELETE',
   })
 }
+
+// ─── Bulk Operations ────────────────────────────────────────────────────
+
+export interface CustomerBulkOperationResult {
+  success: number
+  failed: number
+  errors: { entityId: string; entityName: string | null; message: string }[]
+}
+
+export const bulkActivateCustomers = async (customerIds: string[]): Promise<CustomerBulkOperationResult> => {
+  return apiClient<CustomerBulkOperationResult>('/customers/bulk-activate', {
+    method: 'POST',
+    body: JSON.stringify({ customerIds }),
+  })
+}
+
+export const bulkDeactivateCustomers = async (customerIds: string[]): Promise<CustomerBulkOperationResult> => {
+  return apiClient<CustomerBulkOperationResult>('/customers/bulk-deactivate', {
+    method: 'POST',
+    body: JSON.stringify({ customerIds }),
+  })
+}
+
+export const bulkDeleteCustomers = async (customerIds: string[]): Promise<CustomerBulkOperationResult> => {
+  return apiClient<CustomerBulkOperationResult>('/customers/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ customerIds }),
+  })
+}
+
+// ─── Import / Export ────────────────────────────────────────────────────
+
+export const exportCustomers = async (params?: {
+  format?: 'CSV' | 'Excel'
+  segment?: string
+  tier?: string
+  isActive?: boolean
+  search?: string
+}): Promise<void> => {
+  const queryParams = new URLSearchParams()
+  if (params?.format) queryParams.append('format', params.format)
+  if (params?.segment) queryParams.append('segment', params.segment)
+  if (params?.tier) queryParams.append('tier', params.tier)
+  if (params?.isActive !== undefined) queryParams.append('isActive', String(params.isActive))
+  if (params?.search) queryParams.append('search', params.search)
+  const ext = params?.format === 'Excel' ? 'xlsx' : 'csv'
+  await downloadFileExport(`/api/customers/export?${queryParams}`, `customers.${ext}`)
+}
+
+export interface ImportCustomerDto {
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string
+  tags?: string
+}
+
+export interface BulkImportCustomersResult {
+  success: number
+  failed: number
+  errors: { row: number; message: string }[]
+}
+
+export const bulkImportCustomers = async (customers: ImportCustomerDto[]): Promise<BulkImportCustomersResult> =>
+  apiClient<BulkImportCustomersResult>('/customers/import', {
+    method: 'POST',
+    body: JSON.stringify({ customers }),
+  })

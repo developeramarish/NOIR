@@ -293,5 +293,8 @@ global using NOIR.Application.Features.Customers.DTOs;
 global using NOIR.Application.Features.Customers.Specifications;
 global using NOIR.Domain.Entities.Customer;
 
+// NOIR Application - Reports
+global using NOIR.Application.Features.Reports.DTOs;
+
 // NOIR Test Helpers
 global using NOIR.Application.UnitTests.Common;

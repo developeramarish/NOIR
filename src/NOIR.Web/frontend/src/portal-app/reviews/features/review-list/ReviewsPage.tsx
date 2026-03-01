@@ -1,4 +1,4 @@
-import { useState, useEffect, useDeferredValue, useMemo, useTransition } from 'react'
+import { useState, useEffect, useDeferredValue, useMemo, useTransition, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   CheckCircle2,
@@ -13,6 +13,8 @@ import {
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useUrlTab } from '@/hooks/useUrlTab'
+import { useSelection } from '@/hooks/useSelection'
+import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
   Badge,
   Button,
@@ -97,9 +99,6 @@ export const ReviewsPage = () => {
   const [isFilterPending, startFilterTransition] = useTransition()
   const [params, setParams] = useState<GetReviewsParams>({ page: 1, pageSize: 20 })
 
-  // Selection state
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-
   // Dialog state
   const [detailReviewId, setDetailReviewId] = useState<string | undefined>()
   const [rejectReviewId, setRejectReviewId] = useState<string | undefined>()
@@ -132,6 +131,8 @@ export const ReviewsPage = () => {
   const totalPages = reviewsResponse?.totalPages ?? 1
   const currentPage = params.page ?? 1
 
+  const { selectedIds, setSelectedIds, handleSelectAll: selectAll, handleSelectNone, handleToggleSelect, isAllSelected } = useSelection(reviews)
+
   // Mutations
   const approveMutation = useApproveReview()
   const rejectMutation = useRejectReview()
@@ -146,7 +147,7 @@ export const ReviewsPage = () => {
   const handleTabChange = (value: string) => {
     setUrlTab(value)
     setParams((prev) => ({ ...prev, page: 1 }))
-    setSelectedIds(new Set())
+    handleSelectNone()
   }
 
   const handleRatingFilter = (value: string) => {
@@ -162,25 +163,13 @@ export const ReviewsPage = () => {
     })
   }
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
-  const handleSelectAll = () => {
-    if (selectedIds.size === reviews.length) {
-      setSelectedIds(new Set())
+  const handleSelectAllToggle = useCallback(() => {
+    if (isAllSelected) {
+      handleSelectNone()
     } else {
-      setSelectedIds(new Set(reviews.map((r) => r.id)))
+      selectAll()
     }
-  }
+  }, [isAllSelected, handleSelectNone, selectAll])
 
   const handleApprove = async (id: string) => {
     try {
@@ -313,46 +302,28 @@ export const ReviewsPage = () => {
             </div>
 
             {/* Bulk Actions Toolbar */}
-            {selectedIds.size > 0 && (
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border/50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-                <span className="text-sm font-medium">
-                  {t('reviews.selectedCount', {
-                    count: selectedIds.size,
-                    defaultValue: `${selectedIds.size} selected`,
-                  })}
-                </span>
-                <div className="flex items-center gap-2 ml-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="cursor-pointer text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
-                    onClick={handleBulkApprove}
-                    disabled={bulkApproveMutation.isPending}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    {t('reviews.approveSelected', 'Approve selected')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                    onClick={() => setRejectReviewId('bulk')}
-                    disabled={bulkRejectMutation.isPending}
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    {t('reviews.rejectSelected', 'Reject selected')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="cursor-pointer"
-                    onClick={() => setSelectedIds(new Set())}
-                  >
-                    {t('labels.clearSelection', 'Clear')}
-                  </Button>
-                </div>
-              </div>
-            )}
+            <BulkActionToolbar selectedCount={selectedIds.size} onClearSelection={handleSelectNone}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                onClick={handleBulkApprove}
+                disabled={bulkApproveMutation.isPending}
+              >
+                <CheckCircle2 className="h-4 w-4 mr-1" />
+                {t('reviews.approveSelected', 'Approve selected')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                onClick={() => setRejectReviewId('bulk')}
+                disabled={bulkRejectMutation.isPending}
+              >
+                <XCircle className="h-4 w-4 mr-1" />
+                {t('reviews.rejectSelected', 'Reject selected')}
+              </Button>
+            </BulkActionToolbar>
           </div>
         </CardHeader>
         <CardContent
@@ -373,8 +344,8 @@ export const ReviewsPage = () => {
                   <TableHead className="w-10 sticky left-0 z-10 bg-background"></TableHead>
                   <TableHead className="w-12">
                     <Checkbox
-                      checked={reviews.length > 0 && selectedIds.size === reviews.length}
-                      onCheckedChange={handleSelectAll}
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAllToggle}
                       aria-label={t('reviews.selectAll', 'Select all reviews')}
                       className="cursor-pointer"
                     />

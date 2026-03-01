@@ -4,9 +4,7 @@
  * Provides methods for fetching analytics reports and exporting report data.
  */
 import { apiClient } from './apiClient'
-import { getAccessToken } from './tokenStorage'
-import { getPageContext } from './pageContext'
-import { i18n } from '@/i18n'
+import { downloadFileExport } from '@/lib/fileExport'
 import type {
   RevenueReportDto,
   BestSellersReportDto,
@@ -104,44 +102,6 @@ export const exportReport = async (params: ExportReportParams): Promise<void> =>
   if (params.startDate) queryParams.append('startDate', params.startDate)
   if (params.endDate) queryParams.append('endDate', params.endDate)
 
-  const token = getAccessToken()
-  const pageContext = getPageContext()
-  const headers: Record<string, string> = {
-    'Accept-Language': i18n.language,
-  }
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-  if (pageContext) {
-    headers['X-Page-Context'] = pageContext
-  }
-
-  const response = await fetch(`/api/reports/export?${queryParams.toString()}`, {
-    credentials: 'include',
-    headers,
-  })
-
-  if (!response.ok) {
-    throw new Error(i18n.t('reports.exportFailedWithStatus', { ns: 'common', status: response.status, defaultValue: 'Export failed: {{status}}' }))
-  }
-
-  // Extract filename from Content-Disposition header or generate one
-  const disposition = response.headers.get('Content-Disposition')
-  let filename = `report.${params.format === 'CSV' ? 'csv' : 'xlsx'}`
-  if (disposition) {
-    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-    if (match?.[1]) {
-      filename = match[1].replace(/['"]/g, '')
-    }
-  }
-
-  const blob = await response.blob()
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  window.URL.revokeObjectURL(url)
+  const ext = params.format === 'CSV' ? 'csv' : 'xlsx'
+  await downloadFileExport(`/api/reports/export?${queryParams.toString()}`, `report.${ext}`)
 }

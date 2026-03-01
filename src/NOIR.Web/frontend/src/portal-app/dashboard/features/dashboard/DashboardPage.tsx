@@ -1,21 +1,38 @@
 /**
  * Dashboard Page
  *
- * Empty placeholder dashboard for both Platform Admin and Tenant Admin.
- * Will be populated with role-specific widgets in a future iteration.
+ * Modular widget-based dashboard with feature-gated sections.
+ * Core widgets always visible; ecommerce, blog, and inventory
+ * sections lazy-loaded and gated by feature flags.
  */
+import { Suspense, lazy } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutDashboard } from 'lucide-react'
+import { PageHeader } from '@uikit'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { usePageContext } from '@/hooks/usePageContext'
-import { EmptyState, PageHeader } from '@uikit'
+import { useFeature } from '@/hooks/useFeatures'
+import { CoreWidgetGroup } from './components/CoreWidgetGroup'
+import { DashboardSkeleton } from './components/widgets/DashboardSkeleton'
 
-// ─── Main Page ────────────────────────────────────────────────────────────
+const EcommerceWidgetGroup = lazy(() =>
+  import('./components/EcommerceWidgetGroup').then((m) => ({ default: m.EcommerceWidgetGroup }))
+)
+const BlogWidgetGroup = lazy(() =>
+  import('./components/BlogWidgetGroup').then((m) => ({ default: m.BlogWidgetGroup }))
+)
+const InventoryWidgetGroup = lazy(() =>
+  import('./components/InventoryWidgetGroup').then((m) => ({ default: m.InventoryWidgetGroup }))
+)
 
 export const DashboardPage = () => {
   const { t } = useTranslation('common')
   const { user } = useAuthContext()
   usePageContext('Dashboard')
+
+  const { isEnabled: isEcommerceEnabled } = useFeature('Ecommerce.Orders')
+  const { isEnabled: isBlogEnabled } = useFeature('Content.Blog')
+  const { isEnabled: isInventoryEnabled } = useFeature('Ecommerce.Inventory')
 
   return (
     <div className="py-6 space-y-6">
@@ -26,11 +43,27 @@ export const DashboardPage = () => {
         responsive
       />
 
-      <EmptyState
-        icon={LayoutDashboard}
-        title={t('dashboard.comingSoon', 'Dashboard coming soon')}
-        description={t('dashboard.comingSoonDesc', 'This dashboard is being built. Use the sidebar to navigate to different sections.')}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <CoreWidgetGroup />
+
+        {isEcommerceEnabled && (
+          <Suspense fallback={<DashboardSkeleton count={4} />}>
+            <EcommerceWidgetGroup />
+          </Suspense>
+        )}
+
+        {isBlogEnabled && (
+          <Suspense fallback={<DashboardSkeleton count={2} />}>
+            <BlogWidgetGroup />
+          </Suspense>
+        )}
+
+        {isInventoryEnabled && (
+          <Suspense fallback={<DashboardSkeleton count={3} />}>
+            <InventoryWidgetGroup />
+          </Suspense>
+        )}
+      </div>
     </div>
   )
 }

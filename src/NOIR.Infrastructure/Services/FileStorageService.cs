@@ -9,6 +9,7 @@ public class FileStorageService : IFileStorage, IScopedService
     private readonly IBlobStorage _storage;
     private readonly ILogger<FileStorageService> _logger;
     private readonly string _mediaUrlPrefix;
+    private readonly string? _publicBaseUrl;
 
     public FileStorageService(
         IBlobStorage storage,
@@ -18,6 +19,48 @@ public class FileStorageService : IFileStorage, IScopedService
         _storage = storage;
         _logger = logger;
         _mediaUrlPrefix = settings.Value.MediaUrlPrefix.TrimEnd('/');
+        _publicBaseUrl = settings.Value.PublicBaseUrl?.TrimEnd('/');
+
+        // Auto-derive public URL for cloud providers when not explicitly configured
+        var provider = settings.Value.Provider?.ToLowerInvariant();
+        if (string.IsNullOrEmpty(_publicBaseUrl) && provider is "s3" or "azure")
+        {
+            _publicBaseUrl = DerivePublicBaseUrl(provider, settings.Value);
+
+            if (!string.IsNullOrEmpty(_publicBaseUrl))
+            {
+                _logger.LogInformation(
+                    "Auto-derived {Provider} public URL: {PublicBaseUrl}", provider, _publicBaseUrl);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Cloud storage provider '{Provider}' configured without PublicBaseUrl. " +
+                    "Files will be served through the backend proxy, which adds latency. " +
+                    "Set Storage:PublicBaseUrl in configuration for direct CDN access.",
+                    provider);
+            }
+        }
+    }
+
+    private static string? DerivePublicBaseUrl(string provider, StorageSettings settings)
+    {
+        if (provider == "s3" && !string.IsNullOrEmpty(settings.S3BucketName))
+        {
+            var region = settings.S3Region ?? "us-east-1";
+            return $"https://{settings.S3BucketName}.s3.{region}.amazonaws.com";
+        }
+
+        if (provider == "azure" && !string.IsNullOrEmpty(settings.AzureConnectionString))
+        {
+            var match = Regex.Match(settings.AzureConnectionString, @"AccountName=([^;]+)");
+            if (match.Success && !string.IsNullOrEmpty(settings.AzureContainerName))
+            {
+                return $"https://{match.Groups[1].Value}.blob.core.windows.net/{settings.AzureContainerName}";
+            }
+        }
+
+        return null;
     }
 
     public async Task<string> UploadAsync(string fileName, Stream content, string? folder = null, CancellationToken cancellationToken = default)
@@ -120,13 +163,18 @@ public class FileStorageService : IFileStorage, IScopedService
 
     public string? GetPublicUrl(string path)
     {
-        // Return URL for serving files via configured media endpoint
         if (string.IsNullOrEmpty(path))
         {
             return null;
         }
 
-        // Return relative URL that will be handled by media endpoint
+        // Cloud storage: return absolute URL pointing directly to the provider
+        if (!string.IsNullOrEmpty(_publicBaseUrl))
+        {
+            return $"{_publicBaseUrl}/{path}";
+        }
+
+        // Local storage: return relative URL handled by backend media endpoint
         return $"{_mediaUrlPrefix}/{path}";
     }
 
@@ -137,7 +185,17 @@ public class FileStorageService : IFileStorage, IScopedService
             return null;
         }
 
-        // Strip the media URL prefix to get storage path
+        // Cloud storage: strip the public base URL prefix
+        if (!string.IsNullOrEmpty(_publicBaseUrl))
+        {
+            var cloudPrefix = $"{_publicBaseUrl}/";
+            if (publicUrl.StartsWith(cloudPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return publicUrl[cloudPrefix.Length..];
+            }
+        }
+
+        // Local storage: strip the media URL prefix
         var prefix = $"{_mediaUrlPrefix}/";
         if (publicUrl.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {

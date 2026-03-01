@@ -45,6 +45,7 @@ import {
   BarChart3,
   Heart,
   UsersRound,
+  Image,
 } from 'lucide-react'
 import {
   Badge,
@@ -149,6 +150,7 @@ const navSections: NavSection[] = [
       { titleKey: 'ecommerce.categories', icon: Layers, path: '/portal/ecommerce/categories', permission: Permissions.ProductCategoriesRead, feature: 'Ecommerce.Categories' },
       { titleKey: 'ecommerce.brands', icon: Award, path: '/portal/ecommerce/brands', permission: Permissions.BrandsRead, feature: 'Ecommerce.Brands' },
       { titleKey: 'ecommerce.attributes', icon: Tags, path: '/portal/ecommerce/attributes', permission: Permissions.AttributesRead, feature: 'Ecommerce.Attributes' },
+      { titleKey: 'media.title', icon: Image, path: '/portal/media', permission: Permissions.MediaRead },
     ],
   },
   {

@@ -9,6 +9,9 @@ import {
   addCustomerAddress,
   updateCustomerAddress,
   deleteCustomerAddress,
+  bulkActivateCustomers,
+  bulkDeactivateCustomers,
+  bulkDeleteCustomers,
 } from '@/services/customers'
 import type {
   CreateCustomerRequest,
@@ -113,6 +116,36 @@ export const useDeleteCustomerAddressMutation = () => {
       deleteCustomerAddress(customerId, addressId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: customerKeys.detail(variables.customerId) })
+    },
+  })
+}
+
+export const useBulkActivateCustomers = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkActivateCustomers(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all })
+    },
+  })
+}
+
+export const useBulkDeactivateCustomers = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkDeactivateCustomers(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all })
+    },
+  })
+}
+
+export const useBulkDeleteCustomers = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkDeleteCustomers(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all })
     },
   })
 }

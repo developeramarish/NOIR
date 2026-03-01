@@ -47,6 +47,8 @@ const ProductFormPage = lazy(() => import('@/portal-app/products/features/produc
 const ProductCategoriesPage = lazy(() => import('@/portal-app/products/features/product-category-list/ProductCategoriesPage'))
 const BrandsPage = lazy(() => import('@/portal-app/brands/features/brand-list/BrandsPage'))
 const ProductAttributesPage = lazy(() => import('@/portal-app/products/features/product-attribute-list/ProductAttributesPage'))
+// Media
+const MediaLibraryPage = lazy(() => import('@/portal-app/media/features/media-library/MediaLibraryPage'))
 // Payments
 const PaymentsPage = lazy(() => import('@/portal-app/payments/features/payment-list/PaymentsPage'))
 const PaymentDetailPage = lazy(() => import('@/portal-app/payments/features/payment-detail/PaymentDetailPage'))
@@ -187,6 +189,8 @@ export const App = () => {
                         {/* Marketing */}
                         <Route path="marketing/promotions" element={<Suspense fallback={<LazyFallback />}><PromotionsPage /></Suspense>} />
                         <Route path="marketing/reports" element={<Suspense fallback={<LazyFallback />}><ReportsPage /></Suspense>} />
+                        {/* Media */}
+                        <Route path="media" element={<ProtectedRoute permissions={Permissions.MediaRead}><Suspense fallback={<LazyFallback />}><MediaLibraryPage /></Suspense></ProtectedRoute>} />
                       </Route>
 
                       {/* Catch-all redirect to landing */}

@@ -176,6 +176,15 @@ public class MediaFile : TenantAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Renames the media file (updates the original file name).
+    /// </summary>
+    public void Rename(string newFileName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newFileName);
+        OriginalFileName = newFileName;
+    }
+
+    /// <summary>
     /// Updates alt text for the media file.
     /// </summary>
     public void UpdateAltText(string? altText)

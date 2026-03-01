@@ -175,3 +175,58 @@ public sealed class OrdersByCustomerIdCountSpec : Specification<Order>
     }
 }
 
+/// <summary>
+/// Specification to load orders for export with optional filters.
+/// </summary>
+public sealed class OrdersForExportSpec : Specification<Order>
+{
+    public OrdersForExportSpec(
+        OrderStatus? status = null,
+        string? customerEmail = null,
+        DateTimeOffset? fromDate = null,
+        DateTimeOffset? toDate = null)
+    {
+        if (status.HasValue)
+            Query.Where(o => o.Status == status.Value);
+
+        if (!string.IsNullOrEmpty(customerEmail))
+            Query.Where(o => o.CustomerEmail.Contains(customerEmail));
+
+        if (fromDate.HasValue)
+            Query.Where(o => o.CreatedAt >= fromDate.Value);
+
+        if (toDate.HasValue)
+            Query.Where(o => o.CreatedAt <= toDate.Value);
+
+        Query.OrderByDescending(o => o.CreatedAt)
+            .TagWith("OrdersForExport");
+    }
+}
+
+/// <summary>
+/// Specification to find orders by a list of IDs for bulk update (with tracking).
+/// </summary>
+public sealed class OrdersByIdsForUpdateSpec : Specification<Order>
+{
+    public OrdersByIdsForUpdateSpec(List<Guid> ids)
+    {
+        Query.Where(o => ids.Contains(o.Id)).AsTracking().TagWith("OrdersByIdsForUpdate");
+    }
+}
+
+/// <summary>
+/// Specification to search orders by order number or customer email.
+/// </summary>
+public sealed class OrderSearchSpec : Specification<Order>
+{
+    public OrderSearchSpec(string search, int take = 5)
+    {
+        Query.Where(o =>
+                o.OrderNumber.Contains(search) ||
+                o.CustomerEmail.Contains(search))
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(take)
+            .TagWith("OrderSearch");
+    }
+}
+

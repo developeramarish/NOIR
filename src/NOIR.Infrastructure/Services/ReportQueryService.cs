@@ -12,10 +12,12 @@ namespace NOIR.Infrastructure.Services;
 public class ReportQueryService : IReportQueryService, IScopedService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IExcelExportService _excelExportService;
 
-    public ReportQueryService(ApplicationDbContext context)
+    public ReportQueryService(ApplicationDbContext context, IExcelExportService excelExportService)
     {
         _context = context;
+        _excelExportService = excelExportService;
     }
 
     // ─── Valid order statuses for revenue calculations ─────────────────────
@@ -407,6 +409,29 @@ public class ReportQueryService : IReportQueryService, IScopedService
         var now = DateTimeOffset.UtcNow;
         var effectiveStart = startDate ?? now.AddDays(-30);
         var effectiveEnd = endDate ?? now;
+        var timestamp = now.ToString("yyyyMMdd-HHmmss");
+
+        if (format == ExportFormat.Excel)
+        {
+            var (sheetName, headers, rows) = reportType switch
+            {
+                ReportType.Revenue =>
+                    await BuildRevenueExcelDataAsync(effectiveStart, effectiveEnd, cancellationToken),
+                ReportType.BestSellers =>
+                    await BuildBestSellersExcelDataAsync(effectiveStart, effectiveEnd, cancellationToken),
+                ReportType.Inventory =>
+                    await BuildInventoryExcelDataAsync(cancellationToken),
+                ReportType.CustomerAcquisition =>
+                    await BuildCustomersExcelDataAsync(effectiveStart, effectiveEnd, cancellationToken),
+                _ => throw new ArgumentOutOfRangeException(nameof(reportType))
+            };
+
+            var excelBytes = _excelExportService.CreateExcelFile(sheetName, headers, rows);
+            return new ExportResultDto(
+                excelBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"{reportType}-report-{timestamp}.xlsx");
+        }
 
         var csvContent = reportType switch
         {
@@ -422,13 +447,10 @@ public class ReportQueryService : IReportQueryService, IScopedService
         };
 
         var fileBytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csvContent)).ToArray();
-        var timestamp = now.ToString("yyyyMMdd-HHmmss");
-        var fileName = $"{reportType}-report-{timestamp}.csv";
-
         return new ExportResultDto(
             fileBytes,
             "text/csv",
-            fileName);
+            $"{reportType}-report-{timestamp}.csv");
     }
 
     private async Task<string> ExportRevenueAsync(
@@ -522,6 +544,99 @@ public class ReportQueryService : IReportQueryService, IScopedService
         }
 
         return sb.ToString();
+    }
+
+    // ─── Excel Data Builders ────────────────────────────────────────────────
+
+    private async Task<(string SheetName, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows)>
+        BuildRevenueExcelDataAsync(DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken ct)
+    {
+        var report = await GetRevenueReportAsync("daily", startDate, endDate, ct);
+        var headers = new List<string> { "Date", "Revenue", "OrderCount" };
+        var rows = new List<IReadOnlyList<object?>>();
+
+        foreach (var day in report.RevenueByDay)
+            rows.Add(new List<object?> { day.Date.ToString("yyyy-MM-dd"), day.Revenue, day.OrderCount });
+
+        // Add category breakdown as additional rows with a separator
+        if (report.RevenueByCategory.Any())
+        {
+            rows.Add(new List<object?> { null, null, null }); // blank separator
+            rows.Add(new List<object?> { "Category", "Revenue", "OrderCount" });
+            foreach (var cat in report.RevenueByCategory)
+                rows.Add(new List<object?> { cat.CategoryName, cat.Revenue, cat.OrderCount });
+        }
+
+        if (report.RevenueByPaymentMethod.Any())
+        {
+            rows.Add(new List<object?> { null, null, null });
+            rows.Add(new List<object?> { "PaymentMethod", "Revenue", "Count" });
+            foreach (var pm in report.RevenueByPaymentMethod)
+                rows.Add(new List<object?> { pm.Method, pm.Revenue, pm.Count });
+        }
+
+        return ("Revenue", headers, rows);
+    }
+
+    private async Task<(string SheetName, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows)>
+        BuildBestSellersExcelDataAsync(DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken ct)
+    {
+        var report = await GetBestSellersAsync(startDate, endDate, 50, ct);
+        var headers = new List<string> { "Rank", "ProductId", "ProductName", "UnitsSold", "Revenue" };
+        var rows = new List<IReadOnlyList<object?>>();
+        var rank = 1;
+
+        foreach (var p in report.Products)
+        {
+            rows.Add(new List<object?> { rank, p.ProductId.ToString(), p.ProductName, p.UnitsSold, p.Revenue });
+            rank++;
+        }
+
+        return ("BestSellers", headers, rows);
+    }
+
+    private async Task<(string SheetName, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows)>
+        BuildInventoryExcelDataAsync(CancellationToken ct)
+    {
+        var report = await GetInventoryReportAsync(int.MaxValue, ct);
+        var headers = new List<string> { "ProductId", "ProductName", "VariantSku", "CurrentStock", "ReorderLevel" };
+        var rows = new List<IReadOnlyList<object?>>();
+
+        foreach (var item in report.LowStockProducts)
+            rows.Add(new List<object?> { item.ProductId.ToString(), item.Name, item.VariantSku, item.CurrentStock, item.ReorderLevel });
+
+        // Summary rows
+        rows.Add(new List<object?> { null, null, null, null, null });
+        rows.Add(new List<object?> { "TotalProducts", report.TotalProducts, null, null, null });
+        rows.Add(new List<object?> { "TotalVariants", report.TotalVariants, null, null, null });
+        rows.Add(new List<object?> { "TotalStockValue", report.TotalStockValue, null, null, null });
+        rows.Add(new List<object?> { "TurnoverRate", report.TurnoverRate, null, null, null });
+
+        return ("Inventory", headers, rows);
+    }
+
+    private async Task<(string SheetName, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows)>
+        BuildCustomersExcelDataAsync(DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken ct)
+    {
+        var report = await GetCustomerReportAsync(startDate, endDate, ct);
+        var headers = new List<string> { "Metric", "Value", "Detail1", "Detail2" };
+        var rows = new List<IReadOnlyList<object?>>();
+
+        rows.Add(new List<object?> { "NewCustomers", report.NewCustomers, null, null });
+        rows.Add(new List<object?> { "ReturningCustomers", report.ReturningCustomers, null, null });
+        rows.Add(new List<object?> { "ChurnRate", $"{report.ChurnRate}%", null, null });
+        rows.Add(new List<object?> { null, null, null, null });
+
+        rows.Add(new List<object?> { "Month", "NewCustomers", "Revenue", null });
+        foreach (var m in report.AcquisitionByMonth)
+            rows.Add(new List<object?> { m.Month, m.NewCustomers, m.Revenue, null });
+
+        rows.Add(new List<object?> { null, null, null, null });
+        rows.Add(new List<object?> { "CustomerId", "Name", "TotalSpent", "OrderCount" });
+        foreach (var c in report.TopCustomers)
+            rows.Add(new List<object?> { c.CustomerId?.ToString(), c.Name, c.TotalSpent, c.OrderCount });
+
+        return ("Customers", headers, rows);
     }
 
     private static string EscapeCsv(string? value)

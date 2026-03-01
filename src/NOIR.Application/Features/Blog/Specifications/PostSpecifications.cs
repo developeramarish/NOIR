@@ -147,6 +147,17 @@ public sealed class PostSlugExistsSpec : Specification<Post>
 }
 
 /// <summary>
+/// Specification to find posts by a list of IDs for bulk update (with tracking).
+/// </summary>
+public sealed class PostsByIdsForUpdateSpec : Specification<Post>
+{
+    public PostsByIdsForUpdateSpec(List<Guid> ids)
+    {
+        Query.Where(p => ids.Contains(p.Id)).AsTracking().TagWith("PostsByIdsForUpdate");
+    }
+}
+
+/// <summary>
 /// Specification to find posts that have a specific tag (for update/deletion).
 /// </summary>
 public sealed class PostsWithTagForUpdateSpec : Specification<Post>

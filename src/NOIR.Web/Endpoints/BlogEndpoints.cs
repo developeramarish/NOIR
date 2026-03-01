@@ -1,3 +1,6 @@
+using NOIR.Application.Features.Blog.Commands.BulkDeletePosts;
+using NOIR.Application.Features.Blog.Commands.BulkPublishPosts;
+using NOIR.Application.Features.Blog.Commands.BulkUnpublishPosts;
 using NOIR.Application.Features.Blog.Commands.CreateCategory;
 using NOIR.Application.Features.Blog.Commands.ReorderCategories;
 using NOIR.Application.Features.Blog.Commands.CreatePost;
@@ -229,6 +232,57 @@ public static class BlogEndpoints
         .WithDescription("Reverts a published or scheduled post back to draft status.")
         .Produces<PostDto>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        // Bulk publish posts
+        group.MapPost("/bulk-publish", async (
+            BulkPublishPostsCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.BlogPostsPublish)
+        .WithName("BulkPublishPosts")
+        .WithSummary("Bulk publish blog posts")
+        .WithDescription("Publishes multiple draft blog posts in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk unpublish posts
+        group.MapPost("/bulk-unpublish", async (
+            BulkUnpublishPostsCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.BlogPostsPublish)
+        .WithName("BulkUnpublishPosts")
+        .WithSummary("Bulk unpublish blog posts")
+        .WithDescription("Unpublishes multiple published blog posts in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk delete posts
+        group.MapPost("/bulk-delete", async (
+            BulkDeletePostsCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.BlogPostsDelete)
+        .WithName("BulkDeletePosts")
+        .WithSummary("Bulk delete blog posts")
+        .WithDescription("Soft-deletes multiple blog posts in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
     private static void MapCategoryEndpoints(IEndpointRouteBuilder app)

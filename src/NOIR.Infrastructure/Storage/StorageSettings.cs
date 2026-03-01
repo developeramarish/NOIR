@@ -54,4 +54,11 @@ public class StorageSettings
     /// Default: "/media"
     /// </summary>
     public string MediaUrlPrefix { get; set; } = "/media";
+
+    /// <summary>
+    /// Public base URL for cloud storage (e.g., "https://mybucket.s3.amazonaws.com", "https://myaccount.blob.core.windows.net/container").
+    /// When set, GetPublicUrl() returns absolute URLs pointing directly to the cloud provider instead of proxying through the backend.
+    /// Leave null for local storage (files served via backend media endpoint).
+    /// </summary>
+    public string? PublicBaseUrl { get; set; }
 }

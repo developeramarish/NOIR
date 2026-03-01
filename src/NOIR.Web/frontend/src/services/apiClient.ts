@@ -7,13 +7,12 @@
  * - Consistent error handling across all API calls
  * - Dual auth support: cookies for server pages + localStorage for API calls
  *
- * Security Note: Tokens are stored in localStorage for Vibe Kanban webview
- * compatibility. This is vulnerable to XSS - mitigated by CSP headers,
+ * Security Note: Tokens are stored in localStorage. Mitigated by CSP headers,
  * short token TTL (15 min), and refresh token rotation on the backend.
  *
  * Authentication Strategy:
  * - Login/refresh use useCookies=true to set HTTP-only cookies (for /api/docs, /hangfire)
- * - Tokens are also stored in localStorage for Bearer auth (for webview compatibility)
+ * - Tokens are also stored in localStorage for Bearer auth
  * - All requests include credentials to send/receive cookies
  */
 import { getAccessToken, getRefreshToken, storeTokens, clearTokens } from './tokenStorage'

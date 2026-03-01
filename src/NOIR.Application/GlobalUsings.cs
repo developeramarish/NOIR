@@ -40,6 +40,7 @@ global using System.Text.RegularExpressions;
 global using Microsoft.EntityFrameworkCore;
 
 // NOIR Application
+global using NOIR.Application.Common.DTOs;
 global using NOIR.Application.Common.Exceptions;
 global using NOIR.Application.Common.Interfaces;
 global using NOIR.Application.Common.Models;
@@ -97,6 +98,9 @@ global using NOIR.Application.Features.FeatureManagement.DTOs;
 global using NOIR.Application.Features.FeatureManagement.Specifications;
 global using NOIR.Application.Features.Webhooks.DTOs;
 global using NOIR.Application.Features.Webhooks.Specifications;
+global using NOIR.Application.Features.Dashboard;
+global using NOIR.Application.Features.Dashboard.DTOs;
+global using NOIR.Application.Features.Search.DTOs;
 global using NOIR.Application.Modules;
 global using NOIR.Application.Specifications;
 global using NOIR.Application.Specifications.Notifications;

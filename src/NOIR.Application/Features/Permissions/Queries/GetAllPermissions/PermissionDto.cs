@@ -96,6 +96,12 @@ public static class PermissionDtoFactory
         [DomainPermissions.AttributesUpdate] = ("Update Attributes", "Edit product attributes", "Catalog"),
         [DomainPermissions.AttributesDelete] = ("Delete Attributes", "Delete product attributes", "Catalog"),
 
+        [DomainPermissions.MediaRead] = ("View Media", "View media files and library", "Catalog"),
+        [DomainPermissions.MediaCreate] = ("Upload Media", "Upload new media files", "Catalog"),
+        [DomainPermissions.MediaUpdate] = ("Edit Media", "Rename and edit media files", "Catalog"),
+        [DomainPermissions.MediaDelete] = ("Delete Media", "Delete media files", "Catalog"),
+        [DomainPermissions.MediaManage] = ("Manage Media", "Full media library access", "Catalog"),
+
         // ── Content ────────────────────────────────────────────────────
         [DomainPermissions.BlogPostsRead] = ("View Blog Posts", "View blog posts and drafts", "Content"),
         [DomainPermissions.BlogPostsCreate] = ("Create Blog Posts", "Create new blog posts", "Content"),
@@ -162,6 +168,9 @@ public static class PermissionDtoFactory
         // ── Platform (platform-only) ───────────────────────────────────
         [DomainPermissions.PlatformSettingsRead] = ("View Platform Settings", "View platform configuration", "Platform"),
         [DomainPermissions.PlatformSettingsManage] = ("Manage Platform Settings", "Configure platform settings", "Platform"),
+
+        // ── Search ───────────────────────────────────────────────────────
+        [DomainPermissions.SearchGlobal] = ("Global Search", "Search across all entities", "System"),
     };
 
     /// <summary>

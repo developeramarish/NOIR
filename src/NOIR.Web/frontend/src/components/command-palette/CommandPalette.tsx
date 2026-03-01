@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
+import { useEffect, useState, useRef, useMemo, useCallback, useDeferredValue } from 'react'
 import { Command } from 'cmdk'
 import { useLocation } from 'react-router-dom'
 import { useViewTransitionNavigate } from '@/hooks/useViewTransition'
@@ -35,7 +35,10 @@ import {
   Heart,
   Clock,
   UsersRound,
+  Image,
+  Loader2,
 } from 'lucide-react'
+import { useGlobalSearch } from '@/hooks/useGlobalSearch'
 import { useCommand } from './CommandContext'
 import { useKeyboardShortcuts, formatShortcut } from '@/hooks/useKeyboardShortcuts'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -72,6 +75,8 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   { icon: UsersRound, labelKey: 'ecommerce.customerGroups', path: '/portal/ecommerce/customer-groups', keywords: ['segment', 'group', 'targeting'], permission: 'CustomerGroupsRead' },
   { icon: Star, labelKey: 'ecommerce.reviews', path: '/portal/ecommerce/reviews', keywords: ['rating', 'feedback'], permission: 'ReviewsRead' },
   { icon: Heart, labelKey: 'ecommerce.wishlists', path: '/portal/ecommerce/wishlists', keywords: ['favorites', 'saved'], permission: 'WishlistsRead' },
+  // Media
+  { icon: Image, labelKey: 'media.title', path: '/portal/media', keywords: ['image', 'file', 'upload', 'gallery', 'media', 'photo', 'picture'], permission: 'MediaRead' },
   // Marketing
   { icon: Percent, labelKey: 'ecommerce.promotions', path: '/portal/marketing/promotions', keywords: ['discount', 'coupon', 'voucher', 'sale'], permission: 'PromotionsRead' },
   { icon: BarChart3, labelKey: 'ecommerce.reports', path: '/portal/marketing/reports', keywords: ['analytics', 'statistics', 'chart'], permission: 'ReportsRead' },
@@ -147,6 +152,12 @@ export const CommandPalette = () => {
   const { density, setDensity } = useDensity()
   const { hasPermission } = usePermissions()
   const [search, setSearch] = useState('')
+  const deferredSearch = useDeferredValue(search)
+  const { data: searchResults, isFetching: isSearching } = useGlobalSearch(
+    deferredSearch,
+    isOpen
+  )
+  const hasSearchResults = deferredSearch.length >= 2 && searchResults && searchResults.totalCount > 0
   const inputRef = useRef<HTMLInputElement>(null)
   const [recentPages, setRecentPages] = useState<string[]>([])
 
@@ -309,18 +320,26 @@ export const CommandPalette = () => {
               className="flex h-12 w-full bg-transparent py-3 px-2 text-sm outline-none
                          placeholder:text-muted-foreground"
             />
-            <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border
-                           bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-              Esc
-            </kbd>
+            {isSearching ? (
+              <Loader2 className="h-4 w-4 shrink-0 text-muted-foreground animate-spin" />
+            ) : (
+              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border
+                             bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                Esc
+              </kbd>
+            )}
           </div>
 
           {/* Results List */}
           <Command.List className="max-h-[300px] overflow-y-auto p-2">
             <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
-              {search
-                ? t('commandPalette.noResultsFor', { query: search })
-                : t('commandPalette.noResults')}
+              {deferredSearch.length >= 2
+                ? isSearching
+                  ? t('commandPalette.searching')
+                  : t('commandPalette.noSearchResults', { query: deferredSearch })
+                : search
+                  ? t('commandPalette.noResultsFor', { query: search })
+                  : t('commandPalette.noResults')}
             </Command.Empty>
 
             {/* Recently Visited Group */}
@@ -347,6 +366,122 @@ export const CommandPalette = () => {
                   </Command.Item>
                 ))}
               </Command.Group>
+            )}
+
+            {/* Global Search Results */}
+            {hasSearchResults && (
+              <>
+                {searchResults.products.length > 0 && (
+                  <Command.Group heading={t('commandPalette.searchProducts')}>
+                    {searchResults.products.map((item) => (
+                      <Command.Item
+                        key={`search-product-${item.id}`}
+                        value={`search ${item.title} ${item.subtitle || ''}`}
+                        onSelect={() => handleSelect(item.url)}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer',
+                          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                          'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+                        )}
+                      >
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{item.subtitle}</span>
+                        )}
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+                {searchResults.orders.length > 0 && (
+                  <Command.Group heading={t('commandPalette.searchOrders')}>
+                    {searchResults.orders.map((item) => (
+                      <Command.Item
+                        key={`search-order-${item.id}`}
+                        value={`search ${item.title} ${item.subtitle || ''}`}
+                        onSelect={() => handleSelect(item.url)}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer',
+                          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                          'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+                        )}
+                      >
+                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{item.subtitle}</span>
+                        )}
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+                {searchResults.customers.length > 0 && (
+                  <Command.Group heading={t('commandPalette.searchCustomers')}>
+                    {searchResults.customers.map((item) => (
+                      <Command.Item
+                        key={`search-customer-${item.id}`}
+                        value={`search ${item.title} ${item.subtitle || ''}`}
+                        onSelect={() => handleSelect(item.url)}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer',
+                          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                          'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+                        )}
+                      >
+                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{item.subtitle}</span>
+                        )}
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+                {searchResults.blogPosts.length > 0 && (
+                  <Command.Group heading={t('commandPalette.searchBlogPosts')}>
+                    {searchResults.blogPosts.map((item) => (
+                      <Command.Item
+                        key={`search-blog-${item.id}`}
+                        value={`search ${item.title} ${item.subtitle || ''}`}
+                        onSelect={() => handleSelect(item.url)}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer',
+                          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                          'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+                        )}
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{item.subtitle}</span>
+                        )}
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+                {searchResults.users.length > 0 && (
+                  <Command.Group heading={t('commandPalette.searchUsers')}>
+                    {searchResults.users.map((item) => (
+                      <Command.Item
+                        key={`search-user-${item.id}`}
+                        value={`search ${item.title} ${item.subtitle || ''}`}
+                        onSelect={() => handleSelect(item.url)}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer',
+                          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+                          'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+                        )}
+                      >
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{item.subtitle}</span>
+                        )}
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+              </>
             )}
 
             {/* Navigation Group */}

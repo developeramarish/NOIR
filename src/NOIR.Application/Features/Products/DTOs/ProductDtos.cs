@@ -435,22 +435,7 @@ public sealed record ProductStatsDto(
     int LowStock);
 
 // ===== Bulk Operation DTOs =====
-
-/// <summary>
-/// Result of a bulk operation (publish, archive, delete).
-/// </summary>
-public sealed record BulkOperationResultDto(
-    int Success,
-    int Failed,
-    List<BulkOperationErrorDto> Errors);
-
-/// <summary>
-/// Error details for a failed bulk operation item.
-/// </summary>
-public sealed record BulkOperationErrorDto(
-    Guid ProductId,
-    string? ProductName,
-    string Message);
+// Moved to NOIR.Application.Common.DTOs.BulkOperationDtos
 
 /// <summary>
 /// Lightweight DTO for product variant search/lookup (used in manual order creation).

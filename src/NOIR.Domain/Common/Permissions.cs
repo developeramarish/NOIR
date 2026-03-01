@@ -163,10 +163,23 @@ public static class Permissions
     public const string PaymentRefundsManage = "payment-refunds:manage";
     public const string PaymentWebhooksRead = "payment-webhooks:read";
 
+    // Dashboard
+    public const string DashboardRead = "dashboard:read";
+
+    // Media
+    public const string MediaRead = "media:read";
+    public const string MediaCreate = "media:create";
+    public const string MediaUpdate = "media:update";
+    public const string MediaDelete = "media:delete";
+    public const string MediaManage = "media:manage";
+
     // Webhooks
     public const string WebhooksRead = "webhooks:read";
     public const string WebhooksManage = "webhooks:manage";
     public const string WebhooksTest = "webhooks:test";
+
+    // Search
+    public const string SearchGlobal = "search:global";
 
     /// <summary>
     /// All permissions grouped by resource.
@@ -252,8 +265,17 @@ public static class Permissions
             [PaymentsRead, PaymentsCreate, PaymentsManage, PaymentGatewaysRead, PaymentGatewaysManage,
              PaymentRefundsRead, PaymentRefundsManage, PaymentWebhooksRead];
 
+        public static readonly IReadOnlyList<string> Media =
+            [MediaRead, MediaCreate, MediaUpdate, MediaDelete, MediaManage];
+
         public static readonly IReadOnlyList<string> Webhooks =
             [WebhooksRead, WebhooksManage, WebhooksTest];
+
+        public static readonly IReadOnlyList<string> Dashboard =
+            [DashboardRead];
+
+        public static readonly IReadOnlyList<string> Search =
+            [SearchGlobal];
     }
 
     /// <summary>
@@ -265,6 +287,12 @@ public static class Permissions
     /// </summary>
     public static IReadOnlyList<string> All =>
     [
+        // ── Dashboard ────────────────────────────────────────────────
+        DashboardRead,
+
+        // ── Search ──────────────────────────────────────────────────
+        SearchGlobal,
+
         // ── Marketing ──────────────────────────────────────────────────
         ReportsRead,
         PromotionsRead, PromotionsWrite, PromotionsDelete, PromotionsManage,
@@ -288,6 +316,7 @@ public static class Permissions
         ProductCategoriesRead, ProductCategoriesCreate, ProductCategoriesUpdate, ProductCategoriesDelete,
         BrandsRead, BrandsCreate, BrandsUpdate, BrandsDelete,
         AttributesRead, AttributesCreate, AttributesUpdate, AttributesDelete,
+        MediaRead, MediaCreate, MediaUpdate, MediaDelete, MediaManage,
 
         // ── Content ────────────────────────────────────────────────────
         BlogPostsRead, BlogPostsCreate, BlogPostsUpdate, BlogPostsDelete, BlogPostsPublish,
@@ -322,6 +351,10 @@ public static class Permissions
     /// </summary>
     public static IReadOnlyList<string> PlatformAdminDefaults =>
     [
+        // Dashboard access
+        DashboardRead,
+        // Global search
+        SearchGlobal,
         // Full tenant management
         TenantsRead, TenantsCreate, TenantsUpdate, TenantsDelete,
         // System administration
@@ -344,6 +377,10 @@ public static class Permissions
     /// </summary>
     public static IReadOnlyList<string> AdminDefaults =>
     [
+        // Dashboard access within tenant
+        DashboardRead,
+        // Global search within tenant
+        SearchGlobal,
         // User management within tenant
         UsersRead, UsersCreate, UsersUpdate, UsersDelete, UsersManageRoles,
         // Role management within tenant
@@ -367,6 +404,8 @@ public static class Permissions
         ProductCategoriesRead, ProductCategoriesCreate, ProductCategoriesUpdate, ProductCategoriesDelete,
         BrandsRead, BrandsCreate, BrandsUpdate, BrandsDelete,
         AttributesRead, AttributesCreate, AttributesUpdate, AttributesDelete,
+        // Media within tenant
+        MediaRead, MediaCreate, MediaUpdate, MediaDelete, MediaManage,
         // Reviews within tenant
         ReviewsRead, ReviewsWrite, ReviewsManage,
         // Customer Groups within tenant
@@ -429,6 +468,10 @@ public static class Permissions
         /// </summary>
         public static IReadOnlySet<string> TenantAllowed { get; } = new HashSet<string>
         {
+            // Dashboard within tenant
+            DashboardRead,
+            // Search within tenant
+            SearchGlobal,
             // Users within tenant
             UsersRead,
             UsersCreate,
@@ -489,6 +532,12 @@ public static class Permissions
             AttributesCreate,
             AttributesUpdate,
             AttributesDelete,
+            // Media within tenant
+            MediaRead,
+            MediaCreate,
+            MediaUpdate,
+            MediaDelete,
+            MediaManage,
             // Reviews within tenant
             ReviewsRead,
             ReviewsWrite,

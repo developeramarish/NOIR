@@ -15,12 +15,13 @@ import {
   EllipsisVertical,
   LayoutGrid,
   List as ListIcon,
-  X,
   Loader2,
   Copy,
 } from 'lucide-react'
 import { usePageContext } from '@/hooks/usePageContext'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useSelection } from '@/hooks/useSelection'
+import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
   Badge,
   Button,
@@ -173,7 +174,7 @@ export const ProductsPage = () => {
     { value: 'table', label: t('labels.list', 'List'), icon: ListIcon, ariaLabel: t('labels.tableView', 'Table view') },
     { value: 'grid', label: t('labels.grid', 'Grid'), icon: LayoutGrid, ariaLabel: t('labels.gridView', 'Grid view') },
   ], [t])
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const { selectedIds, setSelectedIds, handleSelectAll, handleSelectNone, handleToggleSelect, isAllSelected } = useSelection(data?.items)
 
   // Transition for bulk operations
   const [isBulkPending, startBulkTransition] = useTransition()
@@ -182,32 +183,6 @@ export const ProductsPage = () => {
     setSearchInput(e.target.value)
     setParams((prev) => ({ ...prev, page: 1 }))
   }
-
-  // Bulk selection handlers
-  const handleSelectAll = () => {
-    if (data?.items) {
-      setSelectedIds(new Set(data.items.map(p => p.id)))
-    }
-  }
-
-  const handleSelectNone = () => {
-    setSelectedIds(new Set())
-  }
-
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
-  const isAllSelected = !!(data?.items && data.items.length > 0 &&
-    data.items.every(p => selectedIds.has(p.id)))
 
   // Bulk action handlers - use bulk API endpoints for better performance
   const onBulkPublish = () => {
@@ -507,72 +482,57 @@ export const ProductsPage = () => {
           )}
 
           {/* Bulk Action Toolbar */}
-          {selectedIds.size > 0 && viewMode === 'table' && (
-            <div className="mb-4 p-4 rounded-lg bg-primary/5 border border-primary/20 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-              <div className="flex items-center flex-wrap gap-3">
-                <Badge variant="secondary" className="text-sm py-1 px-3">
-                  {selectedIds.size} {t('labels.selected', 'selected')}
-                </Badge>
-                {canPublishProducts && selectedDraftCount > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onBulkPublish}
-                    disabled={isBulkPending}
-                    className="cursor-pointer text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950"
-                  >
-                    {isBulkPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    {t('products.publishCount', { count: selectedDraftCount, defaultValue: `Publish ${selectedDraftCount}` })}
-                  </Button>
-                )}
-                {canUpdateProducts && selectedActiveCount > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onBulkArchive}
-                    disabled={isBulkPending}
-                    className="cursor-pointer text-amber-600 border-amber-200 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950"
-                  >
-                    {isBulkPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Archive className="h-4 w-4 mr-2" />
-                    )}
-                    {t('products.archiveCount', { count: selectedActiveCount, defaultValue: `Archive ${selectedActiveCount}` })}
-                  </Button>
-                )}
-                {canDeleteProducts && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onBulkDelete}
-                    disabled={isBulkPending}
-                    className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/10"
-                  >
-                    {isBulkPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 mr-2" />
-                    )}
-                    {t('products.deleteCount', { count: selectedIds.size, defaultValue: `Delete ${selectedIds.size}` })}
-                  </Button>
-                )}
-                <div className="flex-1" />
+          {viewMode === 'table' && (
+            <BulkActionToolbar selectedCount={selectedIds.size} onClearSelection={handleSelectNone}>
+              {canPublishProducts && selectedDraftCount > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={handleSelectNone}
-                  className="cursor-pointer"
+                  onClick={onBulkPublish}
+                  disabled={isBulkPending}
+                  className="cursor-pointer text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950"
                 >
-                  <X className="h-4 w-4 mr-2" />
-                  {t('buttons.clearSelection', 'Clear Selection')}
+                  {isBulkPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  {t('products.publishCount', { count: selectedDraftCount, defaultValue: `Publish ${selectedDraftCount}` })}
                 </Button>
-              </div>
-            </div>
+              )}
+              {canUpdateProducts && selectedActiveCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBulkArchive}
+                  disabled={isBulkPending}
+                  className="cursor-pointer text-amber-600 border-amber-200 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950"
+                >
+                  {isBulkPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Archive className="h-4 w-4 mr-2" />
+                  )}
+                  {t('products.archiveCount', { count: selectedActiveCount, defaultValue: `Archive ${selectedActiveCount}` })}
+                </Button>
+              )}
+              {canDeleteProducts && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBulkDelete}
+                  disabled={isBulkPending}
+                  className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/10"
+                >
+                  {isBulkPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  {t('products.deleteCount', { count: selectedIds.size, defaultValue: `Delete ${selectedIds.size}` })}
+                </Button>
+              )}
+            </BulkActionToolbar>
           )}
 
           {viewMode === 'grid' ? (

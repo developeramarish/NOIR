@@ -232,3 +232,43 @@ export const deleteTag = async (id: string): Promise<void> => {
     method: 'DELETE',
   })
 }
+
+// ============================================================================
+// Bulk Operations
+// ============================================================================
+
+export interface BlogBulkOperationResult {
+  success: number
+  failed: number
+  errors: { entityId: string; entityName: string | null; message: string }[]
+}
+
+/**
+ * Bulk publish posts
+ */
+export const bulkPublishPosts = async (postIds: string[]): Promise<BlogBulkOperationResult> => {
+  return apiClient<BlogBulkOperationResult>('/blog/posts/bulk-publish', {
+    method: 'POST',
+    body: JSON.stringify({ postIds }),
+  })
+}
+
+/**
+ * Bulk unpublish posts
+ */
+export const bulkUnpublishPosts = async (postIds: string[]): Promise<BlogBulkOperationResult> => {
+  return apiClient<BlogBulkOperationResult>('/blog/posts/bulk-unpublish', {
+    method: 'POST',
+    body: JSON.stringify({ postIds }),
+  })
+}
+
+/**
+ * Bulk delete posts
+ */
+export const bulkDeletePosts = async (postIds: string[]): Promise<BlogBulkOperationResult> => {
+  return apiClient<BlogBulkOperationResult>('/blog/posts/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ postIds }),
+  })
+}

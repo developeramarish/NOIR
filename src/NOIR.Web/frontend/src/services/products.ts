@@ -4,6 +4,7 @@
  * Provides methods for managing products and product categories.
  */
 import { apiClient } from './apiClient'
+import { downloadFileExport } from '@/lib/fileExport'
 import { i18n } from '@/i18n'
 import type {
   Product,
@@ -269,6 +270,27 @@ export const exportProducts = async (params?: {
   queryParams.append('includeImages', String(params?.includeImages ?? true))
 
   return apiClient<ExportProductsResult>(`/products/export?${queryParams.toString()}`)
+}
+
+/**
+ * Export products as a file (CSV or Excel) via backend
+ */
+export const exportProductsFile = async (params?: {
+  format?: 'CSV' | 'Excel'
+  categoryId?: string
+  status?: string
+  includeAttributes?: boolean
+  includeImages?: boolean
+}): Promise<void> => {
+  const queryParams = new URLSearchParams()
+  if (params?.format) queryParams.append('format', params.format)
+  if (params?.categoryId) queryParams.append('categoryId', params.categoryId)
+  if (params?.status) queryParams.append('status', params.status)
+  queryParams.append('includeAttributes', String(params?.includeAttributes ?? true))
+  queryParams.append('includeImages', String(params?.includeImages ?? true))
+
+  const ext = params?.format === 'Excel' ? 'xlsx' : 'csv'
+  await downloadFileExport(`/api/products/export/file?${queryParams}`, `products.${ext}`)
 }
 
 /**

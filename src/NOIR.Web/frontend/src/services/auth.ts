@@ -3,7 +3,7 @@
  *
  * Dual Authentication Strategy:
  * - Sets HTTP-only cookies via useCookies=true (for server-rendered pages: /api/docs, /hangfire)
- * - Stores tokens in localStorage (for API calls in Vibe Kanban webview)
+ * - Stores tokens in localStorage (for SPA Bearer auth)
  *
  * This dual approach ensures:
  * - Server-rendered pages work with cookie auth

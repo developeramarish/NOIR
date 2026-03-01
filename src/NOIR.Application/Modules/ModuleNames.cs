@@ -59,4 +59,12 @@ public static class ModuleNames
     {
         public const string Webhooks = "Integrations.Webhooks";
     }
+
+    public static class Dashboard
+    {
+        public const string Core = "Dashboard.Core";
+        public const string Ecommerce = "Dashboard.Ecommerce";
+        public const string Blog = "Dashboard.Blog";
+        public const string Inventory = "Dashboard.Inventory";
+    }
 }

@@ -245,6 +245,14 @@ export const Permissions = {
   WebhooksRead: 'webhooks:read',
   WebhooksManage: 'webhooks:manage',
   WebhooksTest: 'webhooks:test',
+  // Media
+  MediaRead: 'media:read',
+  MediaCreate: 'media:create',
+  MediaUpdate: 'media:update',
+  MediaDelete: 'media:delete',
+  MediaManage: 'media:manage',
+  // Search
+  SearchGlobal: 'search:global',
 } as const
 
 export type PermissionKey = (typeof Permissions)[keyof typeof Permissions]

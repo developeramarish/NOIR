@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Eye,
   EllipsisVertical,
+  Loader2,
   Pencil,
   Plus,
   Search,
@@ -12,11 +13,15 @@ import {
   Crown,
   TrendingUp,
   UserCheck,
+  UserX,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useSelection } from '@/hooks/useSelection'
+import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
   Badge,
   Button,
@@ -25,6 +30,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Checkbox,
+  Credenza,
+  CredenzaBody,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -46,11 +59,12 @@ import {
   TableHeader,
   TableRow,
 } from '@uikit'
-import { useCustomersQuery, useCustomerStatsQuery } from '@/portal-app/customers/queries'
+import { useCustomersQuery, useCustomerStatsQuery, useBulkActivateCustomers, useBulkDeactivateCustomers, useBulkDeleteCustomers } from '@/portal-app/customers/queries'
 import type { GetCustomersParams } from '@/services/customers'
 import type { CustomerSegment, CustomerSummaryDto, CustomerTier } from '@/types/customer'
 import { formatCurrency } from '@/lib/utils/currency'
 import { CustomerFormDialog } from '../../components/CustomerFormDialog'
+import { CustomerImportExport } from '../../components/CustomerImportExport'
 import { DeleteCustomerDialog } from '../../components/DeleteCustomerDialog'
 import { getSegmentBadgeClass, getTierBadgeClass } from '@/portal-app/customers/utils/customerStatus'
 
@@ -66,6 +80,7 @@ export const CustomersPage = () => {
   const canCreate = hasPermission(Permissions.CustomersCreate)
   const canUpdate = hasPermission(Permissions.CustomersUpdate)
   const canDelete = hasPermission(Permissions.CustomersDelete)
+  const canManage = hasPermission(Permissions.CustomersManage)
 
   const [searchInput, setSearchInput] = useState('')
   const deferredSearch = useDeferredValue(searchInput)
@@ -77,6 +92,8 @@ export const CustomersPage = () => {
 
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-customer' })
   const [customerToDelete, setCustomerToDelete] = useState<CustomerSummaryDto | null>(null)
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
+  const [isBulkPending, startBulkTransition] = useTransition()
 
   useEffect(() => {
     setParams(prev => ({ ...prev, page: 1 }))
@@ -98,6 +115,17 @@ export const CustomersPage = () => {
   const totalCount = customersResponse?.totalCount ?? 0
   const totalPages = customersResponse?.totalPages ?? 1
   const currentPage = params.page ?? 1
+
+  const { selectedIds, setSelectedIds, handleSelectAll, handleSelectNone, handleToggleSelect, isAllSelected } = useSelection(customers)
+
+  // Bulk mutation hooks
+  const bulkActivateMutation = useBulkActivateCustomers()
+  const bulkDeactivateMutation = useBulkDeactivateCustomers()
+  const bulkDeleteMutation = useBulkDeleteCustomers()
+
+  // Computed counts
+  const selectedActiveCount = customers.filter(c => selectedIds.has(c.id) && c.isActive).length
+  const selectedInactiveCount = customers.filter(c => selectedIds.has(c.id) && !c.isActive).length
 
   const vipCount = stats?.segmentDistribution.find(s => s.segment === 'VIP')?.count ?? 0
   const avgSpent = stats?.topSpenders && stats.topSpenders.length > 0
@@ -132,6 +160,74 @@ export const CustomersPage = () => {
     navigate(`/portal/ecommerce/customers/${customer.id}`)
   }
 
+  // Bulk action handlers
+  const onBulkActivate = () => {
+    if (selectedIds.size === 0) return
+    const inactiveIds = customers.filter(c => selectedIds.has(c.id) && !c.isActive).map(c => c.id)
+    if (inactiveIds.length === 0) {
+      toast.warning(t('customers.noInactiveSelected', 'No inactive customers selected'))
+      return
+    }
+    startBulkTransition(async () => {
+      try {
+        const result = await bulkActivateMutation.mutateAsync(inactiveIds)
+        if (result.failed > 0) {
+          toast.warning(t('customers.bulkActivatePartial', { success: result.success, failed: result.failed, defaultValue: `${result.success} activated, ${result.failed} failed` }))
+        } else {
+          toast.success(t('customers.bulkActivateSuccess', { count: result.success, defaultValue: `${result.success} customers activated` }))
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t('customers.bulkActivateFailed', 'Failed to activate customers'))
+      }
+      setSelectedIds(new Set())
+    })
+  }
+
+  const onBulkDeactivate = () => {
+    if (selectedIds.size === 0) return
+    const activeIds = customers.filter(c => selectedIds.has(c.id) && c.isActive).map(c => c.id)
+    if (activeIds.length === 0) {
+      toast.warning(t('customers.noActiveSelected', 'No active customers selected'))
+      return
+    }
+    startBulkTransition(async () => {
+      try {
+        const result = await bulkDeactivateMutation.mutateAsync(activeIds)
+        if (result.failed > 0) {
+          toast.warning(t('customers.bulkDeactivatePartial', { success: result.success, failed: result.failed, defaultValue: `${result.success} deactivated, ${result.failed} failed` }))
+        } else {
+          toast.success(t('customers.bulkDeactivateSuccess', { count: result.success, defaultValue: `${result.success} customers deactivated` }))
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t('customers.bulkDeactivateFailed', 'Failed to deactivate customers'))
+      }
+      setSelectedIds(new Set())
+    })
+  }
+
+  const onBulkDelete = () => {
+    if (selectedIds.size === 0) return
+    setShowBulkDeleteConfirm(true)
+  }
+
+  const handleBulkDeleteConfirm = () => {
+    const selectedCustomerIds = Array.from(selectedIds)
+    startBulkTransition(async () => {
+      try {
+        const result = await bulkDeleteMutation.mutateAsync(selectedCustomerIds)
+        if (result.failed > 0) {
+          toast.warning(t('customers.bulkDeletePartial', { success: result.success, failed: result.failed, defaultValue: `${result.success} deleted, ${result.failed} failed` }))
+        } else {
+          toast.success(t('customers.bulkDeleteSuccess', { count: result.success, defaultValue: `${result.success} customers deleted` }))
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t('customers.bulkDeleteFailed', 'Failed to delete customers'))
+      }
+      setSelectedIds(new Set())
+      setShowBulkDeleteConfirm(false)
+    })
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -140,12 +236,18 @@ export const CustomersPage = () => {
         description={t('customers.description', 'Manage your customer base and loyalty programs')}
         responsive
         action={
-          canCreate && (
-            <Button className="group transition-all duration-300 cursor-pointer" onClick={() => openCreate()}>
-              <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
-              {t('customers.newCustomer', 'New Customer')}
-            </Button>
-          )
+          <div className="flex items-center gap-2">
+            <CustomerImportExport
+              totalCount={totalCount}
+              onImportComplete={() => {/* refetch handled by query invalidation */}}
+            />
+            {canCreate && (
+              <Button className="group transition-all duration-300 cursor-pointer" onClick={() => openCreate()}>
+                <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
+                {t('customers.newCustomer', 'New Customer')}
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -265,11 +367,62 @@ export const CustomersPage = () => {
             </div>
           )}
 
+          {/* Bulk Action Toolbar */}
+          <BulkActionToolbar selectedCount={selectedIds.size} onClearSelection={handleSelectNone}>
+            {canManage && selectedInactiveCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBulkActivate}
+                disabled={isBulkPending}
+                className="cursor-pointer text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950"
+              >
+                {isBulkPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserCheck className="h-4 w-4 mr-2" />}
+                {t('customers.activateCount', { count: selectedInactiveCount, defaultValue: `Activate (${selectedInactiveCount})` })}
+              </Button>
+            )}
+            {canManage && selectedActiveCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBulkDeactivate}
+                disabled={isBulkPending}
+                className="cursor-pointer text-amber-600 border-amber-200 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950"
+              >
+                {isBulkPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserX className="h-4 w-4 mr-2" />}
+                {t('customers.deactivateCount', { count: selectedActiveCount, defaultValue: `Deactivate (${selectedActiveCount})` })}
+              </Button>
+            )}
+            {canDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBulkDelete}
+                disabled={isBulkPending}
+                className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/10"
+              >
+                {isBulkPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                {t('customers.deleteCount', { count: selectedIds.size, defaultValue: `Delete (${selectedIds.size})` })}
+              </Button>
+            )}
+          </BulkActionToolbar>
+
           <div className="rounded-xl border border-border/50 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10 sticky left-0 z-10 bg-background"></TableHead>
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={(checked) => {
+                        if (checked) handleSelectAll()
+                        else handleSelectNone()
+                      }}
+                      aria-label={t('labels.selectAll', 'Select all')}
+                      className="cursor-pointer"
+                    />
+                  </TableHead>
                   <TableHead>{t('labels.name', 'Name')}</TableHead>
                   <TableHead>{t('labels.email', 'Email')}</TableHead>
                   <TableHead>{t('labels.phone', 'Phone')}</TableHead>
@@ -285,6 +438,7 @@ export const CustomersPage = () => {
                   [...Array(5)].map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
                       <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-4 rounded" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -297,7 +451,7 @@ export const CustomersPage = () => {
                   ))
                 ) : customers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="p-0">
+                    <TableCell colSpan={10} className="p-0">
                       <EmptyState
                         icon={Users}
                         title={t('customers.noCustomersFound', 'No customers found')}
@@ -314,8 +468,8 @@ export const CustomersPage = () => {
                   customers.map((customer) => (
                     <TableRow
                       key={customer.id}
-                      className="group transition-colors hover:bg-muted/50 cursor-pointer"
-                      onClick={() => handleViewCustomer(customer)}
+                      className={`group transition-colors hover:bg-muted/50 ${selectedIds.size === 0 ? 'cursor-pointer' : ''} ${selectedIds.has(customer.id) ? 'bg-primary/5' : ''}`}
+                      onClick={() => { if (selectedIds.size === 0) handleViewCustomer(customer) }}
                     >
                       <TableCell className="sticky left-0 z-10 bg-background">
                         <DropdownMenu>
@@ -367,6 +521,14 @@ export const CustomersPage = () => {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.has(customer.id)}
+                          onCheckedChange={() => handleToggleSelect(customer.id)}
+                          aria-label={t('labels.selectItem', { name: `${customer.firstName} ${customer.lastName}`, defaultValue: `Select ${customer.firstName} ${customer.lastName}` })}
+                          className="cursor-pointer"
+                        />
                       </TableCell>
                       <TableCell>
                         <span className="font-medium text-sm">
@@ -438,6 +600,50 @@ export const CustomersPage = () => {
         onOpenChange={(open) => !open && setCustomerToDelete(null)}
         customer={customerToDelete}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Credenza open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+        <CredenzaContent className="border-destructive/30">
+          <CredenzaHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-destructive/10 border border-destructive/20">
+                <Trash2 className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <CredenzaTitle>{t('customers.bulkDeleteConfirmTitle', { count: selectedIds.size, defaultValue: `Delete ${selectedIds.size} customers` })}</CredenzaTitle>
+                <CredenzaDescription>
+                  {t('customers.bulkDeleteConfirmDescription', {
+                    count: selectedIds.size,
+                    defaultValue: `Are you sure you want to delete ${selectedIds.size} customers? This action cannot be undone.`,
+                  })}
+                </CredenzaDescription>
+              </div>
+            </div>
+          </CredenzaHeader>
+          <CredenzaBody />
+          <CredenzaFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              disabled={isBulkPending}
+              className="cursor-pointer"
+            >
+              {t('labels.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDeleteConfirm}
+              disabled={isBulkPending}
+              className="cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            >
+              {isBulkPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isBulkPending
+                ? t('labels.deleting', 'Deleting...')
+                : t('customers.deleteCount', { count: selectedIds.size, defaultValue: `Delete (${selectedIds.size})` })}
+            </Button>
+          </CredenzaFooter>
+        </CredenzaContent>
+      </Credenza>
     </div>
   )
 }

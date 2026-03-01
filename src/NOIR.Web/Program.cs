@@ -483,6 +483,7 @@ app.MapCustomerEndpoints();
 app.MapCustomerGroupEndpoints();
 app.MapInventoryEndpoints();
 app.MapDashboardEndpoints();
+app.MapSearchEndpoints();
 app.MapReportEndpoints();
 app.MapCheckoutEndpoints();
 app.MapShippingProviderEndpoints();

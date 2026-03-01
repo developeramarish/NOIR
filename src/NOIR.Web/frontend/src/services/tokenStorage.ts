@@ -2,12 +2,9 @@
  * Token Storage Service
  *
  * Manages JWT tokens in localStorage for authentication.
- * This approach is more compatible with webviews and embedded contexts
- * (like Vibe Kanban) where HTTP-only cookies may not work properly.
  *
  * Security considerations:
  * - Tokens are stored in localStorage (accessible to JavaScript)
- * - This is a trade-off for compatibility with webview environments
  * - For maximum security in pure browser contexts, HTTP-only cookies are preferred
  * - Tokens have short expiration times to limit exposure
  */

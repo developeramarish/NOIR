@@ -2,7 +2,6 @@ import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { VibeKanbanWebCompanion } from 'vibe-kanban-web-companion'
 import './index.css'
 // Initialize i18n before App component
 import './i18n'
@@ -85,7 +84,6 @@ const AppLoadingSkeleton = () => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {import.meta.env.DEV && <VibeKanbanWebCompanion />}
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<AppLoadingSkeleton />}>
         <LanguageProvider>

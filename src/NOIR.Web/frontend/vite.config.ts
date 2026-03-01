@@ -126,7 +126,7 @@ export default defineConfig({
     },
   },
   server: {
-    // Dev server port (3000 for Vibe Kanban compatibility)
+    // Dev server port
     port: 3000,
     strictPort: true, // Fail if port 3000 is in use (don't auto-switch)
     // Proxy API requests to .NET backend (HTTPS to avoid redirect header loss)

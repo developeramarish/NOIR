@@ -119,8 +119,14 @@ public static class MediaEndpoints
 
                 // Build absolute URL to prevent path resolution issues in rich text editors
                 var request = httpContext.Request;
-                var baseUrl = $"{request.Scheme}://{request.Host}";
-                var absoluteUrl = string.IsNullOrEmpty(relativeUrl) ? string.Empty : $"{baseUrl}{relativeUrl}";
+                var absoluteUrl = string.Empty;
+                if (!string.IsNullOrEmpty(relativeUrl))
+                {
+                    // If URL is already absolute (cloud/CDN), use as-is
+                    absoluteUrl = Uri.IsWellFormedUriString(relativeUrl, UriKind.Absolute)
+                        ? relativeUrl
+                        : $"{request.Scheme}://{request.Host}{relativeUrl}";
+                }
 
                 // Serialize variants and srcsets for database storage
                 var variantsJson = System.Text.Json.JsonSerializer.Serialize(
@@ -176,7 +182,10 @@ public static class MediaEndpoints
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Create response (includes "location" alias for TinyMCE compatibility)
-                var response = MediaUploadResultDto.FromProcessingResult(result, absoluteUrl, mediaFile.Id, shortId);
+                // Pass URL normalizer to ensure all variant URLs in the response are absolute
+                var response = MediaUploadResultDto.FromProcessingResult(
+                    result, absoluteUrl, mediaFile.Id, shortId,
+                    url => NormalizeMediaUrl(url, request));
 
                 logger.LogInformation(
                     "Image uploaded and processed: {Slug} (ID: {MediaFileId}) -> {VariantCount} variants in {Ms}ms",
@@ -220,6 +229,7 @@ public static class MediaEndpoints
         // Get MediaFile by ID
         group.MapGet("/{id:guid}", async (
             Guid id,
+            HttpContext httpContext,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
         {
@@ -231,7 +241,7 @@ public static class MediaEndpoints
                 return Results.NotFound();
             }
 
-            return Results.Ok(ToMediaFileDto(mediaFile));
+            return Results.Ok(ToMediaFileDto(mediaFile, httpContext.Request));
         })
         .WithName("GetMediaFile")
         .WithSummary("Get media file by ID")
@@ -242,6 +252,7 @@ public static class MediaEndpoints
         // Get MediaFile by slug (for lookup from URL)
         group.MapGet("/by-slug/{slug}", async (
             string slug,
+            HttpContext httpContext,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
         {
@@ -253,7 +264,7 @@ public static class MediaEndpoints
                 return Results.NotFound();
             }
 
-            return Results.Ok(ToMediaFileDto(mediaFile));
+            return Results.Ok(ToMediaFileDto(mediaFile, httpContext.Request));
         })
         .WithName("GetMediaFileBySlug")
         .WithSummary("Get media file by slug")
@@ -269,6 +280,7 @@ public static class MediaEndpoints
         // Lookup MediaFile by URL (most convenient for frontend)
         group.MapGet("/by-url", async (
             [FromQuery] string url,
+            HttpContext httpContext,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
         {
@@ -287,7 +299,7 @@ public static class MediaEndpoints
                 return Results.NotFound();
             }
 
-            return Results.Ok(ToMediaFileDto(mediaFile));
+            return Results.Ok(ToMediaFileDto(mediaFile, httpContext.Request));
         })
         .WithName("GetMediaFileByUrl")
         .WithSummary("Get media file by URL")
@@ -304,6 +316,7 @@ public static class MediaEndpoints
         // Get MediaFile by shortId (8-char unique identifier)
         group.MapGet("/by-short-id/{shortId}", async (
             string shortId,
+            HttpContext httpContext,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
         {
@@ -315,7 +328,7 @@ public static class MediaEndpoints
                 return Results.NotFound();
             }
 
-            return Results.Ok(ToMediaFileDto(mediaFile));
+            return Results.Ok(ToMediaFileDto(mediaFile, httpContext.Request));
         })
         .WithName("GetMediaFileByShortId")
         .WithSummary("Get media file by short ID")
@@ -330,6 +343,7 @@ public static class MediaEndpoints
 
         // Batch query: Get multiple MediaFiles by IDs
         group.MapPost("/batch/by-ids", async (
+            HttpContext httpContext,
             [FromBody] BatchMediaIdsRequest request,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
@@ -340,7 +354,7 @@ public static class MediaEndpoints
             var spec = new NOIR.Application.Specifications.MediaFiles.MediaFilesByIdsSpec(request.Ids);
             var mediaFiles = await repository.ListAsync(spec, cancellationToken);
 
-            var result = mediaFiles.Select(ToMediaFileDto).ToList();
+            var result = mediaFiles.Select(mf => ToMediaFileDto(mf, httpContext.Request)).ToList();
             return Results.Ok(result);
         })
         .WithName("GetMediaFilesByIds")
@@ -351,6 +365,7 @@ public static class MediaEndpoints
 
         // Batch query: Get multiple MediaFiles by slugs
         group.MapPost("/batch/by-slugs", async (
+            HttpContext httpContext,
             [FromBody] BatchMediaSlugsRequest request,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
@@ -361,7 +376,7 @@ public static class MediaEndpoints
             var spec = new NOIR.Application.Specifications.MediaFiles.MediaFilesBySlugsSpec(request.Slugs);
             var mediaFiles = await repository.ListAsync(spec, cancellationToken);
 
-            var result = mediaFiles.Select(ToMediaFileDto).ToList();
+            var result = mediaFiles.Select(mf => ToMediaFileDto(mf, httpContext.Request)).ToList();
             return Results.Ok(result);
         })
         .WithName("GetMediaFilesBySlugs")
@@ -372,6 +387,7 @@ public static class MediaEndpoints
 
         // Batch query: Get multiple MediaFiles by short IDs
         group.MapPost("/batch/by-short-ids", async (
+            HttpContext httpContext,
             [FromBody] BatchMediaShortIdsRequest request,
             [FromServices] IRepository<MediaFile, Guid> repository,
             CancellationToken cancellationToken) =>
@@ -382,7 +398,7 @@ public static class MediaEndpoints
             var spec = new NOIR.Application.Specifications.MediaFiles.MediaFilesByShortIdsSpec(request.ShortIds);
             var mediaFiles = await repository.ListAsync(spec, cancellationToken);
 
-            var result = mediaFiles.Select(ToMediaFileDto).ToList();
+            var result = mediaFiles.Select(mf => ToMediaFileDto(mf, httpContext.Request)).ToList();
             return Results.Ok(result);
         })
         .WithName("GetMediaFilesByShortIds")
@@ -397,12 +413,95 @@ public static class MediaEndpoints
             """)
         .Produces<List<MediaFileDto>>(StatusCodes.Status200OK)
         .Produces<string>(StatusCodes.Status400BadRequest);
+
+        // ── Media Manager CQRS Endpoints ─────────────────────────────────
+
+        // Get all media files (paginated)
+        group.MapGet("/", async (
+            [FromQuery] string? search,
+            [FromQuery] string? fileType,
+            [FromQuery] string? folder,
+            [FromQuery] string sortBy,
+            [FromQuery] string sortOrder,
+            [FromQuery] int? page,
+            [FromQuery] int? pageSize,
+            IMessageBus bus) =>
+        {
+            var query = new NOIR.Application.Features.Media.Queries.GetMediaFiles.GetMediaFilesQuery(
+                search,
+                fileType,
+                folder,
+                sortBy ?? "createdAt",
+                sortOrder ?? "desc",
+                page ?? 1,
+                pageSize ?? 24);
+            var result = await bus.InvokeAsync<Result<PagedResult<NOIR.Application.Features.Media.Dtos.MediaFileListDto>>>(query);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.MediaRead)
+        .WithName("GetMediaFiles")
+        .WithSummary("Get paginated list of media files")
+        .WithDescription("Returns media files with optional filtering by search, file type, and folder. Supports sorting by createdAt, name, or size.")
+        .Produces<PagedResult<NOIR.Application.Features.Media.Dtos.MediaFileListDto>>(StatusCodes.Status200OK);
+
+        // Delete media file (soft delete)
+        group.MapDelete("/{id:guid}", async (
+            Guid id,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new NOIR.Application.Features.Media.Commands.DeleteMediaFile.DeleteMediaFileCommand(id) { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<bool>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.MediaDelete)
+        .WithName("DeleteMediaFile")
+        .WithSummary("Soft-delete a media file")
+        .WithDescription("Soft-deletes a media file. Physical files are cleaned up asynchronously.")
+        .Produces(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        // Rename media file
+        group.MapPut("/{id:guid}/rename", async (
+            Guid id,
+            [FromBody] RenameMediaFileRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new NOIR.Application.Features.Media.Commands.RenameMediaFile.RenameMediaFileCommand(id, request.NewFileName) { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<bool>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.MediaUpdate)
+        .WithName("RenameMediaFile")
+        .WithSummary("Rename a media file")
+        .WithDescription("Updates the original file name of a media file.")
+        .Produces(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk delete media files
+        group.MapPost("/bulk-delete", async (
+            [FromBody] BulkDeleteMediaFilesRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new NOIR.Application.Features.Media.Commands.BulkDeleteMediaFiles.BulkDeleteMediaFilesCommand(request.Ids) { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<NOIR.Application.Features.Media.Dtos.BulkMediaOperationResultDto>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.MediaDelete)
+        .WithName("BulkDeleteMediaFiles")
+        .WithSummary("Bulk delete media files")
+        .WithDescription("Soft-deletes multiple media files in a single operation.")
+        .Produces<NOIR.Application.Features.Media.Dtos.BulkMediaOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
     /// <summary>
-    /// Convert MediaFile entity to DTO.
+    /// Convert MediaFile entity to DTO, normalizing all URLs to absolute.
     /// </summary>
-    private static MediaFileDto ToMediaFileDto(MediaFile mediaFile)
+    private static MediaFileDto ToMediaFileDto(MediaFile mediaFile, HttpRequest? request = null)
     {
         var variants = System.Text.Json.JsonSerializer.Deserialize<List<MediaVariantDto>>(
             mediaFile.VariantsJson,
@@ -412,6 +511,17 @@ public static class MediaEndpoints
             mediaFile.SrcsetsJson,
             new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
 
+        // Normalize variant URLs to absolute
+        if (request is not null)
+        {
+            variants = variants.Select(v => v with
+            {
+                Url = NormalizeMediaUrl(v.Url, request)
+            }).ToList();
+
+            srcsets = NormalizeSrcsets(srcsets, request);
+        }
+
         return new MediaFileDto
         {
             Id = mediaFile.Id,
@@ -419,7 +529,7 @@ public static class MediaEndpoints
             Slug = mediaFile.Slug,
             OriginalFileName = mediaFile.OriginalFileName,
             Folder = mediaFile.Folder,
-            DefaultUrl = mediaFile.DefaultUrl,
+            DefaultUrl = request is not null ? NormalizeMediaUrl(mediaFile.DefaultUrl, request) : mediaFile.DefaultUrl,
             ThumbHash = mediaFile.ThumbHash,
             DominantColor = mediaFile.DominantColor,
             Width = mediaFile.Width,
@@ -434,6 +544,46 @@ public static class MediaEndpoints
             Srcsets = srcsets,
             CreatedAt = mediaFile.CreatedAt
         };
+    }
+
+    /// <summary>
+    /// Normalize a media URL to absolute. Already-absolute URLs (cloud/CDN) are returned as-is.
+    /// Relative URLs get the request scheme and host prepended.
+    /// </summary>
+    private static string NormalizeMediaUrl(string? url, HttpRequest request)
+    {
+        if (string.IsNullOrEmpty(url)) return string.Empty;
+
+        // Already absolute (cloud/CDN) — use as-is
+        if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            return url;
+
+        // Relative URL — prepend host
+        return $"{request.Scheme}://{request.Host}{url}";
+    }
+
+    /// <summary>
+    /// Normalize all URLs within srcset strings to absolute.
+    /// Srcset format: "url1 300w, url2 640w, url3 1280w"
+    /// </summary>
+    private static Dictionary<string, string> NormalizeSrcsets(Dictionary<string, string> srcsets, HttpRequest request)
+    {
+        var normalized = new Dictionary<string, string>(srcsets.Count);
+        foreach (var (format, srcset) in srcsets)
+        {
+            var parts = srcset.Split(',', StringSplitOptions.TrimEntries);
+            var normalizedParts = parts.Select(part =>
+            {
+                var segments = part.Split(' ', 2, StringSplitOptions.TrimEntries);
+                if (segments.Length == 2)
+                {
+                    return $"{NormalizeMediaUrl(segments[0], request)} {segments[1]}";
+                }
+                return part;
+            });
+            normalized[format] = string.Join(", ", normalizedParts);
+        }
+        return normalized;
     }
 
     /// <summary>
@@ -573,3 +723,13 @@ public sealed record BatchMediaSlugsRequest(IReadOnlyList<string> Slugs);
 /// Request for batch lookup by media file short IDs.
 /// </summary>
 public sealed record BatchMediaShortIdsRequest(IReadOnlyList<string> ShortIds);
+
+/// <summary>
+/// Request to rename a media file.
+/// </summary>
+public sealed record RenameMediaFileRequest(string NewFileName);
+
+/// <summary>
+/// Request for bulk deleting media files.
+/// </summary>
+public sealed record BulkDeleteMediaFilesRequest(List<Guid> Ids);

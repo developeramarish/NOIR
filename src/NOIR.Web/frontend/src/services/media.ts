@@ -5,7 +5,7 @@
  */
 import { apiClient } from './apiClient'
 import { i18n } from '@/i18n'
-import type { MediaFile, MediaUploadResult } from '@/types'
+import type { MediaFile, MediaUploadResult, MediaFilesParams, PagedMediaResult, BulkMediaOperationResult } from '@/types'
 
 export type MediaFolder = 'blog' | 'content' | 'avatars' | 'branding' | 'products'
 
@@ -99,3 +99,42 @@ export const getMediaByShortIds = async (shortIds: string[]): Promise<MediaFile[
     body: JSON.stringify({ shortIds }),
   })
 }
+
+/**
+ * Get paginated list of media files
+ */
+export const getMediaFiles = (params: MediaFilesParams): Promise<PagedMediaResult> => {
+  const query = new URLSearchParams()
+  if (params.search) query.append('search', params.search)
+  if (params.fileType) query.append('fileType', params.fileType)
+  if (params.folder) query.append('folder', params.folder)
+  if (params.sortBy) query.append('sortBy', params.sortBy)
+  if (params.sortOrder) query.append('sortOrder', params.sortOrder)
+  if (params.page) query.append('page', String(params.page))
+  if (params.pageSize) query.append('pageSize', String(params.pageSize))
+  return apiClient<PagedMediaResult>(`/media?${query.toString()}`)
+}
+
+/**
+ * Delete a media file (soft delete)
+ */
+export const deleteMediaFile = (id: string): Promise<void> =>
+  apiClient('/media/' + id, { method: 'DELETE' })
+
+/**
+ * Rename a media file
+ */
+export const renameMediaFile = (id: string, newFileName: string): Promise<void> =>
+  apiClient('/media/' + id + '/rename', {
+    method: 'PUT',
+    body: JSON.stringify({ newFileName }),
+  })
+
+/**
+ * Bulk delete media files
+ */
+export const bulkDeleteMediaFiles = (ids: string[]): Promise<BulkMediaOperationResult> =>
+  apiClient('/media/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  })

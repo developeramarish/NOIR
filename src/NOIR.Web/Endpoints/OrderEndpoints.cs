@@ -1,4 +1,6 @@
 using NOIR.Application.Features.Orders.Commands.AddOrderNote;
+using NOIR.Application.Features.Orders.Commands.BulkCancelOrders;
+using NOIR.Application.Features.Orders.Commands.BulkConfirmOrders;
 using NOIR.Application.Features.Orders.Commands.CancelOrder;
 using NOIR.Application.Features.Orders.Commands.CompleteOrder;
 using NOIR.Application.Features.Orders.Commands.ConfirmOrder;
@@ -11,6 +13,7 @@ using NOIR.Application.Features.Orders.Commands.ShipOrder;
 using NOIR.Application.Features.Orders.DTOs;
 using NOIR.Application.Features.Orders.Queries.GetOrderById;
 using NOIR.Application.Features.Orders.Queries.GetOrderNotes;
+using NOIR.Application.Features.Orders.Queries.ExportOrders;
 using NOIR.Application.Features.Orders.Queries.GetOrders;
 
 namespace NOIR.Web.Endpoints;
@@ -53,6 +56,33 @@ public static class OrderEndpoints
         .WithSummary("Get paginated list of orders")
         .WithDescription("Returns orders with optional filtering by status, customer email, and date range.")
         .Produces<PagedResult<OrderSummaryDto>>(StatusCodes.Status200OK);
+
+        // Export orders as file (CSV or Excel)
+        group.MapGet("/export", async (
+            [FromQuery] ExportFormat? format,
+            [FromQuery] OrderStatus? status,
+            [FromQuery] string? customerEmail,
+            [FromQuery] DateTimeOffset? fromDate,
+            [FromQuery] DateTimeOffset? toDate,
+            IMessageBus bus,
+            CancellationToken ct) =>
+        {
+            var query = new ExportOrdersQuery(
+                format ?? ExportFormat.CSV,
+                status,
+                customerEmail,
+                fromDate,
+                toDate);
+            var result = await bus.InvokeAsync<Result<ExportResultDto>>(query, ct);
+            if (result.IsFailure)
+                return result.ToHttpResult();
+            return Results.File(result.Value.FileBytes, result.Value.ContentType, result.Value.FileName);
+        })
+        .RequireAuthorization(Permissions.OrdersRead)
+        .WithName("ExportOrders")
+        .WithSummary("Export orders as file")
+        .WithDescription("Export orders as a downloadable CSV or Excel file with optional filtering.")
+        .Produces<byte[]>(StatusCodes.Status200OK);
 
         // Get order by ID
         group.MapGet("/{id:guid}", async (Guid id, IMessageBus bus) =>
@@ -215,6 +245,40 @@ public static class OrderEndpoints
         .Produces<OrderDto>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
         .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        // Bulk confirm orders
+        group.MapPost("/bulk-confirm", async (
+            BulkConfirmOrdersCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.OrdersManage)
+        .WithName("BulkConfirmOrders")
+        .WithSummary("Bulk confirm orders")
+        .WithDescription("Confirms multiple pending orders in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk cancel orders
+        group.MapPost("/bulk-cancel", async (
+            BulkCancelOrdersCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.OrdersManage)
+        .WithName("BulkCancelOrders")
+        .WithSummary("Bulk cancel orders")
+        .WithDescription("Cancels multiple orders in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         // Get order notes
         group.MapGet("/{orderId:guid}/notes", async (Guid orderId, IMessageBus bus) =>

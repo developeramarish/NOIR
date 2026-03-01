@@ -80,12 +80,21 @@ public sealed record MediaUploadResultDto
     /// <summary>
     /// Create a successful result.
     /// </summary>
+    /// <param name="result">The image processing result.</param>
+    /// <param name="defaultUrl">The default URL (already normalized to absolute).</param>
+    /// <param name="mediaFileId">The created MediaFile entity ID.</param>
+    /// <param name="shortId">The 8-char short identifier.</param>
+    /// <param name="urlNormalizer">Optional function to normalize relative URLs to absolute (e.g. prepend scheme+host).</param>
     public static MediaUploadResultDto FromProcessingResult(
         ImageProcessingResult result,
         string defaultUrl,
         Guid? mediaFileId = null,
-        string? shortId = null)
+        string? shortId = null,
+        Func<string?, string>? urlNormalizer = null)
     {
+        // Default normalizer: pass-through
+        urlNormalizer ??= url => url ?? string.Empty;
+
         // Group variants by format for srcset generation
         var srcsets = new Dictionary<string, string>();
         var variantsByFormat = result.Variants.GroupBy(v => v.Format);
@@ -95,7 +104,7 @@ public sealed record MediaUploadResultDto
             var formatName = formatGroup.Key.ToString().ToLowerInvariant();
             var srcsetParts = formatGroup
                 .OrderBy(v => v.Width)
-                .Select(v => $"{v.Url} {v.Width}w");
+                .Select(v => $"{urlNormalizer(v.Url ?? v.Path)} {v.Width}w");
             srcsets[formatName] = string.Join(", ", srcsetParts);
         }
 
@@ -123,7 +132,7 @@ public sealed record MediaUploadResultDto
             {
                 Variant = v.Variant.ToString().ToLowerInvariant(),
                 Format = v.Format.ToString().ToLowerInvariant(),
-                Url = v.Url ?? v.Path,
+                Url = urlNormalizer(v.Url ?? v.Path),
                 Width = v.Width,
                 Height = v.Height,
                 SizeBytes = v.SizeBytes

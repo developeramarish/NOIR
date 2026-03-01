@@ -33,7 +33,8 @@ import {
 } from '@uikit'
 
 import type { ProductListItem } from '@/types/product'
-import { bulkImportProducts, exportProducts, type ImportProductDto } from '@/services/products'
+import { bulkImportProducts, exportProducts, exportProductsFile, type ImportProductDto } from '@/services/products'
+import { escapeCSV, parseCSV, downloadCsv } from '@/lib/csv'
 import { toast } from 'sonner'
 
 interface ProductImportExportProps {
@@ -126,18 +127,23 @@ export const ProductImportExport = ({
 
       const csvContent = [headerRow, ...dataRows].join('\n')
 
-      // Download file
-      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `products-export-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      downloadCsv(csvContent, `products-export-${new Date().toISOString().split('T')[0]}.csv`)
 
       toast.success(t('products.export.success', { count: result.rows.length, defaultValue: `${result.rows.length} products exported` }))
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error(t('products.export.failed', 'Failed to export products'))
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Export products as Excel file via backend
+  const handleExportExcel = async () => {
+    setIsExporting(true)
+    try {
+      await exportProductsFile({ format: 'Excel', includeAttributes: true, includeImages: true })
+      toast.success(t('products.export.success', 'Products exported successfully'))
     } catch (error) {
       console.error('Export error:', error)
       toast.error(t('products.export.failed', 'Failed to export products'))
@@ -157,15 +163,7 @@ export const ProductImportExport = ({
     ].join('\n')
 
     const csvContent = [headers, exampleRows].join('\n')
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'products-import-template.csv'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    downloadCsv(csvContent, 'products-import-template.csv')
 
     toast.success(t('products.import.templateDownloaded', 'Template downloaded'))
   }
@@ -314,6 +312,18 @@ export const ProductImportExport = ({
               {products.length}
             </Badge>
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleExportExcel}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+            )}
+            {t('products.export.exportExcel', 'Export Excel')}
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="cursor-pointer"
@@ -433,85 +443,3 @@ export const ProductImportExport = ({
   )
 }
 
-/**
- * Escape a value for CSV output
- */
-const escapeCSV = (value: string): string => {
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`
-  }
-  return value
-}
-
-/**
- * Parse CSV text into headers and rows
- * Handles quoted fields with commas and newlines
- */
-const parseCSV = (text: string): { headers: string[]; rows: string[][] } => {
-  const lines: string[] = []
-  let currentLine = ''
-  let inQuotes = false
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i]
-    if (char === '"') {
-      // Check for escaped quote
-      if (inQuotes && text[i + 1] === '"') {
-        currentLine += '"'
-        i++ // Skip next quote
-      } else {
-        inQuotes = !inQuotes
-      }
-    } else if (char === '\n' && !inQuotes) {
-      if (currentLine.trim()) {
-        lines.push(currentLine)
-      }
-      currentLine = ''
-    } else if (char === '\r' && !inQuotes) {
-      // Skip carriage return
-    } else {
-      currentLine += char
-    }
-  }
-
-  // Don't forget the last line
-  if (currentLine.trim()) {
-    lines.push(currentLine)
-  }
-
-  if (lines.length === 0) {
-    return { headers: [], rows: [] }
-  }
-
-  // Parse a single line into values
-  const parseLine = (line: string): string[] => {
-    const values: string[] = []
-    let currentValue = ''
-    let inQuotes = false
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i]
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          currentValue += '"'
-          i++
-        } else {
-          inQuotes = !inQuotes
-        }
-      } else if (char === ',' && !inQuotes) {
-        values.push(currentValue)
-        currentValue = ''
-      } else {
-        currentValue += char
-      }
-    }
-    values.push(currentValue)
-
-    return values
-  }
-
-  const headers = parseLine(lines[0])
-  const rows = lines.slice(1).map(parseLine)
-
-  return { headers, rows }
-}

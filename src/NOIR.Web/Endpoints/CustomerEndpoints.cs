@@ -1,4 +1,7 @@
 using NOIR.Application.Features.Customers.Commands.AddCustomerAddress;
+using NOIR.Application.Features.Customers.Commands.BulkActivateCustomers;
+using NOIR.Application.Features.Customers.Commands.BulkDeactivateCustomers;
+using NOIR.Application.Features.Customers.Commands.BulkDeleteCustomers;
 using NOIR.Application.Features.Customers.Commands.AddLoyaltyPoints;
 using NOIR.Application.Features.Customers.Commands.CreateCustomer;
 using NOIR.Application.Features.Customers.Commands.DeleteCustomer;
@@ -11,6 +14,8 @@ using NOIR.Application.Features.Customers.DTOs;
 using NOIR.Application.Features.Customers.Queries.GetCustomerById;
 using NOIR.Application.Features.Orders.DTOs;
 using NOIR.Application.Features.Customers.Queries.GetCustomerOrders;
+using NOIR.Application.Features.Customers.Commands.BulkImportCustomers;
+using NOIR.Application.Features.Customers.Queries.ExportCustomers;
 using NOIR.Application.Features.Customers.Queries.GetCustomers;
 using NOIR.Application.Features.Customers.Queries.GetCustomerStats;
 
@@ -87,6 +92,100 @@ public static class CustomerEndpoints
         .WithSummary("Get customer statistics")
         .WithDescription("Returns segment distribution, tier distribution, and top spenders.")
         .Produces<CustomerStatsDto>(StatusCodes.Status200OK);
+
+        // Export customers as file (CSV or Excel)
+        group.MapGet("/export", async (
+            [FromQuery] ExportFormat? format,
+            [FromQuery] CustomerSegment? segment,
+            [FromQuery] CustomerTier? tier,
+            [FromQuery] bool? isActive,
+            [FromQuery] string? search,
+            IMessageBus bus,
+            CancellationToken ct) =>
+        {
+            var query = new ExportCustomersQuery(
+                format ?? ExportFormat.CSV,
+                segment,
+                tier,
+                isActive,
+                search);
+            var result = await bus.InvokeAsync<Result<ExportResultDto>>(query, ct);
+            if (result.IsFailure)
+                return result.ToHttpResult();
+            return Results.File(result.Value.FileBytes, result.Value.ContentType, result.Value.FileName);
+        })
+        .RequireAuthorization(Permissions.CustomersRead)
+        .WithName("ExportCustomers")
+        .WithSummary("Export customers as file")
+        .WithDescription("Export customers as a downloadable CSV or Excel file with optional filtering.")
+        .Produces<byte[]>(StatusCodes.Status200OK);
+
+        // Bulk import customers
+        group.MapPost("/import", async (
+            BulkImportCustomersCommand command,
+            IMessageBus bus,
+            CancellationToken ct) =>
+        {
+            var result = await bus.InvokeAsync<Result<BulkImportCustomersResultDto>>(command, ct);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.CustomersCreate)
+        .WithName("BulkImportCustomers")
+        .WithSummary("Bulk import customers")
+        .WithDescription("Import multiple customers from parsed data. Validates email uniqueness. Maximum 1000 customers per request.")
+        .Produces<BulkImportCustomersResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk deactivate customers
+        group.MapPost("/bulk-deactivate", async (
+            BulkDeactivateCustomersCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.CustomersManage)
+        .WithName("BulkDeactivateCustomers")
+        .WithSummary("Bulk deactivate customers")
+        .WithDescription("Deactivates multiple customers in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk activate customers
+        group.MapPost("/bulk-activate", async (
+            BulkActivateCustomersCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.CustomersManage)
+        .WithName("BulkActivateCustomers")
+        .WithSummary("Bulk activate customers")
+        .WithDescription("Activates multiple customers in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Bulk delete customers
+        group.MapPost("/bulk-delete", async (
+            BulkDeleteCustomersCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var commandWithUser = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<BulkOperationResultDto>>(commandWithUser);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.CustomersDelete)
+        .WithName("BulkDeleteCustomers")
+        .WithSummary("Bulk delete customers")
+        .WithDescription("Soft-deletes multiple customers in a single operation.")
+        .Produces<BulkOperationResultDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         // Get customer orders
         group.MapGet("/{id:guid}/orders", async (

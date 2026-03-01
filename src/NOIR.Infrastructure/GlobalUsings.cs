@@ -181,6 +181,8 @@ global using NOIR.Application.Features.Reports;
 global using NOIR.Application.Features.Reports.DTOs;
 global using NOIR.Application.Features.Wishlists.DTOs;
 global using NOIR.Application.Features.Wishlists.Queries.GetWishlistById;
+global using NOIR.Application.Features.Dashboard;
+global using NOIR.Application.Features.Dashboard.DTOs;
 
 // NOIR Domain
 global using NOIR.Domain.Common;

@@ -35,6 +35,54 @@ export interface MediaFile {
   createdAt: string
 }
 
+// List DTO (lightweight, for grid/list views)
+export interface MediaFileListItem {
+  id: string
+  shortId: string
+  slug: string
+  originalFileName: string
+  folder: string
+  defaultUrl: string
+  thumbHash?: string
+  dominantColor?: string
+  width: number
+  height: number
+  format: string
+  mimeType: string
+  sizeBytes: number
+  altText?: string
+  createdAt: string
+}
+
+// Paginated result
+export interface PagedMediaResult {
+  items: MediaFileListItem[]
+  totalCount: number
+  pageIndex: number
+  pageSize: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
+// Query params
+export interface MediaFilesParams {
+  search?: string
+  fileType?: string
+  folder?: string
+  sortBy?: string
+  sortOrder?: string
+  page?: number
+  pageSize?: number
+}
+
+// Bulk operation result
+export interface BulkMediaOperationResult {
+  success: number
+  failed: number
+  errors: { mediaFileId: string; fileName?: string; message: string }[]
+}
+
 // Upload result from media upload endpoint
 export interface MediaUploadResult {
   success: boolean

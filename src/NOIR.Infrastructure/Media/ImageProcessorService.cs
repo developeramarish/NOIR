@@ -343,12 +343,19 @@ public class ImageProcessorService : IImageProcessor, IScopedService
 
             // Save to storage
             var storagePath = await _fileStorage.UploadAsync(fileName, ms, storageFolder, ct);
-            var url = _fileStorage.GetPublicUrl(storagePath) ?? storagePath;
 
-            // Apply CDN base URL if configured
+            // Resolve public URL: CDN takes precedence over storage provider's public URL.
+            // GetPublicUrl may return an absolute cloud URL (e.g. S3/Azure) or a relative local path.
+            // If CdnBaseUrl is configured, always use it with the relative storagePath (not the already-resolved URL)
+            // to avoid double-prefixing absolute URLs.
+            string url;
             if (!string.IsNullOrEmpty(_settings.CurrentValue.CdnBaseUrl))
             {
-                url = $"{_settings.CurrentValue.CdnBaseUrl.TrimEnd('/')}/{fileName}";
+                url = $"{_settings.CurrentValue.CdnBaseUrl.TrimEnd('/')}/{storagePath}";
+            }
+            else
+            {
+                url = _fileStorage.GetPublicUrl(storagePath) ?? storagePath;
             }
 
             return new ImageVariantInfo

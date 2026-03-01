@@ -431,12 +431,13 @@ public class ExceptionHandlingMiddlewareTests
         await middleware.InvokeAsync(context);
 
         // Assert - Validation failures are user errors (400), log at Information level
+        // Middleware passes exception.InnerException ?? exception to LogInformation
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((o, t) => true),
-                null,
+                exception,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }

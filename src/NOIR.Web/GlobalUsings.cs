@@ -56,6 +56,7 @@ global using Wolverine.FluentValidation;
 
 // NOIR Application
 global using NOIR.Application;
+global using NOIR.Application.Common.DTOs;
 global using NOIR.Application.Common.Exceptions;
 global using NOIR.Application.Modules;
 global using NOIR.Application.Common.Interfaces;
@@ -165,3 +166,15 @@ global using NOIR.Application.Features.Reports.Queries.ExportReport;
 
 // NOIR Application - Shipping
 global using NOIR.Application.Features.Shipping.DTOs;
+
+// NOIR Application - Dashboard
+global using NOIR.Application.Features.Dashboard.DTOs;
+
+// NOIR Application - Search
+global using NOIR.Application.Features.Search.DTOs;
+global using NOIR.Application.Features.Search.Queries;
+global using NOIR.Application.Features.Dashboard.Queries.GetDashboardMetrics;
+global using NOIR.Application.Features.Dashboard.Queries.GetCoreDashboard;
+global using NOIR.Application.Features.Dashboard.Queries.GetEcommerceDashboard;
+global using NOIR.Application.Features.Dashboard.Queries.GetBlogDashboard;
+global using NOIR.Application.Features.Dashboard.Queries.GetInventoryDashboard;

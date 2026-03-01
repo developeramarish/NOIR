@@ -4,6 +4,7 @@
  * Provides methods for managing orders and order lifecycle transitions.
  */
 import { apiClient } from './apiClient'
+import { downloadFileExport } from '@/lib/fileExport'
 import type {
   OrderDto,
   OrderNoteDto,
@@ -171,4 +172,47 @@ export const searchProductVariants = async (params: { search?: string; categoryI
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
   const query = queryParams.toString()
   return apiClient<ProductVariantSearchResult>(`/products/variants/search${query ? `?${query}` : ''}`)
+}
+
+// ─── Export ─────────────────────────────────────────────────────────────
+
+// ─── Bulk Operations ────────────────────────────────────────────────────
+
+export interface OrderBulkOperationResult {
+  success: number
+  failed: number
+  errors: { entityId: string; entityName: string | null; message: string }[]
+}
+
+export const bulkConfirmOrders = async (orderIds: string[]): Promise<OrderBulkOperationResult> => {
+  return apiClient<OrderBulkOperationResult>('/orders/bulk-confirm', {
+    method: 'POST',
+    body: JSON.stringify({ orderIds }),
+  })
+}
+
+export const bulkCancelOrders = async (orderIds: string[], reason?: string): Promise<OrderBulkOperationResult> => {
+  return apiClient<OrderBulkOperationResult>('/orders/bulk-cancel', {
+    method: 'POST',
+    body: JSON.stringify({ orderIds, reason }),
+  })
+}
+
+// ─── Export ─────────────────────────────────────────────────────────────
+
+export const exportOrders = async (params?: {
+  format?: 'CSV' | 'Excel'
+  status?: string
+  customerEmail?: string
+  fromDate?: string
+  toDate?: string
+}): Promise<void> => {
+  const queryParams = new URLSearchParams()
+  if (params?.format) queryParams.append('format', params.format)
+  if (params?.status) queryParams.append('status', params.status)
+  if (params?.customerEmail) queryParams.append('customerEmail', params.customerEmail)
+  if (params?.fromDate) queryParams.append('fromDate', params.fromDate)
+  if (params?.toDate) queryParams.append('toDate', params.toDate)
+  const ext = params?.format === 'Excel' ? 'xlsx' : 'csv'
+  await downloadFileExport(`/api/orders/export?${queryParams}`, `orders.${ext}`)
 }

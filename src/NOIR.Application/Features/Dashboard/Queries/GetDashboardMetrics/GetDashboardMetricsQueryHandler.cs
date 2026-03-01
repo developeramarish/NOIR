@@ -1,5 +1,3 @@
-using NOIR.Application.Features.Dashboard.DTOs;
-
 namespace NOIR.Application.Features.Dashboard.Queries.GetDashboardMetrics;
 
 /// <summary>

@@ -166,8 +166,8 @@ public class BulkPublishProductsCommandHandlerTests
         result.Value.Success.Should().Be(1);
         result.Value.Failed.Should().Be(2);
         result.Value.Errors.Should().HaveCount(2);
-        result.Value.Errors.Should().Contain(e => e.ProductId == activeId);
-        result.Value.Errors.Should().Contain(e => e.ProductId == archivedId);
+        result.Value.Errors.Should().Contain(e => e.EntityId == activeId);
+        result.Value.Errors.Should().Contain(e => e.EntityId == archivedId);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class BulkPublishProductsCommandHandlerTests
         result.Value.Success.Should().Be(1);
         result.Value.Failed.Should().Be(1);
         result.Value.Errors.Should().HaveCount(1);
-        result.Value.Errors[0].ProductId.Should().Be(nonExistentId);
+        result.Value.Errors[0].EntityId.Should().Be(nonExistentId);
         result.Value.Errors[0].Message.Should().Contain("not found");
     }
 
