@@ -81,7 +81,6 @@ pnpm run lint
 |----------|-------------|
 | [Architecture](architecture.md) | Project structure and patterns |
 | [React 19 + Query Patterns](architecture.md#react-19--tanstack-query-performance-patterns) | useDeferredValue, useTransition, optimistic mutations |
-| [UI/UX Enhancements](ui-ux-enhancements.md) | Accessibility, offline support, command palette, and more |
 | [UI/UX Patterns](architecture.md#uiux-standardization-patterns) | Required UI standardization patterns |
 | [API Types](api-types.md) | Type generation from backend |
 | [Localization Guide](localization-guide.md) | Managing translations and adding languages |

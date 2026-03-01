@@ -2,7 +2,7 @@
 
 > Your guide to navigating all NOIR documentation.
 
-**Last Updated:** 2026-02-27
+**Last Updated:** 2026-02-28
 
 ---
 
@@ -63,7 +63,6 @@
 | Document | Topic |
 |----------|-------|
 | [cache-busting-best-practices.md](backend/research/cache-busting-best-practices.md) | Cache invalidation |
-| [hierarchical-audit-logging-comparison-2025.md](backend/research/hierarchical-audit-logging-comparison-2025.md) | Audit design |
 | [role-permission-system-research.md](backend/research/role-permission-system-research.md) | RBAC/ReBAC patterns (Consolidated) |
 | [seo-meta-and-hint-text-best-practices.md](backend/research/seo-meta-and-hint-text-best-practices.md) | SEO best practices |
 | [validation-unification-plan.md](backend/research/validation-unification-plan.md) | Validation strategy |
@@ -82,11 +81,7 @@
 | [api-types.md](frontend/api-types.md) | Type generation from backend |
 | [localization-guide.md](frontend/localization-guide.md) | i18n management |
 | [COLOR_SCHEMA_GUIDE.md](frontend/COLOR_SCHEMA_GUIDE.md) | Color system |
-| [ui-ux-enhancements.md](frontend/ui-ux-enhancements.md) | 11 UI/UX features |
-| [ecommerce-ui.md](frontend/ecommerce-ui.md) | E-commerce components |
-| [vibe-kanban-integration.md](frontend/vibe-kanban-integration.md) | Task management |
 | [audit-storybook-coverage.md](frontend/audit-storybook-coverage.md) | Storybook coverage audit |
-| [audit-ui-patterns.md](frontend/audit-ui-patterns.md) | UI patterns audit |
 | [design-standards.md](frontend/design-standards.md) | Design standards and guidelines |
 
 ### Patterns (`frontend/patterns/`)
@@ -94,12 +89,6 @@
 | Document | Purpose |
 |----------|---------|
 | [form-resolver-type-assertions.md](frontend/patterns/form-resolver-type-assertions.md) | Zod + react-hook-form type assertion pattern |
-
-### Designs (`frontend/designs/`)
-
-| Document | Purpose |
-|----------|---------|
-| [notification-dropdown-ui-design.md](frontend/designs/notification-dropdown-ui-design.md) | Notification UI |
 
 ---
 
@@ -111,12 +100,12 @@
 |----------|---------|
 | [README.md](testing/README.md) | Testing overview, conventions, and running tests |
 
-### Test Coverage Summary (2026-02-23)
+### Test Coverage Summary (2026-02-27)
 
-**Backend Tests:** 10,889+ tests across 4 test projects
-- 2,586 Domain unit tests
-- 7,483 Application unit tests
-- 788 Integration tests
+**Backend Tests:** 11,341+ tests across 4 test projects
+- 2,781 Domain unit tests
+- 7,732 Application unit tests
+- 796 Integration tests
 - 32 Architecture tests
 
 ---
@@ -135,9 +124,33 @@
 
 ## Designs (`designs/`)
 
-| Document | Status |
+### Admin Portal Enhancement
+
+| Document | Purpose |
 |----------|--------|
-| [payment-gateway-admin-ui.md](designs/payment-gateway-admin-ui.md) | Reference |
+| [admin-portal-enhancement-v28-feb.md](designs/admin-portal-enhancement-v28-feb.md) | Admin portal enhancement plan (Dashboard widgets, Media Manager, Search, Import/Export, Bulk Actions) |
+| [admin-portal-enhancement-v28-feb-design.md](designs/admin-portal-enhancement-v28-feb-design.md) | Detailed design spec with wireframes and component specs |
+| [admin-portal-workflow.md](designs/admin-portal-workflow.md) | Admin portal workflow design |
+
+### ERP Module Designs
+
+| Document | Purpose |
+|----------|--------|
+| [module-hr.md](designs/module-hr.md) | HR management module design (Ready) |
+| [module-crm.md](designs/module-crm.md) | CRM module design |
+| [module-pm.md](designs/module-pm.md) | Project Management module design |
+| [module-calendar.md](designs/module-calendar.md) | Calendar module design |
+| [module-support-center.md](designs/module-support-center.md) | Support Center (Knowledge Base + Helpdesk) module design |
+| [module-chat.md](designs/module-chat.md) | Chat/messaging module design |
+| [module-marketplace.md](designs/module-marketplace.md) | Marketplace module design |
+
+---
+
+## Roadmap
+
+| Document | Purpose |
+|----------|--------|
+| [roadmap.md](roadmap.md) | Product roadmap (Now/Next/Later framework) with module status |
 
 ---
 
@@ -154,16 +167,16 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Docs** | 48 |
+| **Total Docs** | ~55 |
 | **Backend Patterns** | 11 |
 | **Backend Architecture** | 2 |
-| **Backend Research** | 6 |
-| **Frontend Guides** | 13 |
+| **Backend Research** | 5 |
+| **Frontend Guides** | 9 |
 | **Testing Docs** | 1 |
 | **ADRs** | 3 |
-| **Designs** | 1 |
-| **Backend Tests** | 10,889+ |
+| **Designs** | 13 |
+| **Backend Tests** | 11,341+ |
 
 ---
 
-**Version:** 3.6 (Updated 2026-02-27 - Removed 11 stale/deleted docs; total 48)
+**Version:** 3.8 (Updated 2026-02-28 — Added all 13 design docs to index; total ~55)

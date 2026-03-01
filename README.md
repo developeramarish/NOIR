@@ -4,34 +4,37 @@
 
 **Enterprise-ready .NET 10 + React 19 SaaS Foundation**
 
-*Multi-tenancy • E-commerce • Clean Architecture • 11,341+ Tests*
+*Multi-tenancy | E-commerce | Clean Architecture | 11,341+ Tests*
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-11341+-green.svg?style=flat-square)](tests/)
+[![AI-Coded](https://img.shields.io/badge/AI--Coded-100%25-blueviolet?style=flat-square&logo=anthropic)](CLAUDE.md)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Tech Stack](#-tech-stack) • [Contributing](#-contributing)
+[Features](#features) | [Quick Start](#quick-start) | [Documentation](#documentation) | [Tech Stack](#tech-stack) | [Contributing](#contributing)
 
 </div>
 
 ---
 
-## 🎯 What is NOIR?
+## What is NOIR?
 
 NOIR is a **production-ready foundation** for building modern SaaS applications. It combines .NET 10's performance with React 19's cutting-edge features, wrapped in Clean Architecture principles.
 
+**100% AI-coded** — every line of code, every test, every document in this repository was generated through AI-assisted development using [Claude Code](https://claude.ai/). NOIR demonstrates that AI can build enterprise-grade, production-quality software at scale.
+
 **Built for:**
-- 🏢 Multi-tenant B2B SaaS applications
-- 🛒 E-commerce platforms with payments
-- 🚀 Startups needing to ship fast with quality
-- 👥 Teams seeking best-practice patterns
-- 🎓 Developers learning enterprise architecture
+- Multi-tenant B2B SaaS applications
+- E-commerce platforms with payments
+- Startups needing to ship fast with quality
+- Teams seeking best-practice patterns
+- Developers learning enterprise architecture
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -39,7 +42,7 @@ NOIR is a **production-ready foundation** for building modern SaaS applications.
 - **Frontend:** Node.js 20+ ([Download](https://nodejs.org/)), pnpm 10+ ([Install](https://pnpm.io/installation))
 - **Database:** SQL Server 2022 (LocalDB on Windows, [Docker](https://hub.docker.com/_/microsoft-mssql-server) on macOS/Linux)
 
-### 🚀 One-Command Start
+### One-Command Start
 
 ```bash
 # Clone the repository
@@ -71,7 +74,7 @@ dotnet build src/NOIR.sln -c Release
 dotnet run --project src/NOIR.Web -c Release
 ```
 
-### 🌐 Access Points
+### Access Points
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
@@ -83,37 +86,37 @@ dotnet run --project src/NOIR.Web -c Release
 
 ---
 
-## ✨ Features
+## Features
 
-### 🏗️ Architecture
+### Architecture
 
 - **Clean Architecture** - Domain, Application, Infrastructure, Web layers
 - **Vertical Slice Architecture** - Features organized by use case, not layer
 - **CQRS** - Command/Query separation with Wolverine messaging
 - **Repository + Specification Pattern** - Reusable, testable queries
 
-### 🔐 Authentication & Authorization
+### Authentication & Authorization
 
 - **JWT + Refresh Tokens** - Secure authentication with token rotation
 - **Role-Based Access Control (RBAC)** - Flexible role management
 - **Permission-Based Authorization** - Granular `resource:action` permissions
 - **Multi-Factor Authentication Ready** - OTP infrastructure in place
 
-### 🏢 Multi-Tenancy
+### Multi-Tenancy
 
 - **Finbuckle.MultiTenant** - Enterprise-grade tenant isolation
 - **Automatic Query Filtering** - Transparent tenant data separation
 - **Tenant Resolution** - Header, claim, and host-based strategies
 - **Per-Tenant Customization** - Isolated settings and configurations
 
-### 📊 Audit & Monitoring
+### Audit & Monitoring
 
 - **3-Level Audit Logging** - HTTP request, Handler command, Entity change
 - **Activity Timeline** - Complete audit trail with before/after states
 - **Real-Time Logs** - SignalR streaming of Serilog logs
 - **Performance Monitoring** - Built-in performance behavior pipeline
 
-### 🔔 Real-Time Communication
+### Real-Time Communication
 
 - **SignalR Hubs** - Notifications and log streaming
 - **Server-Sent Events (SSE)** - Job progress and operation updates
@@ -122,21 +125,21 @@ dotnet run --project src/NOIR.Web -c Release
 - **Live Updates** - WebSocket-based instant updates
 - **Deploy Recovery** - Graceful shutdown with client reconnection
 
-### 📧 Email System
+### Email System
 
 - **Database-Driven Templates** - No .cshtml files, all in database
 - **Multi-Tenant Templates** - Copy-on-write template inheritance
 - **Variable Interpolation** - Mustache-style `{{variable}}` syntax
 - **FluentEmail + MailKit** - Reliable SMTP delivery
 
-### 🗃️ Data Management
+### Data Management
 
 - **Soft Delete** - Data safety with restore capability
 - **Bulk Operations** - High-performance batch processing
 - **Change Tracking** - Automatic audit of entity modifications
 - **Optimistic Concurrency** - Conflict detection and resolution
 
-### 🎨 Frontend Features
+### Frontend Features
 
 - **Modern UI** - shadcn/ui components with Tailwind CSS 4
 - **Dark/Light Mode** - System-aware theme switching
@@ -144,7 +147,7 @@ dotnet run --project src/NOIR.Web -c Release
 - **Type-Safe API** - Auto-generated TypeScript types
 - **Form Validation** - React Hook Form + Zod schemas
 
-### 🛒 E-commerce
+### E-commerce
 
 - **Product Catalog** - Products with variants, SKUs, and hierarchical categories
 - **Shopping Cart** - Guest and authenticated user support with cart merge
@@ -158,7 +161,7 @@ dotnet run --project src/NOIR.Web -c Release
 - **Promotions** - Discount codes, percentage/fixed, usage limits, date ranges
 - **Reports** - Revenue, orders, inventory, product performance analytics
 
-### 💳 Payment Processing
+### Payment Processing
 
 - **Multi-Gateway Support** - Pluggable payment provider architecture
 - **Transaction Tracking** - Full payment lifecycle with status transitions
@@ -167,34 +170,34 @@ dotnet run --project src/NOIR.Web -c Release
 - **COD Support** - Cash-on-delivery with collection confirmation
 - **Real-Time Updates** - SignalR payment status notifications
 
-### 📦 Content Management
+### Content Management
 
 - **Blog CMS** - Posts, categories, tags with rich editor
 - **Rich Content Rendering** - Syntax highlighting (Shiki), math formulas (KaTeX), diagrams (Mermaid)
 - **Media Management** - Image upload with processing
 - **File Storage** - Local, Azure Blob, or AWS S3 support
 
-### 🔌 Feature Management
+### Feature Management
 
 - **Module System** - 31 modules (8 core + 23 toggleable)
 - **Two-Layer Override** - Platform availability + tenant enable → effective state
 - **Endpoint & Command Gating** - Feature-check middleware with caching
 - **Frontend Integration** - `useFeatures()` hook, `FeatureGuard` component, sidebar filtering
 
-### 🔗 Webhooks & Events
+### Webhooks & Events
 
 - **Outbound Webhooks** - Subscription management with event filtering
 - **Delivery Tracking** - Retry logic, delivery status monitoring
 - **Domain Events** - Event notification handlers for system-wide reactivity
 
-### 📱 Progressive Web App
+### Progressive Web App
 
 - **Installable** - iOS, Android, and Desktop via `vite-plugin-pwa`
 - **Offline Support** - Static offline page with retry capability
 - **Auto-Update** - Service worker update prompts
 - **Smart Caching** - NetworkFirst for API, CacheFirst for assets
 
-### 🔧 Developer Experience
+### Developer Experience
 
 - **Hot Reload** - Backend and frontend live reloading
 - **Type Generation** - Swagger → TypeScript types
@@ -203,24 +206,23 @@ dotnet run --project src/NOIR.Web -c Release
 - **Architecture Tests** - Enforce layer boundaries
 - **Comprehensive Docs** - 15,000+ lines of documentation
 - **AI-Assisted** - SuperClaude Framework integration
-- **Progressive Web App** — installable on iOS, Android, and Desktop with offline-ready manifest
-- **Brand Kit**: `brand/noir-brandkit.html` — complete brand reference (logo, colors, typography, mockups)
+- **Brand Kit** - `brand/noir-brandkit.html` complete brand reference (logo, colors, typography, mockups)
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-### 📖 Core Guides
+### Core Guides
 
 | Document | Purpose |
 |----------|---------|
-| **[📍 Documentation Index](docs/DOCUMENTATION_INDEX.md)** | Your navigation hub for all documentation |
-| **[📚 Knowledge Base](docs/KNOWLEDGE_BASE.md)** | Comprehensive codebase reference with deep-dives |
-| **[🗺️ Project Index](docs/PROJECT_INDEX.md)** | Complete project navigation and structure |
-| **[📋 Feature Catalog](docs/FEATURE_CATALOG.md)** | All features, commands, and endpoints |
-| **[🔧 Tech Stack](docs/TECH_STACK.md)** | Technologies with versions and rationale |
+| [Documentation Index](docs/DOCUMENTATION_INDEX.md) | Your navigation hub for all documentation |
+| [Knowledge Base](docs/KNOWLEDGE_BASE.md) | Comprehensive codebase reference with deep-dives |
+| [Project Index](docs/PROJECT_INDEX.md) | Complete project navigation and structure |
+| [Feature Catalog](docs/FEATURE_CATALOG.md) | All features, commands, and endpoints |
+| [Tech Stack](docs/TECH_STACK.md) | Technologies with versions and rationale |
 
-### 🎯 Quick Links
+### Quick Links
 
 <table>
 <tr>
@@ -248,14 +250,21 @@ dotnet run --project src/NOIR.Web -c Release
 </tr>
 </table>
 
-### 🤖 AI Assistant Guides
+### Roadmap & Designs
+
+| Document | Description |
+|----------|-------------|
+| [Admin Portal Enhancement](docs/designs/admin-portal-enhancement-v28-feb.md) | Dashboard widgets, Media Manager, Global Search, Import/Export, Bulk Actions |
+| [Product Roadmap](docs/roadmap/README.md) | 5-phase plan: Core → E-commerce → Admin Enhancement → ERP Modules → Marketplace |
+
+### AI Assistant Guides
 
 - **[CLAUDE.md](CLAUDE.md)** - Claude Code specific instructions
 - **[AGENTS.md](AGENTS.md)** - Universal AI agent guidelines
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 <table>
 <tr>
@@ -298,30 +307,30 @@ dotnet run --project src/NOIR.Web -c Release
 </tr>
 </table>
 
-**[📋 Complete Stack](docs/TECH_STACK.md)** - Detailed technology reference with versions and rationale
+**[Complete Stack](docs/TECH_STACK.md)** - Detailed technology reference with versions and rationale
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 NOIR/
-├── 📦 src/
-│   ├── NOIR.Domain/           # 🎯 Entities, interfaces, value objects
-│   ├── NOIR.Application/      # 📋 Commands, queries, DTOs, handlers
-│   ├── NOIR.Infrastructure/   # 🔧 EF Core, services, persistence
-│   └── NOIR.Web/              # 🌐 API endpoints, middleware, SPA host
-│       └── frontend/          # ⚛️  React application (pnpm)
-│           ├── .storybook/    # 📖 Storybook configuration
-│           └── src/uikit/     # 📚 97 component stories
-├── ✅ tests/                  # 11,341+ tests (Unit, Integration, Architecture)
-├── 📚 docs/                   # 15,000+ lines of documentation
-└── ⚙️  .github/               # CI/CD workflows and templates
+├── src/
+│   ├── NOIR.Domain/           # Entities, interfaces, value objects
+│   ├── NOIR.Application/      # Commands, queries, DTOs, handlers
+│   ├── NOIR.Infrastructure/   # EF Core, services, persistence
+│   └── NOIR.Web/              # API endpoints, middleware, SPA host
+│       └── frontend/          # React application (pnpm)
+│           ├── .storybook/    # Storybook configuration
+│           └── src/uikit/     # 97 component stories
+├── tests/                     # 11,341+ tests (Unit, Integration, Architecture)
+├── docs/                      # 15,000+ lines of documentation
+└── .github/                   # CI/CD workflows and templates
 ```
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Backend Test Coverage
 
@@ -354,7 +363,7 @@ See [Testing Documentation](docs/testing/README.md) for comprehensive testing gu
 
 ---
 
-## 🚀 Common Commands
+## Common Commands
 
 <table>
 <tr>
@@ -440,32 +449,11 @@ Once installed, just speak naturally in Claude Code within this project:
 
 Run `/sc:help` to see all available commands, or `/sc:recommend "your task"` for suggestions.
 
-### UI/UX Design Intelligence
-
-The `/ui-ux-pro-max` skill provides comprehensive UI/UX capabilities:
-
-- **Design Research**: Color palettes, typography, UX patterns, style guidelines
-- **Component Generation**: Production-ready React components with shadcn/ui
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
-- **Responsive Design**: Mobile-first patterns and breakpoint optimization
-- **50+ Styles**: Glassmorphism, neumorphism, brutalism, minimalism, and more
-
-**Installation:**
-```bash
-# Install the ui-ux-pro-max skill
-npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
-```
-
-**Example prompts:**
-- "What color palette for e-commerce?" → Design research with color schemes
-- "Build a product card component" → React/TypeScript implementation
-- "Review my navbar for accessibility" → Comprehensive UX audit
-
-> Skill routing hints are in `CLAUDE.md` under SuperClaude Framework.
+The project also integrates the [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) skill for design research, component generation, accessibility auditing, and 50+ UI styles. See `CLAUDE.md` for routing hints.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -482,24 +470,27 @@ We welcome contributions! Here's how to get started:
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 💝 Acknowledgments
+## Acknowledgments
+
+**AI-Powered Development:** This entire codebase — architecture, implementation, tests, and documentation — was generated using [Claude Code](https://claude.ai/) by Anthropic. NOIR showcases what's possible with AI-assisted software engineering.
 
 NOIR builds on the shoulders of giants:
 
-- **[Clean Architecture](https://github.com/jasontaylordev/CleanArchitecture)** by Jason Taylor - Architectural foundation
-- **[Wolverine](https://wolverinefx.net/)** - CQRS messaging framework
-- **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful React components
-- **[Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant/)** - Multi-tenancy framework
+- **[Clean Architecture](https://github.com/jasontaylordev/CleanArchitecture)** by Jason Taylor — Architectural foundation
+- **[Wolverine](https://wolverinefx.net/)** — CQRS messaging framework
+- **[shadcn/ui](https://ui.shadcn.com/)** — Beautiful React components
+- **[Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant/)** — Multi-tenancy framework
+- **[SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework/)** — AI agent skill routing
 
 ---
 
-## 🌟 Why NOIR?
+## Why NOIR?
 
 | Aspect | NOIR Advantage |
 |--------|----------------|
@@ -514,8 +505,8 @@ NOIR builds on the shoulders of giants:
 
 <div align="center">
 
-**Built with ❤️ by the NOIR Team**
+**100% AI-Coded with Claude Code**
 
-[⭐ Star on GitHub](https://github.com/NOIR-Solution/NOIR) • [📖 Read the Docs](docs/) • [🐛 Report Bug](https://github.com/NOIR-Solution/NOIR/issues) • [💡 Request Feature](https://github.com/NOIR-Solution/NOIR/issues)
+[Star on GitHub](https://github.com/NOIR-Solution/NOIR) · [Read the Docs](docs/) · [Product Roadmap](docs/roadmap/README.md) · [Report Bug](https://github.com/NOIR-Solution/NOIR/issues) · [Request Feature](https://github.com/NOIR-Solution/NOIR/issues)
 
 </div>

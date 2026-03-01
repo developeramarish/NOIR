@@ -1,5 +1,20 @@
 # CLAUDE.md Changelog
 
+## [3.4] - 2026-02-28
+
+### Changed
+- **Documentation overhaul**: Fixed all stale docs, removed references to 8 deleted files
+- **docs/README.md**: Rewritten with accurate structure tree (~55 files), removed all dead links
+- **docs/DOCUMENTATION_INDEX.md**: v3.8 — added all 13 design docs + roadmap section
+- **SETUP.md**: Fixed test count (6,750 → 11,341+), fixed git clone URLs (yourusername → NOIR-Solution)
+- **README.md**: Added "100% AI-Coded" badge, AI attribution, cleaned emoji headers, added roadmap link
+- **diagrams.md**: Fixed EF Core version (8 → 10), updated date
+
+### Added
+- **docs/roadmap/README.md**: Product roadmap with 5 phases (Core Foundation → Marketplace & Ecosystem)
+- **.github/workflows/sync-wiki.yml**: Auto-sync docs/ to GitHub Wiki on push to main (with _Sidebar.md + Home.md)
+- Roadmap reference in CLAUDE.md Documentation section
+
 ## [3.1.1] - 2026-02-26
 
 ### Changed

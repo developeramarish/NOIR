@@ -984,7 +984,6 @@ public void Domain_Should_Not_HaveDependencyOn_Application()
 | [JWT Refresh Token](backend/patterns/jwt-refresh-token.md) | Token rotation and security |
 | [Tenant Isolation](backend/architecture/tenant-id-interceptor.md) | Multi-tenancy implementation |
 | [Architecture Diagrams](architecture/diagrams.md) | ER, CQRS flow, multi-tenancy, order lifecycle diagrams |
-| [Payment Gateway Design](../docs/designs/payment-gateway-admin-ui.md) | Payment gateway admin UI |
 
 ### Frontend
 
@@ -1009,7 +1008,6 @@ public void Domain_Should_Not_HaveDependencyOn_Application()
 | Document | Topic |
 |----------|-------|
 | [Role Permission System](backend/research/role-permission-system-research.md) | Role/permission patterns |
-| [Hierarchical Audit Comparison](backend/research/hierarchical-audit-logging-comparison-2025.md) | Audit system design |
 | [Validation Unification Plan](backend/research/validation-unification-plan.md) | Unified validation strategy |
 
 ---
@@ -1067,7 +1065,7 @@ pnpm build-storybook      # Static build
 | **Validation** | `*Validator.cs` | [Validation Plan](backend/research/validation-unification-plan.md) |
 | **Email Templates** | `EmailTemplate` entity | Knowledge Base |
 | **SignalR Hubs** | `NotificationHub`, `DeveloperLogHub` | Knowledge Base |
-| **Payment Processing** | `Features/Payments/`, `Services/Payment/` | [Payment Gateway Design](../docs/designs/payment-gateway-admin-ui.md) |
+| **Payment Processing** | `Features/Payments/`, `Services/Payment/` | Knowledge Base |
 
 ---
 

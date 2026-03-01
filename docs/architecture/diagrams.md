@@ -1,6 +1,6 @@
 # NOIR Architecture Diagrams
 
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-02-28
 
 These diagrams document the core architecture of the NOIR e-commerce platform. All diagrams use Mermaid syntax and can be rendered in GitHub, VS Code (with Mermaid extension), or any Mermaid-compatible viewer.
 
@@ -753,7 +753,7 @@ BaseEntity<TId>                    -- Id, DomainEvents
 | **UI Components** | shadcn/ui, Tailwind CSS 4, Radix UI | Component library |
 | **API** | ASP.NET Core Minimal APIs | HTTP endpoints |
 | **Message Bus** | Wolverine | CQRS command/query routing |
-| **ORM** | EF Core 8 | Database access |
+| **ORM** | EF Core 10 | Database access |
 | **Multi-Tenancy** | Finbuckle.MultiTenant | Tenant isolation |
 | **Validation** | FluentValidation | Command/query validation |
 | **Database** | SQL Server | Persistence |

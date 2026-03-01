@@ -2332,7 +2332,6 @@ dotnet test --collect:"XPlat Code Coverage"
 
 | Document | Path | Description |
 |----------|------|-------------|
-| Audit Logging Comparison | `docs/backend/research/hierarchical-audit-logging-comparison-2025.md` | Technology comparison |
 | Role & Permission Systems | `docs/backend/research/role-permission-system-research.md` | RBAC/ReBAC patterns (Consolidated) |
 | Cache Busting | `docs/backend/research/cache-busting-best-practices.md` | Frontend cache strategies |
 | SEO Best Practices | `docs/backend/research/seo-meta-and-hint-text-best-practices.md` | SEO meta and hint text |
@@ -2354,13 +2353,6 @@ dotnet test --collect:"XPlat Code Coverage"
 | API Types | `docs/frontend/api-types.md` | Type generation |
 | Localization | `docs/frontend/localization-guide.md` | i18n setup |
 | Color Schema | `docs/frontend/COLOR_SCHEMA_GUIDE.md` | Color guidelines |
-| Vibe Kanban Integration | `docs/frontend/vibe-kanban-integration.md` | Task management integration |
-
-### Frontend Designs
-
-| Document | Path | Description |
-|----------|------|-------------|
-| Notification Dropdown | `docs/frontend/designs/notification-dropdown-ui-design.md` | Notification bell design |
 
 ### Architecture Decisions
 

@@ -77,7 +77,6 @@ dotnet ef migrations add MigrationName \
 
 | Topic | Document |
 |-------|----------|
-| Audit Logging Comparison | [research/hierarchical-audit-logging-comparison-2025.md](research/hierarchical-audit-logging-comparison-2025.md) |
 | Role & Permission Systems | [research/role-permission-system-research.md](research/role-permission-system-research.md) |
 | Vietnam Shipping | [research/vietnam-shipping-integration-2026.md](research/vietnam-shipping-integration-2026.md) |
 

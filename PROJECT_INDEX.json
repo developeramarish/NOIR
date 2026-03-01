@@ -225,12 +225,12 @@
       "json-enum-serialization", "jwt-refresh-token", "technical-checklist"
     ],
     "backend_research": [
-      "role-permission-system-research", "hierarchical-audit-logging-comparison-2025",
+      "role-permission-system-research",
       "validation-unification-plan", "cache-busting-best-practices", "seo-meta-and-hint-text-best-practices",
-      "ecommerce-ux-patterns-2026", "vietnam-shipping-integration-2026"
+      "vietnam-shipping-integration-2026"
     ],
     "frontend_guides": [
-      "architecture", "api-types", "localization-guide", "COLOR_SCHEMA_GUIDE", "vibe-kanban-integration", "ecommerce-ui", "ui-ux-enhancements"
+      "architecture", "api-types", "localization-guide", "COLOR_SCHEMA_GUIDE", "audit-storybook-coverage", "design-standards"
     ],
     "testing_guides": [
       "testing/README"

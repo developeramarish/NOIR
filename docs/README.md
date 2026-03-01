@@ -2,7 +2,7 @@
 
 > **Start Here:** [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-02-28
 
 ## Core Documentation
 
@@ -20,7 +20,7 @@
 
 ```
 docs/
-├── Core (7 files)
+├── Core (8 files)
 │   ├── README.md                    # This file
 │   ├── DOCUMENTATION_INDEX.md       # Master index
 │   ├── KNOWLEDGE_BASE.md            # Codebase reference
@@ -30,7 +30,7 @@ docs/
 │   ├── API_INDEX.md                 # API documentation
 │   └── ARCHITECTURE.md              # Architecture overview
 │
-├── backend/                          # .NET backend (20 files)
+├── backend/                          # .NET backend (18 files)
 │   ├── README.md                    # Backend overview
 │   ├── patterns/ (11 files)         # Implementation patterns
 │   │   ├── repository-specification.md
@@ -46,28 +46,23 @@ docs/
 │   │   └── attribute-category-inheritance.md
 │   ├── architecture/ (1 file)
 │   │   └── tenant-id-interceptor.md
-│   └── research/ (7 files)          # Research documents
+│   └── research/ (5 files)          # Research documents
 │       ├── cache-busting-best-practices.md
-│       ├── ecommerce-ux-patterns-2026.md
-│       ├── hierarchical-audit-logging-comparison-2025.md
-│       ├── role-permission-system-research.md   # Consolidated RBAC/ReBAC
+│       ├── role-permission-system-research.md
 │       ├── seo-meta-and-hint-text-best-practices.md
 │       ├── validation-unification-plan.md
 │       └── vietnam-shipping-integration-2026.md
 │
-├── frontend/ (10 files)              # React frontend
+├── frontend/ (8 files)              # React frontend
 │   ├── README.md
 │   ├── architecture.md
 │   ├── api-types.md
 │   ├── localization-guide.md
 │   ├── COLOR_SCHEMA_GUIDE.md
-│   ├── ui-ux-enhancements.md
-│   ├── ecommerce-ui.md
-│   ├── vibe-kanban-integration.md
-│   ├── patterns/ (1 file)
-│   │   └── form-resolver-type-assertions.md
-│   └── designs/ (1 file)
-│       └── notification-dropdown-ui-design.md
+│   ├── audit-storybook-coverage.md
+│   ├── design-standards.md
+│   └── patterns/ (1 file)
+│       └── form-resolver-type-assertions.md
 │
 ├── decisions/ (4 files)              # Architecture Decision Records
 │   ├── README.md
@@ -75,17 +70,19 @@ docs/
 │   ├── 002-frontend-ui-stack.md
 │   └── 003-vertical-slice-cqrs.md
 │
-├── designs/ (1 file)                 # Feature designs
-│   └── payment-gateway-admin-ui.md
+├── designs/ (11 files)               # Feature designs
+│   ├── admin-portal-enhancement-v28-feb.md
+│   ├── admin-portal-enhancement-v28-feb-design.md
+│   ├── admin-portal-workflow.md
+│   ├── module-hr.md
+│   ├── module-crm.md
+│   ├── module-pm.md
+│   ├── module-calendar.md
+│   ├── module-support-center.md
+│   ├── module-chat.md
+│   └── module-marketplace.md
 │
-├── plans/ (2 files)                  # Roadmaps
-│   ├── feature-roadmap-basic.md     # Phases 1-4 (Complete)
-│   └── feature-roadmap-ecommerce.md # E-commerce (In Progress)
-│
-├── research/ (3 files)               # General research
-│   ├── admin-portal-features-2026.md
-│   ├── admin-portal-ux-research.md
-│   └── essential-erp-cms-features-2026.md
+├── roadmap.md                        # Product roadmap (Now/Next/Later)
 │
 ├── architecture/ (1 file)            # Architecture diagrams
 │   └── diagrams.md
@@ -94,7 +91,7 @@ docs/
     └── README.md
 ```
 
-**Total: 53 documentation files**
+**Total: ~55 documentation files**
 
 ## Quick Links
 
@@ -112,15 +109,19 @@ docs/
 - [Architecture](frontend/architecture.md)
 - [API Types](frontend/api-types.md)
 - [Localization](frontend/localization-guide.md)
-- [UI/UX Enhancements](frontend/ui-ux-enhancements.md)
-- [E-commerce UI](frontend/ecommerce-ui.md)
+- [Design Standards](frontend/design-standards.md)
 - [Color Schema](frontend/COLOR_SCHEMA_GUIDE.md)
+- [Storybook Coverage](frontend/audit-storybook-coverage.md)
 
 ### Research
 
-- [Role Permission System](backend/research/role-permission-system-research.md) (Consolidated)
+- [Role Permission System](backend/research/role-permission-system-research.md)
 - [Vietnam Shipping Integration](backend/research/vietnam-shipping-integration-2026.md)
-- [E-commerce UX Patterns](backend/research/ecommerce-ux-patterns-2026.md)
+
+### Designs
+
+- [Admin Portal Enhancement](designs/admin-portal-enhancement-v28-feb.md)
+- [ERP Module Designs](designs/module-pm.md) (PM, CRM, HR, Helpdesk, DMS, Accounting, Calendar, Chat, Billing, Marketplace)
 
 ### Architecture Decisions
 

@@ -6,7 +6,6 @@ Complete setup instructions for Windows, macOS, and Linux development environmen
 
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Vibe Kanban Integration](#vibe-kanban-integration)
 - [Windows Setup](#windows-setup)
 - [macOS Setup](#macos-setup)
 - [Linux Setup](#linux-setup)
@@ -92,53 +91,6 @@ pnpm run dev
 **Note:** This assumes Docker is available for SQL Server and MailHog. For Windows LocalDB, see platform-specific setup below.
 
 ---
-
-## Vibe Kanban Integration
-
-This project uses **Vibe Kanban** for task management and sprint tracking. When using Vibe Kanban to manage this project, you have two options for starting the dev server:
-
-### Option 1: Batch File (Recommended for Windows)
-
-**Command:**
-```
-D:\TOP\GIT\NOIR\src\NOIR.Web\frontend\start-dev.bat
-```
-
-Or use the relative path in Vibe Kanban's "Edit Dev Script" dialog:
-```
-src\NOIR.Web\frontend\start-dev.bat
-```
-
-The `start-dev.bat` file is a convenience wrapper that:
-- Automatically changes to the correct directory (`%~dp0` = script's directory)
-- Runs `pnpm run dev:full` in the frontend folder
-- Works reliably with Vibe Kanban's dev server launcher
-
-### Option 2: Direct Command
-
-**Command:**
-```bash
-cd NOIR/src/NOIR.Web/frontend && pnpm run dev:full
-```
-
-**Note:** This may not work properly in Vibe Kanban's dev script UI on Windows due to command parsing issues. Use the batch file instead.
-
-**What it does:**
-1. Installs frontend dependencies (`pnpm install`) if `node_modules` is missing
-2. Checks if backend is already running (reuses existing instance)
-3. Builds backend (`dotnet build`) if backend not running
-4. Starts .NET backend (`dotnet run`)
-5. Waits for backend health check at `localhost:4000/api/health`
-6. Generates TypeScript API types from OpenAPI spec
-7. Starts Vite dev server on `localhost:3000`
-8. Handles graceful shutdown with Ctrl+C
-
-**Output URLs:**
-| URL | Purpose |
-|-----|---------|
-| http://localhost:3000 | Frontend (Vite dev server) |
-| http://localhost:4000 | Backend API |
-| http://localhost:4000/api/docs | API Documentation (Scalar) |
 | http://localhost:8025 | MailHog (email testing) |
 
 ### Prerequisites for Dev Script
@@ -204,7 +156,7 @@ Free full-featured edition for development:
 
 ```powershell
 # Clone repository
-git clone https://github.com/yourusername/noir.git
+git clone https://github.com/NOIR-Solution/NOIR.git
 cd noir
 
 # Restore dependencies
@@ -306,7 +258,7 @@ docker logs noir-sqlserver
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/noir.git
+git clone https://github.com/NOIR-Solution/NOIR.git
 cd noir
 
 # Restore dependencies
@@ -457,7 +409,7 @@ docker ps
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/noir.git
+git clone https://github.com/NOIR-Solution/NOIR.git
 cd noir
 
 # Restore and build
@@ -538,7 +490,7 @@ dotnet run --project src/NOIR.Web --environment Development
 ### All Tests
 
 ```bash
-# Run all 6,750+ tests
+# Run all 11,341+ tests
 dotnet test src/NOIR.sln
 ```
 
@@ -1002,3 +954,4 @@ Claude can:
 | Date | Version | Changes |
 |------|---------|---------|
 | 2025-01-02 | 1.0 | Initial comprehensive setup guide |
+| 2026-02-28 | 1.1 | Updated test count to 11,341+, fixed git clone URLs |

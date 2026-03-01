@@ -1,6 +1,6 @@
 # NOIR - Claude Code Instructions
 
-> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.2 (2026-02-27).
+> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.3 (2026-02-28).
 
 ## SuperClaude Framework
 
@@ -293,8 +293,12 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Backend Patterns** | `docs/backend/patterns/` |
 | **Frontend Guide** | `docs/frontend/` |
 | **Architecture Decisions** | `docs/decisions/` |
+| **Designs** | `docs/designs/` |
+| **Roadmap** | `docs/roadmap.md` |
 
-Research reports → `docs/backend/research/` or `docs/frontend/research/`.
+Research reports → `docs/backend/research/`.
+
+**Wiki:** Auto-synced from `docs/` via `.github/workflows/sync-wiki.yml` on push to main.
 
 ## File Boundaries
 
@@ -303,4 +307,4 @@ Research reports → `docs/backend/research/` or `docs/frontend/research/`.
 
 ---
 
-> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.2 (2026-02-27).
+> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.4 (2026-02-28).
