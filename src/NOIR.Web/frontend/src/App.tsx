@@ -67,6 +67,13 @@ const ReviewsPage = lazy(() => import('@/portal-app/reviews/features/review-list
 // Wishlists
 const WishlistAnalyticsPage = lazy(() => import('@/portal-app/wishlists/features/wishlist-analytics/WishlistAnalyticsPage'))
 const WishlistPage = lazy(() => import('@/portal-app/wishlists/features/wishlist-page/WishlistPage'))
+// CRM
+const CrmContactsPage = lazy(() => import('@/portal-app/crm/features/contacts/ContactsPage'))
+const CrmContactDetailPage = lazy(() => import('@/portal-app/crm/features/contacts/ContactDetailPage'))
+const CrmCompaniesPage = lazy(() => import('@/portal-app/crm/features/companies/CompaniesPage'))
+const CrmCompanyDetailPage = lazy(() => import('@/portal-app/crm/features/companies/CompanyDetailPage'))
+const PipelineKanbanPage = lazy(() => import('@/portal-app/crm/features/pipeline/PipelineKanbanPage'))
+const DealDetailPage = lazy(() => import('@/portal-app/crm/features/pipeline/DealDetailPage'))
 // HR
 const EmployeesPage = lazy(() => import('@/portal-app/hr/features/employee-list/EmployeesPage'))
 const EmployeeDetailPage = lazy(() => import('@/portal-app/hr/features/employee-detail/EmployeeDetailPage'))
@@ -193,6 +200,13 @@ export const App = () => {
                         {/* Wishlists */}
                         <Route path="ecommerce/wishlists" element={<Suspense fallback={<LazyFallback />}><WishlistAnalyticsPage /></Suspense>} />
                         <Route path="ecommerce/wishlists/manage" element={<Suspense fallback={<LazyFallback />}><WishlistPage /></Suspense>} />
+                        {/* CRM */}
+                        <Route path="crm/contacts" element={<Suspense fallback={<LazyFallback />}><CrmContactsPage /></Suspense>} />
+                        <Route path="crm/contacts/:id" element={<Suspense fallback={<LazyFallback />}><CrmContactDetailPage /></Suspense>} />
+                        <Route path="crm/companies" element={<Suspense fallback={<LazyFallback />}><CrmCompaniesPage /></Suspense>} />
+                        <Route path="crm/companies/:id" element={<Suspense fallback={<LazyFallback />}><CrmCompanyDetailPage /></Suspense>} />
+                        <Route path="crm/pipeline" element={<Suspense fallback={<LazyFallback />}><PipelineKanbanPage /></Suspense>} />
+                        <Route path="crm/pipeline/deals/:id" element={<Suspense fallback={<LazyFallback />}><DealDetailPage /></Suspense>} />
                         {/* HR */}
                         <Route path="hr/employees" element={<Suspense fallback={<LazyFallback />}><EmployeesPage /></Suspense>} />
                         <Route path="hr/employees/:id" element={<Suspense fallback={<LazyFallback />}><EmployeeDetailPage /></Suspense>} />

@@ -47,6 +47,8 @@ import {
   UsersRound,
   Image,
   GitBranch,
+  Contact,
+  Kanban,
 } from 'lucide-react'
 import {
   Badge,
@@ -152,6 +154,15 @@ const navSections: NavSection[] = [
       { titleKey: 'hr.tags.title', icon: Tags, path: '/portal/hr/tags', permission: Permissions.HrTagsRead, feature: 'Erp.Hr' },
       { titleKey: 'hr.orgChart.title', icon: GitBranch, path: '/portal/hr/org-chart', permission: Permissions.HrEmployeesRead, feature: 'Erp.Hr' },
       { titleKey: 'hr.reports.title', icon: BarChart3, path: '/portal/hr/reports', permission: Permissions.HrEmployeesRead, feature: 'Erp.Hr' },
+    ],
+  },
+  {
+    // CRM - Customer Relationship Management
+    labelKey: 'nav.crm',
+    items: [
+      { titleKey: 'crm.contacts.title', icon: Contact, path: '/portal/crm/contacts', permission: Permissions.CrmContactsRead, feature: 'Erp.Crm' },
+      { titleKey: 'crm.companies.title', icon: Building2, path: '/portal/crm/companies', permission: Permissions.CrmCompaniesRead, feature: 'Erp.Crm' },
+      { titleKey: 'crm.pipeline.title', icon: Kanban, path: '/portal/crm/pipeline', permission: Permissions.CrmLeadsRead, feature: 'Erp.Crm' },
     ],
   },
   {

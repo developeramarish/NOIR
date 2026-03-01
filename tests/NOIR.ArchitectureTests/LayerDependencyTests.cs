@@ -202,6 +202,10 @@ public class LayerDependencyTests
             .DoNotResideInNamespace("NOIR.Application.Features.Hr.Queries.ExportEmployees")
             .And()
             .DoNotResideInNamespace("NOIR.Application.Features.Hr.Commands.BulkAssignTags")
+            .And()
+            .DoNotResideInNamespace("NOIR.Application.Features.Crm.Queries.GetCrmDashboard")
+            .And()
+            .DoNotResideInNamespace("NOIR.Application.Features.Crm.Commands.UpdatePipeline")
             .ShouldNot()
             .HaveDependencyOn("Microsoft.EntityFrameworkCore")
             .GetResult();

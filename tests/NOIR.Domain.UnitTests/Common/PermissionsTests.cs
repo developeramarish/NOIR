@@ -384,7 +384,12 @@ public class PermissionsTests
             + Permissions.Groups.Search.Count
             + Permissions.Groups.HrEmployees.Count
             + Permissions.Groups.HrDepartments.Count
-            + Permissions.Groups.HrTags.Count;
+            + Permissions.Groups.HrTags.Count
+            + Permissions.Groups.CrmContacts.Count
+            + Permissions.Groups.CrmCompanies.Count
+            + Permissions.Groups.CrmLeads.Count
+            + Permissions.Groups.CrmPipeline.Count
+            + Permissions.Groups.CrmActivities.Count;
 
         // Assert
         Permissions.All.Should().HaveCount(expectedCount);

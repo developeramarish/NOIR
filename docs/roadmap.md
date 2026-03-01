@@ -16,10 +16,9 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 
 | Horizon | Theme | Status |
 |---------|-------|--------|
-| **Done** | Core Foundation + E-commerce + Admin Portal | Shipped |
-| **Now** | HR Module (first ERP module) | Design Ready |
-| **Next** | CRM Module | Design Draft |
-| **Later** | CRM → PM → Calendar → Support Center | Designs in Draft |
+| **Done** | Core Foundation + E-commerce + Admin Portal + HR Module | Shipped |
+| **Now** | CRM Module (second ERP module) | Design Ready |
+| **Later** | PM → Calendar → Support Center | Designs in Draft |
 | **Future** | Marketplace, Chat, Mobile, Plugin Ecosystem | Aspirational |
 
 ---
@@ -64,40 +63,47 @@ NOIR is a comprehensive, AI-built enterprise SaaS foundation — e-commerce core
 
 **Design Docs:** [Enhancement Plan](designs/admin-portal-enhancement-v28-feb.md) | [Design Spec](designs/admin-portal-enhancement-v28-feb-design.md)
 
----
-
-## Now — HR Module (First ERP Module)
+### HR Module (First ERP Module)
 
 > **Outcome:** Define "who is in the organization and where they sit" — the prerequisite for all people-dependent modules (CRM, PM, Support Center).
 
-| Deliverable | Design | Impl |
-|-------------|--------|------|
-| Employee profiles (CRUD, auto-code, User account sync) | Ready | **Phase 1 Done** |
-| Department hierarchy (tree, self-referencing, manager) | Ready | **Phase 1 Done** |
-| Employee tags with categories (Team/Skill/Project/etc.) | Ready | **Phase 2 Done** |
-| Org chart (d3-org-chart), bulk ops, import/export, reports | Ready | **Phase 3 Done** |
+- Employee profiles (CRUD, auto-code, hierarchy validation, User account sync)
+- Department hierarchy (tree, self-referencing, manager, reorder)
+- Employee tags with 7 categories (Team/Skill/Project/Location/Seniority/Employment/Custom)
+- Org chart with d3-org-chart (zoom, pan, search, PNG export)
+- Bulk operations (assign tags, change department)
+- Import/Export (CSV import, Excel/CSV export)
+- HR reports (headcount, tag distribution, employment type, status breakdown)
+- 11,639 backend tests
 
-**Design Doc:** [module-hr.md](designs/module-hr.md) — 100% complete (DTOs, sequence diagrams, NOIR pattern compliance, edge cases).
+**Design Doc:** [module-hr.md](designs/module-hr.md)
+
+---
+
+## Now — CRM Module (Second ERP Module)
+
+> **Outcome:** Sales teams can manage contacts, leads, and deal pipelines — building on HR's employee/department foundation.
+
+**Design Doc:** [module-crm.md](designs/module-crm.md) — Design Ready.
 
 ---
 
 ## Later — ERP Module Expansion
 
-> **Outcome:** Expand from e-commerce into full enterprise operations — customer relationships, project management, scheduling, and support.
+> **Outcome:** Expand from e-commerce into full enterprise operations — project management, scheduling, and support.
 
 ### Module Pipeline
 
 | # | Module | Problem It Solves | Depends On | Design | Design Doc |
 |---|--------|-------------------|------------|--------|------------|
-| 2 | **CRM** | Sales teams need to manage contacts, leads, and deal pipelines | HR | Ready | [module-crm.md](designs/module-crm.md) |
 | 3 | **Project Management** | Teams need to track tasks, milestones, and deadlines | HR | Ready | [module-pm.md](designs/module-pm.md) |
-| 4 | **Calendar** | Teams need event scheduling and resource booking | Standalone | Draft | [module-calendar.md](designs/module-calendar.md) |
+| 4 | **Calendar** | Teams need event scheduling and resource booking | Standalone | Ready | [module-calendar.md](designs/module-calendar.md) |
 | 5 | **Support Center** | Unified helpdesk ticketing + knowledge base for self-service and support | HR, Customers | Draft | [module-support-center.md](designs/module-support-center.md) |
 
 ### Dependency Graph
 
 ```
-HR (Next) ─────────┬──→ CRM
+HR (Done) ─────────┬──→ CRM (Now)
                    ├──→ Project Management
                    └──→ Support Center (+ Customers)
 
@@ -119,7 +125,7 @@ Standalone ────────┴──→ Calendar
 
 | Module | Problem It Solves | Design |
 |--------|-------------------|--------|
-| **Chat** | Internal teams need real-time messaging and channels | [Draft](designs/module-chat.md) |
+| **Chat** | Internal teams need real-time messaging and channels | [Ready](designs/module-chat.md) |
 | **Marketplace** | Vendors need multi-store management with commission tracking | [Draft](designs/module-marketplace.md) |
 | Plugin ecosystem | Tenants need custom extensions without forking | Not Started |
 | Third-party integrations | Connect to Zapier, external APIs, and webhooks | Not Started |

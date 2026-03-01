@@ -63,6 +63,7 @@ public static class ModuleNames
     public static class Erp
     {
         public const string Hr = "Erp.Hr";
+        public const string Crm = "Erp.Crm";
     }
 
     public static class Dashboard

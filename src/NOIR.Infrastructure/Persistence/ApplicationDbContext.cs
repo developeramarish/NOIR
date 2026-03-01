@@ -138,6 +138,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<EmployeeTag> EmployeeTags => Set<EmployeeTag>();
     public DbSet<EmployeeTagAssignment> EmployeeTagAssignments => Set<EmployeeTagAssignment>();
 
+    // CRM entities
+    public DbSet<CrmContact> CrmContacts => Set<CrmContact>();
+    public DbSet<CrmCompany> CrmCompanies => Set<CrmCompany>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<Pipeline> Pipelines => Set<Pipeline>();
+    public DbSet<CrmActivity> CrmActivities => Set<CrmActivity>();
+
     /// <summary>
     /// Configures global type conventions.
     /// This reduces repetitive configuration and ensures consistency.

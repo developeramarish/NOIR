@@ -194,6 +194,33 @@ public static class Permissions
     public const string HrTagsRead = "hr-tags:read";
     public const string HrTagsManage = "hr-tags:manage";
 
+    // CRM Contacts
+    public const string CrmContactsRead = "crm-contacts:read";
+    public const string CrmContactsCreate = "crm-contacts:create";
+    public const string CrmContactsUpdate = "crm-contacts:update";
+    public const string CrmContactsDelete = "crm-contacts:delete";
+
+    // CRM Companies
+    public const string CrmCompaniesRead = "crm-companies:read";
+    public const string CrmCompaniesCreate = "crm-companies:create";
+    public const string CrmCompaniesUpdate = "crm-companies:update";
+    public const string CrmCompaniesDelete = "crm-companies:delete";
+
+    // CRM Leads
+    public const string CrmLeadsRead = "crm-leads:read";
+    public const string CrmLeadsCreate = "crm-leads:create";
+    public const string CrmLeadsUpdate = "crm-leads:update";
+    public const string CrmLeadsManage = "crm-leads:manage";
+
+    // CRM Pipeline
+    public const string CrmPipelineManage = "crm-pipeline:manage";
+
+    // CRM Activities
+    public const string CrmActivitiesRead = "crm-activities:read";
+    public const string CrmActivitiesCreate = "crm-activities:create";
+    public const string CrmActivitiesUpdate = "crm-activities:update";
+    public const string CrmActivitiesDelete = "crm-activities:delete";
+
     // Search
     public const string SearchGlobal = "search:global";
 
@@ -296,6 +323,21 @@ public static class Permissions
         public static readonly IReadOnlyList<string> HrTags =
             [HrTagsRead, HrTagsManage];
 
+        public static readonly IReadOnlyList<string> CrmContacts =
+            [CrmContactsRead, CrmContactsCreate, CrmContactsUpdate, CrmContactsDelete];
+
+        public static readonly IReadOnlyList<string> CrmCompanies =
+            [CrmCompaniesRead, CrmCompaniesCreate, CrmCompaniesUpdate, CrmCompaniesDelete];
+
+        public static readonly IReadOnlyList<string> CrmLeads =
+            [CrmLeadsRead, CrmLeadsCreate, CrmLeadsUpdate, CrmLeadsManage];
+
+        public static readonly IReadOnlyList<string> CrmPipeline =
+            [CrmPipelineManage];
+
+        public static readonly IReadOnlyList<string> CrmActivities =
+            [CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete];
+
         public static readonly IReadOnlyList<string> Dashboard =
             [DashboardRead];
 
@@ -347,6 +389,13 @@ public static class Permissions
         HrEmployeesRead, HrEmployeesCreate, HrEmployeesUpdate, HrEmployeesDelete,
         HrDepartmentsRead, HrDepartmentsCreate, HrDepartmentsUpdate, HrDepartmentsDelete,
         HrTagsRead, HrTagsManage,
+
+        // ── CRM ────────────────────────────────────────────────────────
+        CrmContactsRead, CrmContactsCreate, CrmContactsUpdate, CrmContactsDelete,
+        CrmCompaniesRead, CrmCompaniesCreate, CrmCompaniesUpdate, CrmCompaniesDelete,
+        CrmLeadsRead, CrmLeadsCreate, CrmLeadsUpdate, CrmLeadsManage,
+        CrmPipelineManage,
+        CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete,
 
         // ── Content ────────────────────────────────────────────────────
         BlogPostsRead, BlogPostsCreate, BlogPostsUpdate, BlogPostsDelete, BlogPostsPublish,
@@ -460,7 +509,13 @@ public static class Permissions
         // HR within tenant
         HrEmployeesRead, HrEmployeesCreate, HrEmployeesUpdate, HrEmployeesDelete,
         HrDepartmentsRead, HrDepartmentsCreate, HrDepartmentsUpdate, HrDepartmentsDelete,
-        HrTagsRead, HrTagsManage
+        HrTagsRead, HrTagsManage,
+        // CRM within tenant
+        CrmContactsRead, CrmContactsCreate, CrmContactsUpdate, CrmContactsDelete,
+        CrmCompaniesRead, CrmCompaniesCreate, CrmCompaniesUpdate, CrmCompaniesDelete,
+        CrmLeadsRead, CrmLeadsCreate, CrmLeadsUpdate, CrmLeadsManage,
+        CrmPipelineManage,
+        CrmActivitiesRead, CrmActivitiesCreate, CrmActivitiesUpdate, CrmActivitiesDelete
     ];
 
     /// <summary>
@@ -630,7 +685,25 @@ public static class Permissions
             HrDepartmentsUpdate,
             HrDepartmentsDelete,
             HrTagsRead,
-            HrTagsManage
+            HrTagsManage,
+            // CRM within tenant
+            CrmContactsRead,
+            CrmContactsCreate,
+            CrmContactsUpdate,
+            CrmContactsDelete,
+            CrmCompaniesRead,
+            CrmCompaniesCreate,
+            CrmCompaniesUpdate,
+            CrmCompaniesDelete,
+            CrmLeadsRead,
+            CrmLeadsCreate,
+            CrmLeadsUpdate,
+            CrmLeadsManage,
+            CrmPipelineManage,
+            CrmActivitiesRead,
+            CrmActivitiesCreate,
+            CrmActivitiesUpdate,
+            CrmActivitiesDelete
         };
 
         /// <summary>

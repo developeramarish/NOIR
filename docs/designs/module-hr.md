@@ -337,6 +337,48 @@ Employee can be linked to User later via `LinkEmployeeToUserCommand`.
 
 ---
 
+## Validation Rules
+
+### Employee
+
+| Field | Rule |
+|-------|------|
+| `FirstName` | Required, 1-100 chars |
+| `LastName` | Required, 1-100 chars |
+| `Email` | Required, valid email format, max 256, unique per tenant |
+| `Phone` | Optional, max 20 chars |
+| `DepartmentId` | Required, must exist and belong to tenant, department must be active |
+| `Position` | Optional, max 100 chars |
+| `ManagerId` | Optional. If set: must exist, must be active, no circular reference, depth <= 20 |
+| `JoinDate` | Required |
+| `EndDate` | Optional. Required when deactivating. Must be >= JoinDate |
+| `Status` | Required, valid `EmployeeStatus` enum |
+| `EmploymentType` | Required, valid `EmploymentType` enum |
+| `Notes` | Optional, max 2000 chars |
+| `CreateUserAccount` | If true: email must not already have a User account in tenant |
+
+### Department
+
+| Field | Rule |
+|-------|------|
+| `Name` | Required, 1-200 chars, unique per parent + tenant |
+| `Code` | Required, 1-20 chars, unique per tenant, uppercase alphanumeric |
+| `Description` | Optional, max 500 chars |
+| `ManagerId` | Optional. If set: must be active Employee in tenant |
+| `ParentDepartmentId` | Optional. If set: must exist, no circular reference, depth <= 20 |
+| `SortOrder` | Required, >= 0 |
+
+### Tag
+
+| Field | Rule |
+|-------|------|
+| `Name` | Required, 1-100 chars, unique per tenant |
+| `Category` | Required, valid `EmployeeTagCategory` enum. Cannot be changed after creation |
+| `Color` | Required, valid hex format (e.g. "#3B82F6"), max 7 chars |
+| `Description` | Optional, max 500 chars |
+
+---
+
 ## DTOs (Response Shapes)
 
 ### EmployeeDto (detail view — `GetEmployeeByIdQuery`)

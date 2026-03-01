@@ -346,6 +346,23 @@ public static class DependencyInjection
         services.AddBeforeStateResolver<EmployeeTagDto, GetEmployeeTagByIdQuery>(
             targetId => new GetEmployeeTagByIdQuery(Guid.Parse(targetId.ToString()!)));
 
+        // CRM before-state resolvers
+        services.AddBeforeStateResolver<NOIR.Application.Features.Crm.DTOs.ContactDto,
+            NOIR.Application.Features.Crm.Queries.GetContactById.GetContactByIdQuery>(
+            targetId => new NOIR.Application.Features.Crm.Queries.GetContactById.GetContactByIdQuery(Guid.Parse(targetId.ToString()!)));
+
+        services.AddBeforeStateResolver<NOIR.Application.Features.Crm.DTOs.CompanyDto,
+            NOIR.Application.Features.Crm.Queries.GetCompanyById.GetCompanyByIdQuery>(
+            targetId => new NOIR.Application.Features.Crm.Queries.GetCompanyById.GetCompanyByIdQuery(Guid.Parse(targetId.ToString()!)));
+
+        services.AddBeforeStateResolver<NOIR.Application.Features.Crm.DTOs.LeadDto,
+            NOIR.Application.Features.Crm.Queries.GetLeadById.GetLeadByIdQuery>(
+            targetId => new NOIR.Application.Features.Crm.Queries.GetLeadById.GetLeadByIdQuery(Guid.Parse(targetId.ToString()!)));
+
+        services.AddBeforeStateResolver<NOIR.Application.Features.Crm.DTOs.ActivityDto,
+            NOIR.Application.Features.Crm.Queries.GetActivityById.GetActivityByIdQuery>(
+            targetId => new NOIR.Application.Features.Crm.Queries.GetActivityById.GetActivityByIdQuery(Guid.Parse(targetId.ToString()!)));
+
         // Settings DTOs use parameterless query resolvers (tenant-scoped singletons, no ID needed)
         services.AddSettingsBeforeStateResolver<SmtpSettingsDto, GetSmtpSettingsQuery>();
         services.AddSettingsBeforeStateResolver<BrandingSettingsDto, GetBrandingSettingsQuery>();

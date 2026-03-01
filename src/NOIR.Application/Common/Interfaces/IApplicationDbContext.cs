@@ -115,6 +115,31 @@ public interface IApplicationDbContext
     DbSet<EmployeeTag> EmployeeTags { get; }
 
     /// <summary>
+    /// CRM contacts DbSet for aggregate queries.
+    /// </summary>
+    DbSet<CrmContact> CrmContacts { get; }
+
+    /// <summary>
+    /// CRM companies DbSet for aggregate queries.
+    /// </summary>
+    DbSet<CrmCompany> CrmCompanies { get; }
+
+    /// <summary>
+    /// CRM leads DbSet for aggregate queries.
+    /// </summary>
+    DbSet<Lead> Leads { get; }
+
+    /// <summary>
+    /// CRM pipelines DbSet for aggregate queries.
+    /// </summary>
+    DbSet<Pipeline> Pipelines { get; }
+
+    /// <summary>
+    /// CRM activities DbSet for aggregate queries.
+    /// </summary>
+    DbSet<CrmActivity> CrmActivities { get; }
+
+    /// <summary>
     /// Attaches an entity to the context for tracking.
     EntityEntry<TEntity> Attach<TEntity>(TEntity entity) where TEntity : class;
 
