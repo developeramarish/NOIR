@@ -4,11 +4,13 @@ using NOIR.Application.Features.Pm.Commands.MoveTask;
 using NOIR.Application.Features.Pm.Commands.ChangeTaskStatus;
 using NOIR.Application.Features.Pm.Commands.DeleteTask;
 using NOIR.Application.Features.Pm.Commands.AddTaskComment;
+using NOIR.Application.Features.Pm.Commands.UpdateTaskComment;
 using NOIR.Application.Features.Pm.Commands.DeleteTaskComment;
 using NOIR.Application.Features.Pm.Commands.AddLabelToTask;
 using NOIR.Application.Features.Pm.Commands.RemoveLabelFromTask;
 using NOIR.Application.Features.Pm.Queries.GetTasks;
 using NOIR.Application.Features.Pm.Queries.GetTaskById;
+using NOIR.Application.Features.Pm.Queries.SearchTasks;
 using NOIR.Application.Features.Pm.DTOs;
 
 namespace NOIR.Web.Endpoints;
@@ -42,6 +44,21 @@ public static class TaskEndpoints
         .WithName("GetTasks")
         .WithSummary("Get paginated list of tasks")
         .Produces<PagedResult<TaskCardDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/search", async (
+            [FromQuery] Guid projectId,
+            [FromQuery] string q,
+            [FromQuery] int? take,
+            IMessageBus bus) =>
+        {
+            var query = new SearchTasksQuery(projectId, q, take ?? 10);
+            var result = await bus.InvokeAsync<Result<List<TaskSearchDto>>>(query);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmTasksRead)
+        .WithName("SearchTasks")
+        .WithSummary("Search tasks within a project for autocomplete")
+        .Produces<List<TaskSearchDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}", async (Guid id, IMessageBus bus) =>
         {
@@ -170,6 +187,26 @@ public static class TaskEndpoints
         .RequireAuthorization(Permissions.PmTasksUpdate)
         .WithName("AddTaskComment")
         .WithSummary("Add a comment to a task")
+        .Produces<TaskCommentDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        group.MapPut("/{id:guid}/comments/{commentId:guid}", async (
+            Guid id,
+            Guid commentId,
+            UpdateTaskCommentRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new UpdateTaskCommentCommand(id, commentId, request.Content)
+            {
+                AuditUserId = currentUser.UserId
+            };
+            var result = await bus.InvokeAsync<Result<TaskCommentDto>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmTasksUpdate)
+        .WithName("UpdateTaskComment")
+        .WithSummary("Update a task comment")
         .Produces<TaskCommentDto>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 

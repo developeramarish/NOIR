@@ -140,6 +140,16 @@ public interface IApplicationDbContext
     DbSet<CrmActivity> CrmActivities { get; }
 
     /// <summary>
+    /// PM projects DbSet for search queries.
+    /// </summary>
+    DbSet<Project> Projects { get; }
+
+    /// <summary>
+    /// PM project tasks DbSet for search queries.
+    /// </summary>
+    DbSet<ProjectTask> ProjectTasks { get; }
+
+    /// <summary>
     /// PM project members DbSet for non-aggregate entity CRUD.
     /// </summary>
     DbSet<ProjectMember> ProjectMembers { get; }

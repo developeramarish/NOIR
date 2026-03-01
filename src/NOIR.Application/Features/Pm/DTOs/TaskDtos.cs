@@ -164,3 +164,23 @@ public sealed record ReorderColumnsRequest(List<Guid> ColumnIds);
 /// Request body for deleting a column (requires target column for task migration).
 /// </summary>
 public sealed record DeleteColumnRequest(Guid MoveToColumnId);
+
+/// <summary>
+/// Lightweight task search result for autocomplete.
+/// </summary>
+public sealed record TaskSearchDto(
+    Guid Id,
+    string TaskNumber,
+    string Title,
+    ProjectTaskStatus Status,
+    TaskPriority Priority);
+
+/// <summary>
+/// Request body for updating a task label.
+/// </summary>
+public sealed record UpdateTaskLabelRequest(string Name, string Color);
+
+/// <summary>
+/// Request body for updating a task comment.
+/// </summary>
+public sealed record UpdateTaskCommentRequest(string Content);

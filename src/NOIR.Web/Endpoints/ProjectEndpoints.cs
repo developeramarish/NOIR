@@ -6,12 +6,14 @@ using NOIR.Application.Features.Pm.Commands.AddProjectMember;
 using NOIR.Application.Features.Pm.Commands.RemoveProjectMember;
 using NOIR.Application.Features.Pm.Commands.ChangeProjectMemberRole;
 using NOIR.Application.Features.Pm.Commands.CreateTaskLabel;
+using NOIR.Application.Features.Pm.Commands.UpdateTaskLabel;
 using NOIR.Application.Features.Pm.Commands.DeleteTaskLabel;
 using NOIR.Application.Features.Pm.Commands.CreateColumn;
 using NOIR.Application.Features.Pm.Commands.UpdateColumn;
 using NOIR.Application.Features.Pm.Commands.ReorderColumns;
 using NOIR.Application.Features.Pm.Commands.DeleteColumn;
 using NOIR.Application.Features.Pm.Queries.GetProjects;
+using NOIR.Application.Features.Pm.Queries.SearchProjects;
 using NOIR.Application.Features.Pm.Queries.GetProjectById;
 using NOIR.Application.Features.Pm.Queries.GetProjectMembers;
 using NOIR.Application.Features.Pm.Queries.GetProjectLabels;
@@ -47,6 +49,20 @@ public static class ProjectEndpoints
         .WithName("GetProjects")
         .WithSummary("Get paginated list of projects")
         .Produces<PagedResult<ProjectListDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/search", async (
+            [FromQuery] string q,
+            [FromQuery] int? take,
+            IMessageBus bus) =>
+        {
+            var query = new SearchProjectsQuery(q, take ?? 10);
+            var result = await bus.InvokeAsync<Result<List<ProjectSearchDto>>>(query);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmProjectsRead)
+        .WithName("SearchProjects")
+        .WithSummary("Search projects for autocomplete")
+        .Produces<List<ProjectSearchDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}", async (Guid id, IMessageBus bus) =>
         {
@@ -236,6 +252,27 @@ public static class ProjectEndpoints
         .WithName("CreateTaskLabel")
         .WithSummary("Create a new task label")
         .Produces<TaskLabelDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status409Conflict);
+
+        group.MapPut("/{id:guid}/labels/{labelId:guid}", async (
+            Guid id,
+            Guid labelId,
+            UpdateTaskLabelRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new UpdateTaskLabelCommand(id, labelId, request.Name, request.Color)
+            {
+                AuditUserId = currentUser.UserId
+            };
+            var result = await bus.InvokeAsync<Result<TaskLabelDto>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmProjectsUpdate)
+        .WithName("UpdateTaskLabel")
+        .WithSummary("Update a task label")
+        .Produces<TaskLabelDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
         .Produces<ProblemDetails>(StatusCodes.Status409Conflict);
 
         group.MapDelete("/{id:guid}/labels/{labelId:guid}", async (

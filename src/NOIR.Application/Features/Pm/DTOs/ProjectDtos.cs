@@ -105,3 +105,14 @@ public sealed record AddProjectMemberRequest(Guid EmployeeId, ProjectMemberRole 
 /// Request body for changing a member's role.
 /// </summary>
 public sealed record ChangeProjectMemberRoleRequest(ProjectMemberRole Role);
+
+/// <summary>
+/// Lightweight project search result for autocomplete.
+/// </summary>
+public sealed record ProjectSearchDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    ProjectStatus Status,
+    string? Color,
+    string? Icon);
