@@ -1,5 +1,21 @@
 # CLAUDE.md Changelog
 
+## [3.5] - 2026-03-02
+
+### Added
+- **CI/CD pipeline**: GitHub Actions with build, unit tests (parallel), integration tests, frontend build + Storybook
+- **Comprehensive test suite**: 80+ new unit tests (CRM, PM, HR, Dashboard, Blog, Media), 20 integration tests
+- **Playwright E2E tests**: Full E2E suite with page objects, auth fixtures, 14 test modules
+- **Wiki sync improvements**: Graceful handling of uninitialized wiki, workflow_dispatch trigger
+
+### Fixed
+- State machine guards in CRM Lead handlers (Win/Lose/Reopen) and PM ChangeTaskStatus
+- PM ReorderTask handler and validator for float-based sort ordering
+- Missing SQL semicolons in EmployeeCodeGenerator and ProjectCodeGenerator
+
+### Changed
+- Test count: 11,341 → 12,663 (2,971 domain + 8,535 application + 45 architecture + 1,112 integration)
+
 ## [3.4] - 2026-02-28
 
 ### Changed

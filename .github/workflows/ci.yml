@@ -141,6 +141,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          package_json_file: src/NOIR.Web/frontend/package.json
 
       - name: Get pnpm store directory
         id: pnpm-cache
