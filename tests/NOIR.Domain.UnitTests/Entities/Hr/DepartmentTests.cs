@@ -205,6 +205,35 @@ public class DepartmentTests
         department.Code.Should().Be("MKT");
     }
 
+    [Fact]
+    public void Update_WithNullManagerId_ShouldClearManager()
+    {
+        // Arrange
+        var managerId = Guid.NewGuid();
+        var department = CreateTestDepartment(managerId: managerId);
+        department.ClearDomainEvents();
+
+        // Act
+        department.Update("Engineering", "ENG", "Eng Dept", null, null);
+
+        // Assert
+        department.ManagerId.Should().BeNull();
+    }
+
+    [Fact]
+    public void Update_ShouldTrimDescription()
+    {
+        // Arrange
+        var department = CreateTestDepartment();
+        department.ClearDomainEvents();
+
+        // Act
+        department.Update("Marketing", "MKT", "  Marketing Dept  ", null, null);
+
+        // Assert
+        department.Description.Should().Be("Marketing Dept");
+    }
+
     #endregion
 
     #region Deactivate / Activate Tests

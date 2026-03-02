@@ -222,14 +222,17 @@ export const DepartmentFormDialog = ({ open, onOpenChange, department, parentDep
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('hr.parentDepartment')}</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                      <Select
+                        onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)}
+                        value={field.value || '__none__'}
+                      >
                         <FormControl>
                           <SelectTrigger className="cursor-pointer">
                             <SelectValue placeholder={t('hr.noParent', 'No parent (root department)')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="" className="cursor-pointer">{t('hr.noParent', 'No parent (root department)')}</SelectItem>
+                          <SelectItem value="__none__" className="cursor-pointer">{t('hr.noParent', 'No parent (root department)')}</SelectItem>
                           {flatDepartments.map((dept) => (
                             <SelectItem key={dept.id} value={dept.id} className="cursor-pointer">
                               {dept.label}

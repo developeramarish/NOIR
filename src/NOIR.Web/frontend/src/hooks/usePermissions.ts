@@ -267,33 +267,41 @@ export const Permissions = {
   HrTagsRead: 'hr-tags:read',
   HrTagsManage: 'hr-tags:manage',
   // CRM - Contacts
-  CrmContactsRead: 'crm:contacts:read',
-  CrmContactsCreate: 'crm:contacts:create',
-  CrmContactsUpdate: 'crm:contacts:update',
-  CrmContactsDelete: 'crm:contacts:delete',
+  CrmContactsRead: 'crm-contacts:read',
+  CrmContactsCreate: 'crm-contacts:create',
+  CrmContactsUpdate: 'crm-contacts:update',
+  CrmContactsDelete: 'crm-contacts:delete',
   // CRM - Companies
-  CrmCompaniesRead: 'crm:companies:read',
-  CrmCompaniesCreate: 'crm:companies:create',
-  CrmCompaniesUpdate: 'crm:companies:update',
-  CrmCompaniesDelete: 'crm:companies:delete',
+  CrmCompaniesRead: 'crm-companies:read',
+  CrmCompaniesCreate: 'crm-companies:create',
+  CrmCompaniesUpdate: 'crm-companies:update',
+  CrmCompaniesDelete: 'crm-companies:delete',
   // CRM - Leads
-  CrmLeadsRead: 'crm:leads:read',
-  CrmLeadsCreate: 'crm:leads:create',
-  CrmLeadsUpdate: 'crm:leads:update',
-  CrmLeadsManage: 'crm:leads:manage',
+  CrmLeadsRead: 'crm-leads:read',
+  CrmLeadsCreate: 'crm-leads:create',
+  CrmLeadsUpdate: 'crm-leads:update',
+  CrmLeadsManage: 'crm-leads:manage',
   // CRM - Pipeline
-  CrmPipelineManage: 'crm:pipeline:manage',
+  CrmPipelineManage: 'crm-pipeline:manage',
   // CRM - Activities
-  CrmActivitiesRead: 'crm:activities:read',
-  CrmActivitiesCreate: 'crm:activities:create',
-  CrmActivitiesUpdate: 'crm:activities:update',
-  CrmActivitiesDelete: 'crm:activities:delete',
+  CrmActivitiesRead: 'crm-activities:read',
+  CrmActivitiesCreate: 'crm-activities:create',
+  CrmActivitiesUpdate: 'crm-activities:update',
+  CrmActivitiesDelete: 'crm-activities:delete',
   // PM - Projects
-  PmProjectsRead: 'pm:projects:read',
-  PmProjectsCreate: 'pm:projects:create',
-  PmProjectsUpdate: 'pm:projects:update',
-  PmProjectsDelete: 'pm:projects:delete',
-  PmProjectsManage: 'pm:projects:manage',
+  PmProjectsRead: 'pm-projects:read',
+  PmProjectsCreate: 'pm-projects:create',
+  PmProjectsUpdate: 'pm-projects:update',
+  PmProjectsDelete: 'pm-projects:delete',
+  PmProjectsManage: 'pm-projects:manage',
+  // PM - Tasks
+  PmTasksRead: 'pm-tasks:read',
+  PmTasksCreate: 'pm-tasks:create',
+  PmTasksUpdate: 'pm-tasks:update',
+  PmTasksDelete: 'pm-tasks:delete',
+  PmTasksManage: 'pm-tasks:manage',
+  // PM - Members
+  PmMembersManage: 'pm-members:manage',
 } as const
 
 export type PermissionKey = (typeof Permissions)[keyof typeof Permissions]

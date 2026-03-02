@@ -25,8 +25,14 @@ public class ReorderTaskCommandHandler
                 Error.NotFound($"Task with ID '{command.TaskId}' not found.", "NOIR-PM-006"));
         }
 
+        if (task.ColumnId is null)
+        {
+            return Result.Failure<Features.Pm.DTOs.TaskDto>(
+                Error.Validation("Task.NoColumn", "Task does not belong to any column."));
+        }
+
         // Only update SortOrder (don't change column)
-        task.MoveToColumn(task.ColumnId!.Value, command.NewSortOrder);
+        task.MoveToColumn(task.ColumnId.Value, command.NewSortOrder);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Reload with navigation properties

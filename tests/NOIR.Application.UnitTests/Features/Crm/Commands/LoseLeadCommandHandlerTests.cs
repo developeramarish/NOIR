@@ -52,9 +52,9 @@ public class LoseLeadCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_NotActiveLead_ShouldThrow()
+    public async Task Handle_NotActiveLead_ShouldReturnValidationError()
     {
-        // Arrange
+        // Arrange - handler pre-checks status and returns validation error
         var lead = CreateActiveLead();
         lead.Win(); // Already Won
 
@@ -64,9 +64,12 @@ public class LoseLeadCommandHandlerTests
 
         var command = new LoseLeadCommand(lead.Id, "Reason");
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(command, CancellationToken.None));
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Type.Should().Be(ErrorType.Validation);
     }
 
     [Fact]
@@ -84,5 +87,48 @@ public class LoseLeadCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_NullReason_ShouldSucceed()
+    {
+        // Arrange
+        var lead = CreateActiveLead();
+
+        _leadRepoMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LeadByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lead);
+
+        var command = new LoseLeadCommand(lead.Id, null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        lead.Status.Should().Be(LeadStatus.Lost);
+        lead.LostReason.Should().BeNull();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_AlreadyLostLead_ShouldReturnValidationError()
+    {
+        // Arrange - handler pre-checks status and returns validation error
+        var lead = CreateActiveLead();
+        lead.Lose("First loss");
+
+        _leadRepoMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LeadByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lead);
+
+        var command = new LoseLeadCommand(lead.Id, "Second loss");
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Type.Should().Be(ErrorType.Validation);
     }
 }

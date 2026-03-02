@@ -108,4 +108,28 @@ public class MoveLeadStageCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task Handle_SameStage_ShouldSucceedAndUpdateSortOrder()
+    {
+        // Arrange
+        var lead = CreateActiveLead();
+        var currentStageId = lead.StageId;
+
+        _leadRepoMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LeadByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lead);
+
+        // Move to the same stage but with a different sort order
+        var command = new MoveLeadStageCommand(lead.Id, currentStageId, 5.0);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        lead.StageId.Should().Be(currentStageId);
+        lead.SortOrder.Should().Be(5.0);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

@@ -96,4 +96,57 @@ public class LinkEmployeeToUserCommandHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("NOIR-HR-004");
     }
+
+    [Fact]
+    public async Task Handle_ReLinkToDifferentUser_Succeeds()
+    {
+        // Arrange
+        var employee = Employee.Create(
+            "EMP-001", "John", "Doe", "john@example.com",
+            Guid.NewGuid(), DateTimeOffset.UtcNow, EmploymentType.FullTime, TestTenantId);
+        employee.LinkToUser("old-user-123");
+        var command = new LinkEmployeeToUserCommand(Guid.NewGuid(), "new-user-789");
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByUserIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Employee?)null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        employee.UserId.Should().Be("new-user-789");
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ValidRequest_ReturnsDtoWithLinkedStatus()
+    {
+        // Arrange
+        var employee = Employee.Create(
+            "EMP-001", "John", "Doe", "john@example.com",
+            Guid.NewGuid(), DateTimeOffset.UtcNow, EmploymentType.FullTime, TestTenantId);
+        var command = new LinkEmployeeToUserCommand(Guid.NewGuid(), "user-456");
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByUserIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Employee?)null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.HasUserAccount.Should().BeTrue();
+        result.Value.UserId.Should().Be("user-456");
+    }
 }

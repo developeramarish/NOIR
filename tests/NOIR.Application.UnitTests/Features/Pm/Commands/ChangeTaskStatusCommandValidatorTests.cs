@@ -62,4 +62,22 @@ public class ChangeTaskStatusCommandValidatorTests
         // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
+
+    [Theory]
+    [InlineData(ProjectTaskStatus.Todo)]
+    [InlineData(ProjectTaskStatus.InProgress)]
+    [InlineData(ProjectTaskStatus.InReview)]
+    [InlineData(ProjectTaskStatus.Done)]
+    [InlineData(ProjectTaskStatus.Cancelled)]
+    public void Validate_AllValidStatuses_ShouldPass(ProjectTaskStatus status)
+    {
+        // Arrange
+        var command = new ChangeTaskStatusCommand(Guid.NewGuid(), status);
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldNotHaveAnyValidationErrors();
+    }
 }

@@ -78,9 +78,9 @@ public class ReopenLeadCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ActiveLead_ShouldThrow()
+    public async Task Handle_ActiveLead_ShouldReturnValidationError()
     {
-        // Arrange
+        // Arrange - handler pre-checks status and returns validation error
         var lead = CreateActiveLead();
 
         _leadRepoMock
@@ -89,9 +89,12 @@ public class ReopenLeadCommandHandlerTests
 
         var command = new ReopenLeadCommand(lead.Id);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(command, CancellationToken.None));
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Type.Should().Be(ErrorType.Validation);
     }
 
     [Fact]

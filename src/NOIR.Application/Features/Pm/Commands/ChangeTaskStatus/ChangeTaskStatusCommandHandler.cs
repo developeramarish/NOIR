@@ -25,6 +25,12 @@ public class ChangeTaskStatusCommandHandler
                 Error.NotFound($"Task with ID '{command.Id}' not found.", "NOIR-PM-006"));
         }
 
+        if (command.Status == ProjectTaskStatus.Done && task.Status == ProjectTaskStatus.Done)
+        {
+            return Result.Failure<Features.Pm.DTOs.TaskDto>(
+                Error.Validation("Status", "Task is already completed."));
+        }
+
         if (command.Status == ProjectTaskStatus.Done)
         {
             task.Complete();

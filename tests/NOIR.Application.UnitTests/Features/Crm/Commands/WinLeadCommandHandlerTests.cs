@@ -143,9 +143,9 @@ public class WinLeadCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_NotActiveLead_ShouldThrow()
+    public async Task Handle_NotActiveLead_ShouldReturnValidationError()
     {
-        // Arrange - Lead is already Won, domain Win() will throw
+        // Arrange - Lead is already Won, handler pre-checks status and returns validation error
         var lead = CreateActiveLead();
         lead.Win(); // Make it Won first
 
@@ -155,8 +155,38 @@ public class WinLeadCommandHandlerTests
 
         var command = new WinLeadCommand(lead.Id);
 
-        // Act & Assert - Domain throws InvalidOperationException
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(command, CancellationToken.None));
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Type.Should().Be(ErrorType.Validation);
+    }
+
+    [Fact]
+    public async Task Handle_ContactNotFound_ShouldSucceedWithoutCustomerCreation()
+    {
+        // Arrange
+        var lead = CreateActiveLead();
+
+        _leadRepoMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LeadByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lead);
+
+        _contactRepoMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<ContactByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CrmContact?)null);
+
+        var command = new WinLeadCommand(lead.Id);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        lead.Status.Should().Be(LeadStatus.Won);
+        _customerRepoMock.Verify(
+            x => x.AddAsync(It.IsAny<Customer>(), It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -423,6 +423,25 @@ public class EmployeeTests
             .WithMessage("Deactivation status must be Resigned or Terminated.");
     }
 
+    [Fact]
+    public void Deactivate_AlreadyDeactivatedEmployee_ShouldStillSucceed()
+    {
+        // Arrange - Employee is already deactivated (Resigned)
+        var employee = CreateTestEmployee();
+        employee.Deactivate(EmployeeStatus.Resigned);
+        var firstEndDate = employee.EndDate;
+        employee.ClearDomainEvents();
+
+        // Act - Deactivate again with Terminated (no domain guard against double deactivation)
+        employee.Deactivate(EmployeeStatus.Terminated);
+
+        // Assert - Status is updated, EndDate is refreshed
+        employee.Status.Should().Be(EmployeeStatus.Terminated);
+        employee.EndDate.Should().NotBeNull();
+        employee.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<EmployeeDeactivatedEvent>();
+    }
+
     #endregion
 
     #region Reactivate Tests
@@ -457,6 +476,23 @@ public class EmployeeTests
         // Assert
         employee.DomainEvents.Should().ContainSingle();
         employee.DomainEvents.First().Should().BeOfType<EmployeeUpdatedEvent>();
+    }
+
+    [Fact]
+    public void Reactivate_AlreadyActiveEmployee_ShouldStillSucceed()
+    {
+        // Arrange - Employee is already active (no domain guard)
+        var employee = CreateTestEmployee();
+        employee.ClearDomainEvents();
+
+        // Act
+        employee.Reactivate();
+
+        // Assert - Remains active, EndDate stays null
+        employee.Status.Should().Be(EmployeeStatus.Active);
+        employee.EndDate.Should().BeNull();
+        employee.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<EmployeeUpdatedEvent>();
     }
 
     #endregion

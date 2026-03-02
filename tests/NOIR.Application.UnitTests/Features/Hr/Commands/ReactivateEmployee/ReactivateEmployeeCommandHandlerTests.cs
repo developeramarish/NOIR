@@ -66,4 +66,53 @@ public class ReactivateEmployeeCommandHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("NOIR-HR-010");
     }
+
+    [Fact]
+    public async Task Handle_TerminatedEmployee_ReactivatesSuccessfully()
+    {
+        // Arrange
+        var employee = Employee.Create(
+            "EMP-001", "John", "Doe", "john@example.com",
+            Guid.NewGuid(), DateTimeOffset.UtcNow, EmploymentType.FullTime, TestTenantId);
+        employee.Deactivate(EmployeeStatus.Terminated);
+        var command = new ReactivateEmployeeCommand(Guid.NewGuid());
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        employee.Status.Should().Be(EmployeeStatus.Active);
+        employee.EndDate.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_ValidRequest_ReturnsDtoWithCorrectValues()
+    {
+        // Arrange
+        var employee = Employee.Create(
+            "EMP-002", "Jane", "Smith", "jane@example.com",
+            Guid.NewGuid(), DateTimeOffset.UtcNow, EmploymentType.PartTime, TestTenantId);
+        employee.Deactivate(EmployeeStatus.Resigned);
+        var command = new ReactivateEmployeeCommand(Guid.NewGuid());
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Status.Should().Be(EmployeeStatus.Active);
+        result.Value.EndDate.Should().BeNull();
+        result.Value.EmployeeCode.Should().Be("EMP-002");
+        result.Value.FirstName.Should().Be("Jane");
+        result.Value.LastName.Should().Be("Smith");
+    }
 }

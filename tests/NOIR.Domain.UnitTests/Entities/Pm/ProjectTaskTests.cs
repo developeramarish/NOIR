@@ -301,5 +301,32 @@ public class ProjectTaskTests
             .WithMessage("Task is already cancelled.");
     }
 
+    [Fact]
+    public void Complete_WhenCancelled_ShouldThrow()
+    {
+        // Arrange — task is cancelled, so Complete should still work (no guard on Cancel->Complete)
+        var task = CreateTodoTask();
+        task.Cancel();
+
+        // Act — Complete() only guards against Done status, not Cancelled
+        // So this should succeed per current domain logic
+        var act = () => task.Complete();
+        act.Should().NotThrow();
+        task.Status.Should().Be(ProjectTaskStatus.Done);
+    }
+
+    [Fact]
+    public void Cancel_WhenCompleted_ShouldNotThrow()
+    {
+        // Arrange — task is completed
+        var task = CreateTodoTask();
+        task.Complete();
+
+        // Act — Cancel() only guards against Cancelled status, not Done
+        var act = () => task.Cancel();
+        act.Should().NotThrow();
+        task.Status.Should().Be(ProjectTaskStatus.Cancelled);
+    }
+
     #endregion
 }

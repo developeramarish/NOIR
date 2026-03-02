@@ -26,7 +26,12 @@ public class ReopenLeadCommandHandler
                 Error.NotFound($"Lead with ID '{command.LeadId}' not found.", "NOIR-CRM-022"));
         }
 
-        // Reopen the lead (domain validates status is not Active)
+        if (lead.Status == LeadStatus.Active)
+        {
+            return Result.Failure<Features.Crm.DTOs.LeadDto>(
+                Error.Validation("LeadId", "Only won or lost leads can be reopened."));
+        }
+
         lead.Reopen();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

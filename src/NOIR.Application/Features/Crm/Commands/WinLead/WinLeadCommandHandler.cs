@@ -35,7 +35,12 @@ public class WinLeadCommandHandler
                 Error.NotFound($"Lead with ID '{command.LeadId}' not found.", "NOIR-CRM-022"));
         }
 
-        // Win the lead (domain validates status is Active)
+        if (lead.Status != LeadStatus.Active)
+        {
+            return Result.Failure<Features.Crm.DTOs.LeadDto>(
+                Error.Validation("LeadId", "Only active leads can be won."));
+        }
+
         lead.Win();
 
         // Auto-create customer from contact if contact has no customer yet

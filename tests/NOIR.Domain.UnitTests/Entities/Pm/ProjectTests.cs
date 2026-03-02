@@ -252,4 +252,38 @@ public class ProjectTests
     }
 
     #endregion
+
+    #region ChangeStatus Tests
+
+    [Fact]
+    public void ChangeStatus_ToCompleted_ShouldSetEndDate()
+    {
+        // Arrange
+        var project = CreateActiveProject();
+        var beforeChange = DateTimeOffset.UtcNow;
+
+        // Act
+        project.ChangeStatus(ProjectStatus.Completed);
+
+        // Assert
+        project.Status.Should().Be(ProjectStatus.Completed);
+        project.EndDate.Should().NotBeNull();
+        project.EndDate.Should().BeOnOrAfter(beforeChange);
+    }
+
+    [Fact]
+    public void ChangeStatus_ToOnHold_ShouldNotSetEndDate()
+    {
+        // Arrange
+        var project = CreateActiveProject();
+
+        // Act
+        project.ChangeStatus(ProjectStatus.OnHold);
+
+        // Assert
+        project.Status.Should().Be(ProjectStatus.OnHold);
+        project.EndDate.Should().BeNull();
+    }
+
+    #endregion
 }

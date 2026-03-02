@@ -26,7 +26,12 @@ public class LoseLeadCommandHandler
                 Error.NotFound($"Lead with ID '{command.LeadId}' not found.", "NOIR-CRM-022"));
         }
 
-        // Lose the lead (domain validates status is Active)
+        if (lead.Status != LeadStatus.Active)
+        {
+            return Result.Failure<Features.Crm.DTOs.LeadDto>(
+                Error.Validation("LeadId", "Only active leads can be lost."));
+        }
+
         lead.Lose(command.Reason);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

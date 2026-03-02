@@ -15,6 +15,13 @@
     "i18n:scan": "node scripts/scan-ui-strings.mjs",
     "visual:test": "cd e2e-tests && pnpm exec playwright test tests/visual",
     "visual:update": "cd e2e-tests && pnpm exec playwright test tests/visual --update-snapshots",
+    "e2e": "cd e2e && npx playwright test",
+    "e2e:smoke": "cd e2e && npx playwright test --grep @smoke",
+    "e2e:regression": "cd e2e && npx playwright test --grep \"@smoke|@regression\"",
+    "e2e:ui": "cd e2e && npx playwright test --ui",
+    "e2e:debug": "cd e2e && npx playwright test --debug",
+    "e2e:report": "cd e2e && npx playwright show-report",
+    "e2e:codegen": "cd e2e && npx playwright codegen http://localhost:3000",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

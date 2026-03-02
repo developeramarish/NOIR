@@ -39,7 +39,7 @@ public class EmployeeCodeGenerator : IEmployeeCodeGenerator, IScopedService
                 WHEN NOT MATCHED THEN
                     INSERT (Id, TenantId, Prefix, CurrentValue)
                     VALUES (NEWID(), {1}, {0}, 1)
-                OUTPUT INSERTED.CurrentValue;"
+                OUTPUT INSERTED.CurrentValue"
             : @"
                 MERGE INTO SequenceCounters WITH (HOLDLOCK) AS target
                 USING (SELECT {0} AS Prefix) AS source
@@ -49,11 +49,13 @@ public class EmployeeCodeGenerator : IEmployeeCodeGenerator, IScopedService
                 WHEN NOT MATCHED THEN
                     INSERT (Id, TenantId, Prefix, CurrentValue)
                     VALUES (NEWID(), NULL, {0}, 1)
-                OUTPUT INSERTED.CurrentValue;";
+                OUTPUT INSERTED.CurrentValue";
 
-        var result = tenantId != null
-            ? await _dbContext.Database.SqlQueryRaw<int>(sql, prefix, tenantId).FirstAsync(ct)
-            : await _dbContext.Database.SqlQueryRaw<int>(sql, prefix).FirstAsync(ct);
+        // Use ToListAsync() instead of FirstAsync() to avoid EF Core non-composable SQL error
+        var results = tenantId != null
+            ? await _dbContext.Database.SqlQueryRaw<int>(sql, prefix, tenantId).ToListAsync(ct)
+            : await _dbContext.Database.SqlQueryRaw<int>(sql, prefix).ToListAsync(ct);
+        var result = results.First();
 
         return result;
     }

@@ -160,9 +160,9 @@ export interface PipelineStageDto {
 }
 
 export interface StageWithLeadsDto {
-  stageId: string
-  stageName: string
-  stageColor: string
+  id: string
+  name: string
+  color: string
   sortOrder: number
   totalValue: number
   leadCount: number
@@ -170,8 +170,8 @@ export interface StageWithLeadsDto {
 }
 
 export interface PipelineViewDto {
-  pipelineId: string
-  pipelineName: string
+  id: string
+  name: string
   stages: StageWithLeadsDto[]
 }
 

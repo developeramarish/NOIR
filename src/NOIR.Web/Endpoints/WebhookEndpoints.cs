@@ -210,13 +210,13 @@ public static class WebhookEndpoints
         group.MapGet("/event-types", async (IMessageBus bus) =>
         {
             var query = new GetWebhookEventTypesQuery();
-            var result = await bus.InvokeAsync<Result<List<WebhookEventTypeDto>>>(query);
+            var result = await bus.InvokeAsync<Result<IReadOnlyList<WebhookEventTypeDto>>>(query);
             return result.ToHttpResult();
         })
         .RequireAuthorization(Permissions.WebhooksRead)
         .WithName("GetWebhookEventTypes")
         .WithSummary("Get available webhook event types")
         .WithDescription("Returns all available event types that can be subscribed to for webhook delivery.")
-        .Produces<List<WebhookEventTypeDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<WebhookEventTypeDto>>(StatusCodes.Status200OK);
     }
 }

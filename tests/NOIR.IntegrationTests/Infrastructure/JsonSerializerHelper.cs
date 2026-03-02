@@ -38,3 +38,34 @@ public static class HttpContentExtensions
             cancellationToken);
     }
 }
+
+/// <summary>
+/// Extension methods for HttpClient to send JSON with enum string serialization.
+/// The API expects enums serialized as strings. Default PostAsJsonAsync sends enums as integers.
+/// </summary>
+public static class HttpClientJsonExtensions
+{
+    /// <summary>
+    /// Sends a POST request with JSON body using enum-aware serializer options.
+    /// </summary>
+    public static Task<HttpResponseMessage> PostAsJsonWithEnumsAsync<T>(
+        this HttpClient client,
+        string requestUri,
+        T value,
+        CancellationToken cancellationToken = default)
+    {
+        return client.PostAsJsonAsync(requestUri, value, JsonSerializerHelper.Options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a PUT request with JSON body using enum-aware serializer options.
+    /// </summary>
+    public static Task<HttpResponseMessage> PutAsJsonWithEnumsAsync<T>(
+        this HttpClient client,
+        string requestUri,
+        T value,
+        CancellationToken cancellationToken = default)
+    {
+        return client.PutAsJsonAsync(requestUri, value, JsonSerializerHelper.Options, cancellationToken);
+    }
+}

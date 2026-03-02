@@ -139,4 +139,102 @@ public class DeactivateEmployeeCommandHandlerTests
         // Department manager should have been nulled via Update
         managedDept.ManagerId.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Handle_MultipleDirectReports_NullsAllManagerIds()
+    {
+        // Arrange
+        var employeeId = Guid.NewGuid();
+        var employee = CreateTestEmployee();
+        var report1 = CreateTestEmployee();
+        report1.UpdateManager(employeeId);
+        var report2 = CreateTestEmployee();
+        report2.UpdateManager(employeeId);
+        var report3 = CreateTestEmployee();
+        report3.UpdateManager(employeeId);
+        var command = new DeactivateEmployeeCommand(employeeId, EmployeeStatus.Terminated);
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        _employeeRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<EmployeesByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Employee> { report1, report2, report3 });
+
+        _departmentRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<DepartmentsByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Department>());
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        report1.ManagerId.Should().BeNull();
+        report2.ManagerId.Should().BeNull();
+        report3.ManagerId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_IsDepartmentManagerAndHasDirectReports_CascadesBoth()
+    {
+        // Arrange
+        var employeeId = Guid.NewGuid();
+        var employee = CreateTestEmployee();
+        var directReport = CreateTestEmployee();
+        directReport.UpdateManager(employeeId);
+        var managedDept = Department.Create("Engineering", "ENG", TestTenantId, managerId: employeeId);
+        var command = new DeactivateEmployeeCommand(employeeId, EmployeeStatus.Resigned);
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        _employeeRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<EmployeesByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Employee> { directReport });
+
+        _departmentRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<DepartmentsByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Department> { managedDept });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        directReport.ManagerId.Should().BeNull();
+        managedDept.ManagerId.Should().BeNull();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_EmployeeWithTerminatedStatus_SetsCorrectStatus()
+    {
+        // Arrange
+        var employeeId = Guid.NewGuid();
+        var employee = CreateTestEmployee();
+        var command = new DeactivateEmployeeCommand(employeeId, EmployeeStatus.Terminated);
+
+        _employeeRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<EmployeeByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(employee);
+
+        _employeeRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<EmployeesByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Employee>());
+
+        _departmentRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<DepartmentsByManagerIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Department>());
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        employee.Status.Should().Be(EmployeeStatus.Terminated);
+        employee.EndDate.Should().NotBeNull();
+    }
 }

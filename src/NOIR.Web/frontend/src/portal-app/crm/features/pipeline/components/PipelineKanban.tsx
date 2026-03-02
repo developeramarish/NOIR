@@ -75,7 +75,7 @@ export const PipelineKanban = ({ pipelineView, isLoading, showClosedDeals, onLea
         break
       }
       // Check if dropped on the stage container itself
-      if (stage.stageId === overId) {
+      if (stage.id === overId) {
         targetStage = stage
         break
       }
@@ -88,7 +88,7 @@ export const PipelineKanban = ({ pipelineView, isLoading, showClosedDeals, onLea
     if (!originalStage) return
 
     // If same stage and same position, do nothing
-    if (originalStage.stageId === targetStage.stageId && leadId === overId) return
+    if (originalStage.id === targetStage.id && leadId === overId) return
 
     // Calculate new sort order
     const targetLeads = targetStage.leads.filter(l => l.id !== leadId)
@@ -107,7 +107,7 @@ export const PipelineKanban = ({ pipelineView, isLoading, showClosedDeals, onLea
     }
 
     moveLeadStageMutation.mutate(
-      { leadId, newStageId: targetStage.stageId, newSortOrder },
+      { leadId, newStageId: targetStage.id, newSortOrder },
       {
         onError: (err) => {
           toast.error(err instanceof Error ? err.message : t('errors.unknown'))
@@ -153,20 +153,20 @@ export const PipelineKanban = ({ pipelineView, isLoading, showClosedDeals, onLea
           const stageActiveValue = stageActiveLeads.reduce((sum, l) => sum + l.value, 0)
 
           return (
-            <div key={stage.stageId} className="min-w-[280px] max-w-[320px] flex-shrink-0">
+            <div key={stage.id} className="min-w-[280px] max-w-[320px] flex-shrink-0">
               <div className="bg-muted/30 rounded-lg border border-border/50">
                 <StageColumnHeader
-                  name={stage.stageName}
-                  color={stage.stageColor}
+                  name={stage.name}
+                  color={stage.color}
                   totalValue={stageActiveValue}
                   leadCount={stageActiveLeads.length}
                 />
                 <SortableContext
                   items={stageActiveLeads.map(l => l.id)}
                   strategy={verticalListSortingStrategy}
-                  id={stage.stageId}
+                  id={stage.id}
                 >
-                  <div className="space-y-2 p-2 min-h-[100px]" data-stage-id={stage.stageId}>
+                  <div className="space-y-2 p-2 min-h-[100px]" data-stage-id={stage.id}>
                     {stageActiveLeads.map((lead) => (
                       <LeadCard
                         key={lead.id}
