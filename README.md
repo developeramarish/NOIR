@@ -39,11 +39,11 @@ NOIR is a production-ready foundation for building multi-tenant SaaS application
 
 ```mermaid
 flowchart TB
-    FE["🖥️  React 19 Frontend\n56 pages · 98 UIKit components · 35 hooks"]
-    WEB["⚡  Web Layer — ASP.NET Core 10\n52 endpoint groups · JWT · Multi-tenancy · SignalR + SSE"]
-    APP["📋  Application Layer — CQRS via Wolverine\nCommands · Queries · Validators · Domain Events · Audit"]
-    DOM["🏛️  Domain Layer\nEntities · Value Objects · Repository Interfaces · Specifications"]
-    INF["🔧  Infrastructure\nEF Core 10 · SQL Server 2022 · FusionCache · Hangfire · ClosedXML"]
+    FE["🖥️ React 19 Frontend<br/>56 pages · 98 UIKit components · 35 hooks"]
+    WEB["⚡ Web Layer — ASP.NET Core 10<br/>52 endpoint groups · JWT · Multi-tenancy · SignalR + SSE"]
+    APP["📋 Application Layer — CQRS via Wolverine<br/>Commands · Queries · Validators · Domain Events · Audit"]
+    DOM["🏛️ Domain Layer<br/>Entities · Value Objects · Repository Interfaces · Specifications"]
+    INF["🔧 Infrastructure<br/>EF Core 10 · SQL Server 2022 · FusionCache · Hangfire · ClosedXML"]
 
     FE -->|REST / SignalR / SSE| WEB
     WEB --> APP
