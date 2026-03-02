@@ -127,21 +127,12 @@ jobs:
           - [ADR 003: Vertical Slice CQRS](decisions/003-vertical-slice-cqrs)
 
           ## Roadmap & Designs
-          - [Product Roadmap](roadmap/README)
-          - **Designs**
-            - [Admin Portal Plan](designs/admin-portal-enhancement-v28-feb)
-            - [Admin Portal Design](designs/admin-portal-enhancement-v28-feb-design)
-            - [Admin Portal Workflow](designs/admin-portal-workflow)
-            - [Accounting](designs/module-accounting)
-            - [Calendar](designs/module-calendar)
-            - [Chat](designs/module-chat)
-            - [CRM](designs/module-crm)
-            - [Documents](designs/module-document)
-            - [Helpdesk](designs/module-helpdesk)
+          - [Product Roadmap](roadmap)
+          - **Module Designs**
             - [HR](designs/module-hr)
-            - [Marketplace](designs/module-marketplace)
+            - [CRM](designs/module-crm)
             - [Project Management](designs/module-pm)
-            - [Subscriptions](designs/module-subscription)
+            - [Calendar](designs/module-calendar)
           SIDEBAR
 
           # Generate Home.md (wiki landing page)
@@ -162,7 +153,7 @@ jobs:
           | Learn frontend patterns | [Frontend Overview](frontend/README) |
           | See the API | [API Index](API_INDEX) |
           | View architecture diagrams | [Diagrams](architecture/diagrams) |
-          | See the product roadmap | [Roadmap](roadmap/README) |
+          | See the product roadmap | [Roadmap](roadmap) |
 
           ## About
 
