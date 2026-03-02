@@ -138,7 +138,7 @@ jobs:
           retention-days: 7
 
   frontend:
-    name: Frontend Build
+    name: Frontend Build & Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -170,6 +170,23 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Unit tests with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: src/NOIR.Web/frontend/coverage/
+          retention-days: 7
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Storybook browser tests
+        run: pnpm test:storybook
 
       - name: Build
         run: pnpm run build

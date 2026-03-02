@@ -6,6 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const config: StorybookConfig = {
   stories: ['../src/uikit/**/*.stories.@(ts|tsx)'],
+  addons: ['@storybook/addon-vitest'],
   framework: '@storybook/react-vite',
   viteFinal: async (config) => {
     const tailwindcss = (await import('@tailwindcss/vite')).default
