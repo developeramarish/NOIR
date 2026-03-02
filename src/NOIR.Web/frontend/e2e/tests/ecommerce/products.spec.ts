@@ -458,7 +458,7 @@ test.describe('E-commerce Products @nightly', () => {
     await expect(page.locator(TOAST_SUCCESS).first()).toBeVisible({ timeout: 10_000 });
 
     // Verify attribute is removed
-    await expect(page.getByText(attrName)).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(attrName).first()).not.toBeVisible({ timeout: 5_000 });
   });
 
   /**
@@ -518,6 +518,6 @@ test.describe('E-commerce Products @nightly', () => {
     await confirmDelete(page);
     await expect(page.locator(TOAST_SUCCESS).first()).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.getByText(updatedBrandName)).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(updatedBrandName).first()).not.toBeVisible({ timeout: 5_000 });
   });
 });

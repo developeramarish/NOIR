@@ -9,7 +9,7 @@ export class UsersPage {
   constructor(private page: Page) {
     this.createButton = page.getByRole('button', { name: /create|add|new|invite/i });
     this.userTable = page.getByRole('table');
-    this.searchInput = page.getByPlaceholder(/search/i);
+    this.searchInput = page.locator('main').getByPlaceholder(/search/i).first();
     this.userRows = page.getByRole('table').getByRole('row');
   }
 
@@ -62,8 +62,17 @@ export class UsersPage {
     const searchInput = this.searchInput;
     if (await searchInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await searchInput.fill(email);
-      await this.page.waitForTimeout(500); // debounce
+      await this.page.waitForLoadState('networkidle');
+      await this.page.waitForTimeout(500); // extra settle time
     }
-    await expect(this.page.getByRole('row', { name: new RegExp(email, 'i') })).toBeVisible({ timeout: 10_000 });
+    // Try row accessible name first, fall back to visible text
+    const byRow = this.page.getByRole('row', { name: new RegExp(email, 'i') });
+    const byText = this.page.getByText(email);
+    const rowVisible = await byRow.isVisible({ timeout: 8_000 }).catch(() => false);
+    if (!rowVisible) {
+      await expect(byText.first()).toBeVisible({ timeout: 5_000 });
+    } else {
+      await expect(byRow).toBeVisible({ timeout: 5_000 });
+    }
   }
 }

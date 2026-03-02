@@ -41,7 +41,7 @@ test.describe('Auth Login @smoke', () => {
 
     // Enter an invalid email format
     await loginPage.emailInput.fill('not-an-email');
-    await loginPage.passwordInput.click(); // trigger blur validation
+    await loginPage.emailInput.press('Tab'); // trigger blur validation
 
     // Expect invalid email format error
     await expect(

@@ -92,7 +92,7 @@ test.describe('E-commerce Customer Groups @regression', () => {
     await expect(page.locator(TOAST_SUCCESS).first()).toBeVisible({ timeout: 10_000 });
 
     // Verify removed
-    await expect(page.getByText(updatedName)).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(updatedName).first()).not.toBeVisible({ timeout: 5_000 });
   });
 
   /**

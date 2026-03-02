@@ -106,6 +106,9 @@ test.describe('Admin Users @regression', () => {
     await usersPage.goto();
     await waitForTableLoad(page);
 
+    // Search for the user to ensure they appear on the visible page
+    await usersPage.expectUserInList(userData.email);
+
     // Find the test user row and click edit via the dropdown menu
     const userRow = page.getByRole('row', { name: new RegExp(userData.email, 'i') });
     await expect(userRow).toBeVisible();

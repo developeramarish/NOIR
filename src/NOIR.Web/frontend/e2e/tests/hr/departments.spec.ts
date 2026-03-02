@@ -314,7 +314,7 @@ test.describe('HR Departments & Tags @regression', () => {
         await waitForTagsPage(page);
 
         // Click the Create Tag button
-        await page.getByRole('button', { name: /create tag/i }).click();
+        await page.getByRole('button', { name: /create tag/i }).first().click();
 
         // Wait for dialog
         await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 10_000 });

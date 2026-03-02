@@ -180,8 +180,10 @@ export class ApiHelper {
     await this.request.delete(`${API_URL}/api/blog/posts/${id}`);
   }
 
-  async createBlogCategory(data: { name: string }) {
-    const res = await this.request.post(`${API_URL}/api/blog/categories`, { data });
+  async createBlogCategory(data: { name: string; slug?: string }) {
+    // Slug is required by the backend validator
+    const slug = data.slug ?? data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const res = await this.request.post(`${API_URL}/api/blog/categories`, { data: { ...data, slug } });
     const text = await res.text();
     return text ? JSON.parse(text) : {};
   }
@@ -190,8 +192,10 @@ export class ApiHelper {
     await this.request.delete(`${API_URL}/api/blog/categories/${id}`);
   }
 
-  async createBlogTag(data: { name: string }) {
-    const res = await this.request.post(`${API_URL}/api/blog/tags`, { data });
+  async createBlogTag(data: { name: string; slug?: string }) {
+    // Slug is required by the backend validator
+    const slug = data.slug ?? data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const res = await this.request.post(`${API_URL}/api/blog/tags`, { data: { ...data, slug } });
     const text = await res.text();
     return text ? JSON.parse(text) : {};
   }
@@ -324,6 +328,47 @@ export class ApiHelper {
 
   async deleteCustomerGroup(id: string) {
     await this.request.delete(`${API_URL}/api/customer-groups/${id}`);
+  }
+
+  // ─── CRM Companies ───────────────────────────────────────
+  async createCompany(data: { name: string; industry?: string; website?: string }) {
+    const res = await this.request.post(`${API_URL}/api/crm/companies`, { data });
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
+  }
+
+  async deleteCompany(id: string) {
+    await this.request.delete(`${API_URL}/api/crm/companies/${id}`);
+  }
+
+  // ─── HR Employee Tags ────────────────────────────────────
+  async createEmployeeTag(data: { name: string; category?: string; color?: string; description?: string }) {
+    const res = await this.request.post(`${API_URL}/api/hr/employee-tags`, {
+      data: {
+        category: 'Skill',
+        color: '#3b82f6',
+        isActive: true,
+        sortOrder: 0,
+        ...data,
+      },
+    });
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
+  }
+
+  async deleteEmployeeTag(id: string) {
+    await this.request.delete(`${API_URL}/api/hr/employee-tags/${id}`);
+  }
+
+  // ─── Wishlists ──────────────────────────────────────────
+  async createWishlist(data: { name?: string }) {
+    const res = await this.request.post(`${API_URL}/api/wishlists`, { data: { name: data.name ?? 'E2E Wishlist' } });
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
+  }
+
+  async deleteWishlist(id: string) {
+    await this.request.delete(`${API_URL}/api/wishlists/${id}`);
   }
 
   // ─── Generic cleanup ────────────────────────────────────

@@ -21,7 +21,7 @@ export default defineConfig({
 
   /* ── Performance ─────────────────────────────────────────── */
   fullyParallel: true,
-  workers: CI ? '50%' : undefined, // Local: all cores; CI: half to be stable
+  workers: CI ? '50%' : 4, // Local: 4 workers (prevents CPU hang); CI: half cores
   timeout: 30_000,                 // 30s per test (fail fast, don't hang)
   expect: { timeout: 5_000 },     // 5s assertion timeout
 

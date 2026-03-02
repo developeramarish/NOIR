@@ -226,3 +226,31 @@ export function testReview(overrides: {
     ...overrides,
   };
 }
+
+export function testCompany(overrides?: Partial<{
+  name: string;
+  industry: string;
+  website: string;
+}>) {
+  const suffix = randomSuffix();
+  return {
+    name: `TestCompany-${suffix}`,
+    industry: 'Technology',
+    website: `https://company-${suffix}.example.com`,
+    ...overrides,
+  };
+}
+
+export function testEmployeeTag(overrides?: Partial<{
+  name: string;
+  category: string;
+  color: string;
+}>) {
+  const suffix = randomSuffix();
+  return {
+    name: `TestTag-${suffix}`,
+    category: 'Skill',
+    color: '#3b82f6',
+    ...overrides,
+  };
+}
