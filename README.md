@@ -2,6 +2,8 @@
 
 # NOIR
 
+> *Build in the shadows. Ship in the light.*
+
 **Enterprise .NET 10 + React 19 SaaS Platform**
 
 *Multi-Tenancy · E-commerce · ERP Modules · Clean Architecture*
@@ -10,7 +12,7 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-11%2C974_passing-brightgreen.svg?style=flat-square)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-12%2C791_passing-brightgreen.svg?style=flat-square)](tests/)
 [![AI-Coded](https://img.shields.io/badge/Built_with-Claude_Code-blueviolet?style=flat-square&logo=anthropic)](https://claude.ai/download)
 
 [Features](#features) · [Quick Start](#quick-start) · [Architecture](#architecture) · [Documentation](#documentation) · [Contributing](#contributing)
@@ -23,7 +25,7 @@
 
 NOIR is a production-ready foundation for building multi-tenant SaaS applications. It provides a complete vertical stack — from database to UI — with built-in e-commerce, ERP modules, and enterprise patterns out of the box.
 
-**100% AI-coded.** Every line of code, every test, every document in this repository was written using [Claude Code](https://claude.ai/download). NOIR is a proof that AI-assisted development can produce enterprise-grade software — with clean architecture, 11,974 passing tests, and full-stack functionality — when used effectively.
+**100% AI-coded.** Every line of code, every test, every document in this repository was written using [Claude Code](https://claude.ai/download). NOIR is a proof that AI-assisted development can produce enterprise-grade software — with clean architecture, 12,791 passing tests, and full-stack functionality — when used effectively.
 
 **Use cases:**
 - Multi-tenant B2B/B2C SaaS platforms
@@ -33,97 +35,22 @@ NOIR is a production-ready foundation for building multi-tenant SaaS application
 
 ---
 
-## Quick Start
-
-### Prerequisites
-
-| Requirement | Version | Download |
-|-------------|---------|----------|
-| .NET SDK | 10.0+ | [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/10.0) |
-| Node.js | 20+ | [nodejs.org](https://nodejs.org/) |
-| pnpm | 10+ | [pnpm.io](https://pnpm.io/installation) |
-| SQL Server | 2022 | LocalDB (Windows) or [Docker](https://hub.docker.com/_/microsoft-mssql-server) |
-
-### Setup
-
-```bash
-git clone https://github.com/NOIR-Solution/NOIR.git && cd NOIR
-dotnet build src/NOIR.sln
-```
-
-Run backend and frontend in separate terminals:
-
-```bash
-# Terminal 1 — Backend (port 4000)
-dotnet watch --project src/NOIR.Web
-
-# Terminal 2 — Frontend (port 3000)
-cd src/NOIR.Web/frontend && pnpm install && pnpm run dev
-```
-
-### Access
-
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| API | http://localhost:4000 |
-| API Docs (Scalar) | http://localhost:4000/api/docs |
-| Storybook | http://localhost:6006 |
-| Hangfire Dashboard | http://localhost:4000/hangfire |
-
-Default credentials: `admin@noir.local` / `123qwe`
-
----
-
-## Features
-
-### Platform
-
-| Feature | Description |
-|---------|-------------|
-| **Multi-Tenancy** | Finbuckle-based tenant isolation with per-tenant configs, automatic query filtering |
-| **Authentication** | JWT + refresh token rotation, RBAC, granular `resource:action` permissions |
-| **Audit Trail** | 3-level logging (HTTP → Command → Entity), activity timeline with diff |
-| **Feature Management** | 33 modules with platform/tenant override, endpoint and command gating |
-| **Real-Time** | SignalR hubs, SSE for job progress, multi-tab session sync |
-| **Email** | Database-driven templates with Mustache interpolation, multi-tenant inheritance |
-| **PWA** | Installable on all platforms, offline support, smart caching strategies |
-
-### E-commerce
-
-| Module | Capabilities |
-|--------|-------------|
-| **Products** | Variants with SKU/price/inventory, hierarchical categories, 13 attribute types, faceted search |
-| **Cart & Checkout** | Guest + authenticated carts with merge, accordion checkout with session expiry |
-| **Orders** | Full lifecycle (Pending → Delivered), cancel/return with inventory rollback |
-| **Payments** | Multi-gateway architecture, transaction tracking, refund workflow, webhook verification |
-| **Shipping** | Provider integrations, tracking timeline, carrier management |
-| **Inventory** | Receipt system (stock-in/stock-out), draft/confirmed workflow |
-| **Customers** | Profiles, addresses, order history, segmentation groups |
-| **Promotions** | Discount codes, percentage/fixed, usage limits, date-range scheduling |
-| **Reviews** | Product reviews with moderation workflow (approve/reject) |
-| **Reports** | Revenue, orders, inventory, product performance analytics |
-
-### ERP Modules
-
-| Module | Capabilities |
-|--------|-------------|
-| **HR** | Employees (auto-code), department tree, 7 tag categories, org chart, bulk ops, import/export |
-| **CRM** | Contacts, companies, lead pipeline Kanban, activities, dashboard widgets |
-| **Project Management** | Projects (auto-code), Kanban board, tasks with subtasks/labels/comments |
-
-### Content & Media
-
-| Feature | Description |
-|---------|-------------|
-| **Blog CMS** | Posts, categories, tags with rich content editor |
-| **Rich Rendering** | Syntax highlighting (Shiki), math (KaTeX), diagrams (Mermaid) |
-| **Media Library** | Upload, processing, storage (local / Azure Blob / AWS S3) |
-| **Webhooks** | Outbound subscriptions with event filtering and delivery tracking |
-
----
-
 ## Architecture
+
+```mermaid
+flowchart TB
+    FE["🖥️  React 19 Frontend\n56 pages · 98 UIKit components · 35 hooks"]
+    WEB["⚡  Web Layer — ASP.NET Core 10\n52 endpoint groups · JWT · Multi-tenancy · SignalR + SSE"]
+    APP["📋  Application Layer — CQRS via Wolverine\nCommands · Queries · Validators · Domain Events · Audit"]
+    DOM["🏛️  Domain Layer\nEntities · Value Objects · Repository Interfaces · Specifications"]
+    INF["🔧  Infrastructure\nEF Core 10 · SQL Server 2022 · FusionCache · Hangfire · ClosedXML"]
+
+    FE -->|REST / SignalR / SSE| WEB
+    WEB --> APP
+    APP --> DOM
+    APP --> INF
+    INF -->|implements| DOM
+```
 
 ```
 NOIR/
@@ -133,10 +60,10 @@ NOIR/
 │   ├── NOIR.Infrastructure/   # EF Core, external services, persistence
 │   └── NOIR.Web/              # API endpoints, middleware, SPA host
 │       └── frontend/          # React 19 SPA
-│           ├── src/portal-app/ # Feature modules
-│           ├── src/uikit/      # 98 UI components with Storybook stories
+│           ├── src/portal-app/ # Feature modules (56 pages)
+│           ├── src/uikit/      # 98 UI components + Storybook stories
 │           └── src/hooks/      # 35 custom hooks
-├── tests/                     # 11,974 tests
+├── tests/                     # 12,791 tests
 └── docs/                      # Architecture, patterns, module designs
 ```
 
@@ -148,7 +75,57 @@ NOIR/
 - **Soft Delete** — data safety by default, hard delete only for GDPR
 - **Domain Events** — decoupled cross-cutting reactions to state changes
 
-### Tech Stack
+---
+
+## Features
+
+### 🏗️ Platform
+
+| | Feature | Description |
+|--|---------|-------------|
+| 🏢 | **Multi-Tenancy** | Finbuckle-based tenant isolation with per-tenant configs, automatic query filtering |
+| 🔐 | **Authentication** | JWT + refresh token rotation, RBAC, granular `resource:action` permissions |
+| 📜 | **Audit Trail** | 3-level logging (HTTP → Command → Entity), activity timeline with diff |
+| 🎛️ | **Feature Management** | 33 modules with platform/tenant override, endpoint and command gating |
+| ⚡ | **Real-Time** | SignalR hubs, SSE for job progress, multi-tab session sync |
+| 📧 | **Email** | Database-driven templates with Mustache interpolation, multi-tenant inheritance |
+| 📱 | **PWA** | Installable on all platforms, offline support, smart caching strategies |
+
+### 🛒 E-commerce
+
+| | Module | Capabilities |
+|--|--------|-------------|
+| 📦 | **Products** | Variants with SKU/price/inventory, hierarchical categories, 13 attribute types, faceted search |
+| 🛍️ | **Cart & Checkout** | Guest + authenticated carts with merge, accordion checkout with session expiry |
+| 📋 | **Orders** | Full lifecycle (Pending → Delivered), cancel/return with inventory rollback |
+| 💳 | **Payments** | Multi-gateway architecture, transaction tracking, refund workflow, webhook verification |
+| 🚚 | **Shipping** | Provider integrations, tracking timeline, carrier management |
+| 🏪 | **Inventory** | Receipt system (stock-in/stock-out), draft/confirmed workflow |
+| 👥 | **Customers** | Profiles, addresses, order history, segmentation groups |
+| 🎟️ | **Promotions** | Discount codes, percentage/fixed, usage limits, date-range scheduling |
+| ⭐ | **Reviews** | Product reviews with moderation workflow (approve/reject) |
+| 📊 | **Reports** | Revenue, orders, inventory, product performance analytics |
+
+### 🏢 ERP Modules
+
+| | Module | Capabilities |
+|--|--------|-------------|
+| 👤 | **HR** | Employees (auto-code), department tree, 7 tag categories, org chart, bulk ops, import/export |
+| 🤝 | **CRM** | Contacts, companies, lead pipeline Kanban, activities, dashboard widgets |
+| 📌 | **Project Management** | Projects (auto-code), Kanban board, tasks with subtasks/labels/comments |
+
+### 📝 Content & Media
+
+| | Feature | Description |
+|--|---------|-------------|
+| ✍️ | **Blog CMS** | Posts, categories, tags with rich content editor |
+| 🎨 | **Rich Rendering** | Syntax highlighting (Shiki), math (KaTeX), diagrams (Mermaid) |
+| 🖼️ | **Media Library** | Upload, processing, storage (local / Azure Blob / AWS S3) |
+| 🔔 | **Webhooks** | Outbound subscriptions with event filtering and delivery tracking |
+
+---
+
+## Tech Stack
 
 <table>
 <tr>
@@ -201,15 +178,59 @@ See [TECH_STACK.md](docs/TECH_STACK.md) for the complete technology reference.
 |-------|-------|-------|
 | Domain Unit Tests | 2,963 | Business rules, entity logic |
 | Application Unit Tests | 8,163 | Handlers, validators, DTOs |
-| Integration Tests | 803 | API endpoints with database |
+| Integration Tests | 803 | API endpoints with real database |
 | Architecture Tests | 45 | Layer dependency enforcement |
-| **Total** | **11,974** | |
+| Frontend Unit Tests | 143 | Hooks, lib utilities (96% coverage) |
+| Storybook Browser Tests | 674 | 97 UIKit components in Chromium |
+| **Total** | **12,791** | |
 
 ```bash
-dotnet test src/NOIR.sln                                  # Run all
-dotnet test tests/NOIR.Application.UnitTests              # Specific suite
-dotnet test src/NOIR.sln --collect:"XPlat Code Coverage"  # With coverage
+dotnet test src/NOIR.sln                                  # Backend (11,974)
+cd src/NOIR.Web/frontend && pnpm test:coverage            # Frontend unit + coverage
+cd src/NOIR.Web/frontend && pnpm test:storybook           # Storybook browser tests
 ```
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+| Requirement | Version | Download |
+|-------------|---------|----------|
+| .NET SDK | 10.0+ | [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| Node.js | 20+ | [nodejs.org](https://nodejs.org/) |
+| pnpm | 10+ | [pnpm.io](https://pnpm.io/installation) |
+| SQL Server | 2022 | LocalDB (Windows) or [Docker](https://hub.docker.com/_/microsoft-mssql-server) |
+
+### Setup
+
+```bash
+git clone https://github.com/NOIR-Solution/NOIR.git && cd NOIR
+dotnet build src/NOIR.sln
+```
+
+Run backend and frontend in separate terminals:
+
+```bash
+# Terminal 1 — Backend (port 4000)
+dotnet watch --project src/NOIR.Web
+
+# Terminal 2 — Frontend (port 3000)
+cd src/NOIR.Web/frontend && pnpm install && pnpm run dev
+```
+
+### Access
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| API | http://localhost:4000 |
+| API Docs (Scalar) | http://localhost:4000/api/docs |
+| Storybook | http://localhost:6006 |
+| Hangfire Dashboard | http://localhost:4000/hangfire |
+
+Default credentials: `admin@noir.local` / `123qwe`
 
 ---
 
@@ -310,7 +331,7 @@ NOIR builds on these excellent open-source projects:
 
 <div align="center">
 
-**Built entirely with [Claude Code](https://claude.ai/download)**
+*Build in the shadows. Ship in the light.*
 
 [Documentation](docs/) · [Roadmap](docs/roadmap.md) · [Report Bug](https://github.com/NOIR-Solution/NOIR/issues) · [Request Feature](https://github.com/NOIR-Solution/NOIR/issues)
 
