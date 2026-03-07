@@ -101,6 +101,7 @@ import {
   useReorderProductImages,
 } from '@/portal-app/products/queries'
 import { useActiveBrandsQuery } from '@/portal-app/brands/queries'
+import { FilePreviewModal } from '@uikit'
 import { ImageUploadZone } from '@/components/products/ImageUploadZone'
 import { SortableImageGallery } from '@/components/products/SortableImageGallery'
 import { ProductAttributesSection } from '@/components/products/ProductAttributesSection'
@@ -351,6 +352,7 @@ export const ProductFormPage = () => {
   const [tempImages, setTempImages] = useState<TempImage[]>([])
   const [localVariantToDelete, setLocalVariantToDelete] = useState<LocalVariant | null>(null)
   const [tempImageToDelete, setTempImageToDelete] = useState<TempImage | null>(null)
+  const [tempImagePreviewIndex, setTempImagePreviewIndex] = useState<number | null>(null)
 
   // Mutation hooks
   const createProductMutation = useCreateProduct()
@@ -1706,7 +1708,8 @@ export const ProductFormPage = () => {
                           <img
                             src={img.url}
                             alt={img.altText || t('products.productImage', 'Product image')}
-                            className="w-full aspect-square object-cover"
+                            className="w-full aspect-square object-cover cursor-pointer"
+                            onClick={() => setTempImagePreviewIndex(tempImages.indexOf(img))}
                           />
                           {img.isPrimary && (
                             <div className="absolute top-2 left-2">
@@ -1740,6 +1743,13 @@ export const ProductFormPage = () => {
                       ))}
                     </div>
                   )}
+
+                  <FilePreviewModal
+                    open={tempImagePreviewIndex !== null}
+                    onOpenChange={(open) => { if (!open) setTempImagePreviewIndex(null) }}
+                    files={tempImages.map((img) => ({ url: img.url, name: img.altText || t('products.productImage', 'Product image') }))}
+                    initialIndex={tempImagePreviewIndex ?? 0}
+                  />
 
                   {/* Add Image by URL */}
                   <div className="space-y-2 pt-4 border-t">
