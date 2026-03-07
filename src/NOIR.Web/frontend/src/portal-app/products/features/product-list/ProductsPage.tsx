@@ -746,7 +746,7 @@ export const ProductsPage = () => {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {/* Product image thumbnail - Click to view full image */}
-                            <div style={{ viewTransitionName: `product-image-${product.id}` }}>
+                            <div style={{ viewTransitionName: `product-image-${product.id}` }} onClick={(e) => e.stopPropagation()}>
                               <FilePreviewTrigger
                                 file={{
                                   url: product.primaryImageUrl ?? '',
