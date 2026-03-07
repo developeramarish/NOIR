@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FilePreviewModal } from '@uikit'
 import {
   DndContext,
   closestCenter,
@@ -17,7 +18,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Star, Trash2, Pencil, GripVertical } from 'lucide-react'
+import { Star, Trash2, Pencil, GripVertical, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge, Button, Input } from '@uikit'
 
@@ -35,6 +36,7 @@ interface SortableImageGalleryProps {
 
 interface SortableImageCardProps {
   image: ProductImage
+  allImages: ProductImage[]
   productName?: string
   isViewMode?: boolean
   index: number
@@ -48,6 +50,7 @@ interface SortableImageCardProps {
 
 const SortableImageCard = ({
   image,
+  allImages,
   productName,
   isViewMode,
   index,
@@ -59,6 +62,7 @@ const SortableImageCard = ({
   onSaveAltText,
 }: SortableImageCardProps) => {
   const { t } = useTranslation('common')
+  const [previewOpen, setPreviewOpen] = useState(false)
   const {
     attributes,
     listeners,
@@ -105,8 +109,9 @@ const SortableImageCard = ({
             image.altText ||
             `${productName || t('products.product', 'Product')} - ${t('products.imageNumber', { number: index + 1, defaultValue: `Image ${index + 1}` })}`
           }
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className={cn('h-full w-full object-cover transition-transform duration-300 group-hover:scale-105', isViewMode && 'cursor-pointer')}
           draggable={false}
+          onClick={isViewMode ? () => setPreviewOpen(true) : undefined}
         />
 
         {image.isPrimary && (
@@ -129,6 +134,15 @@ const SortableImageCard = ({
                 <Star className="h-4 w-4" />
               </Button>
             )}
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 shadow-lg backdrop-blur-sm bg-white/90 hover:bg-white transition-all duration-200 hover:scale-110 cursor-pointer"
+              onClick={() => setPreviewOpen(true)}
+              aria-label={t('products.viewImage', 'View image')}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
             <Button
               size="icon"
               variant="secondary"
@@ -186,6 +200,13 @@ const SortableImageCard = ({
           )}
         </p>
       )}
+
+      <FilePreviewModal
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        files={allImages.map((img) => ({ url: img.url, name: img.altText || productName || '' }))}
+        initialIndex={index}
+      />
     </div>
   )
 }
@@ -283,6 +304,7 @@ export const SortableImageGallery = ({
             <SortableImageCard
               key={image.id}
               image={image}
+              allImages={images}
               productName={productName}
               isViewMode={isViewMode}
               index={index}
