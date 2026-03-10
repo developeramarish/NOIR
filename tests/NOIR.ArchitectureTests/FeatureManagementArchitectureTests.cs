@@ -92,14 +92,14 @@ public class FeatureManagementArchitectureTests
     }
 
     [Fact]
-    public void ModuleDefinitionCount_ShouldBe34()
+    public void ModuleDefinitionCount_ShouldBe35()
     {
         // Act
         var moduleTypes = GetModuleDefinitionTypes().ToList();
 
         // Assert
-        moduleTypes.Should().HaveCount(34,
-            because: "there should be exactly 34 module definitions (8 Core + 14 Ecommerce + 3 Content + 3 Platform + 2 Analytics + 1 Integrations + 3 Erp)");
+        moduleTypes.Should().HaveCount(35,
+            because: "there should be exactly 35 module definitions (8 Core + 14 Ecommerce + 3 Content + 4 Platform + 2 Analytics + 1 Integrations + 3 Erp)");
     }
 
     [Fact]
