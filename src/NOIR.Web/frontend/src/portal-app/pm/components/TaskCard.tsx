@@ -65,7 +65,6 @@ export const TaskCard = ({ task, onClick, isDraggable = true, onComplete, onUnas
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   }
 
   const { icon: PriorityIcon, badgeClass } = priorityConfig[task.priority]
@@ -73,6 +72,17 @@ export const TaskCard = ({ task, onClick, isDraggable = true, onComplete, onUnas
   const extraLabels = task.labels.length - 2
   const isParent = task.subtaskCount > 0 && !task.parentTaskId
   const isSubtask = Boolean(task.parentTaskId && task.parentTaskNumber)
+
+  // Show a clear drop-placeholder skeleton at the insertion point while dragging
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="h-16 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5"
+      />
+    )
+  }
 
   return (
     <div
@@ -83,7 +93,7 @@ export const TaskCard = ({ task, onClick, isDraggable = true, onComplete, onUnas
       className={`group ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
     >
       <Card
-        className={`shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 py-0 gap-0 ${
+        className={`shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border-border/60 dark:border-border py-0 gap-0 ${
           isMemberDragTarget ? 'ring-2 ring-primary/60 shadow-md bg-primary/5' : ''
         } ${task.status === 'Done' || task.status === 'Cancelled' ? 'opacity-60' : ''}`}
         onClick={() => onClick(task)}

@@ -28,6 +28,8 @@ import {
   Users,
   Layers,
   CornerDownRight,
+  Circle,
+  CheckCircle2,
 } from 'lucide-react'
 import {
   Avatar,
@@ -55,7 +57,6 @@ import {
 } from '@uikit'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
-import { ViewTransitionLink } from '@/components/navigation/ViewTransitionLink'
 import {
   useTaskQuery,
   useUpdateTask,
@@ -132,7 +133,7 @@ const LabelPickerPopover = ({ activeIds, projectLabels, projectId, taskId: _task
 
   return (
     <div className="w-60 p-2 space-y-1">
-      <p className="text-xs font-semibold text-muted-foreground px-1 pb-1 border-b border-border/40">
+      <p className="text-xs font-semibold text-muted-foreground px-1 pb-1 border-b border-border/60 dark:border-border/80">
         {t('pm.labels', { defaultValue: 'Labels' })}
       </p>
 
@@ -357,7 +358,7 @@ const MemberPickerPopover = ({ assigneeId, assigneeName, members, onAssign }: Me
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2 space-y-1" align="start">
-        <p className="text-xs font-semibold text-muted-foreground px-1 pb-1 border-b border-border/40">
+        <p className="text-xs font-semibold text-muted-foreground px-1 pb-1 border-b border-border/60 dark:border-border/80">
           {t('pm.assignee', { defaultValue: 'Assignee' })}
         </p>
         {members.length > 4 && (
@@ -446,8 +447,8 @@ const getAvatarColorClass = (name: string) =>
 const SidebarSection = ({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) => (
   <div className="space-y-1.5">
     <div className="flex items-center gap-1.5">
-      <Icon className="h-3 w-3 text-muted-foreground/60" />
-      <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">{label}</span>
+      <Icon className="h-3 w-3 text-muted-foreground" />
+      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
     </div>
     {children}
   </div>
@@ -497,7 +498,6 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
   // ── Subtask add ──
   const [addSubtaskOpen, setAddSubtaskOpen] = useState(false)
   const [subtaskTitle, setSubtaskTitle] = useState('')
-
 
   useEffect(() => {
     if (!open) {
@@ -634,7 +634,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
       <DialogContent className="max-w-4xl w-full p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col [&>button:last-child]:hidden">
 
         {/* ── Top bar — Jira-style breadcrumb ── */}
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/60 bg-muted/40 dark:bg-muted/25 flex-shrink-0">
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/70 dark:border-border bg-muted/50 dark:bg-muted/50 flex-shrink-0">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-1 flex-1 min-w-0 text-xs text-muted-foreground overflow-hidden">
             {task?.projectName && (
@@ -651,7 +651,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
             {task?.parentTaskNumber && task?.parentTaskId && (
               <>
                 <button
-                  onClick={() => onNavigateToTask?.(task.parentTaskNumber!)}
+                  onClick={() => onNavigateToTask?.(task.parentTaskId!)}
                   className="hover:text-foreground transition-colors cursor-pointer font-mono flex-shrink-0"
                 >
                   #{task.parentTaskNumber!.split('-').pop()}
@@ -712,7 +712,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
         {isLoading && (
           <div className="flex-1 overflow-y-auto p-5">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] h-full gap-0">
-              <div className="p-5 space-y-5 border-r border-border/30">
+              <div className="p-5 space-y-5 border-r border-border/50 dark:border-border/70">
                 <div className="flex gap-2">
                   <Skeleton className="h-5 w-16 rounded-full" />
                   <Skeleton className="h-5 w-20 rounded-full" />
@@ -743,7 +743,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
             <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] h-full">
 
               {/* ── Left panel ── */}
-              <div className="p-5 space-y-5 overflow-y-auto border-r border-border/30 min-h-0">
+              <div className="p-5 space-y-5 overflow-y-auto border-r border-border/50 dark:border-border/70 min-h-0">
 
                 {/* Active labels — shown above title like Trello */}
                 {task.labels.length > 0 && (
@@ -781,15 +781,12 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                         className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${
                           task.status === 'Done'
                             ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600'
-                            : 'border-green-500/60 hover:border-green-500 hover:bg-green-500/10'
+                            : 'border-muted-foreground/40 hover:border-foreground hover:bg-muted'
                         }`}
                         onClick={() => handleStatusChange(task.status === 'Done' ? 'Todo' : 'Done')}
                         aria-label={task.status === 'Done' ? t('pm.markTodo', { defaultValue: 'Mark as todo' }) : t('pm.quickComplete', { defaultValue: 'Mark as done' })}
                       >
-                        {task.status === 'Done'
-                          ? <Check className="h-3.5 w-3.5 text-white" />
-                          : <Check className="h-3.5 w-3.5 text-green-500/40 group-hover:text-green-500" />
-                        }
+                        {task.status === 'Done' && <Check className="h-3.5 w-3.5 text-white" />}
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -826,7 +823,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
 
                 {/* Description */}
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
                     {t('pm.taskDescription', { defaultValue: 'Description' })}
                   </p>
                   <Textarea
@@ -842,7 +839,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 {/* Subtasks */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <CheckSquare className="h-4 w-4 text-green-500" />
+                    <CheckSquare className="h-4 w-4 text-muted-foreground" />
                     <h3 className="text-sm font-semibold">
                       {t('pm.subtasks', { defaultValue: 'Subtasks' })}
                       {task.subtasks.length > 0 && (
@@ -872,17 +869,22 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                   {task.subtasks.length > 0 && (
                     <div className="space-y-1.5 mb-3">
                       {task.subtasks.map((subtask) => (
-                        <ViewTransitionLink
+                        <button
                           key={subtask.id}
-                          to={`/portal/tasks/${subtask.id}`}
-                          onClick={() => onOpenChange(false)}
-                          className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border/50 hover:border-primary/20 hover:bg-primary/5 transition-all group/subtask"
+                          type="button"
+                          onClick={() => onNavigateToTask?.(subtask.id)}
+                          className="w-full flex items-center gap-2.5 p-2.5 rounded-lg border border-border/60 dark:border-border/80 hover:border-primary/20 hover:bg-primary/5 transition-all group/subtask cursor-pointer text-left"
                         >
+                          {subtask.status === 'Done' ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          )}
                           <Badge
                             variant="outline"
-                            className={`text-[10px] px-1.5 py-0 flex-shrink-0 ${getStatusBadgeClasses(statusColorMap[subtask.status])}`}
+                            className={`text-[10px] px-1.5 py-0 flex-shrink-0 ${subtask.columnName ? 'text-muted-foreground' : getStatusBadgeClasses(statusColorMap[subtask.status])}`}
                           >
-                            {subtask.status}
+                            {subtask.columnName ?? t(`statuses.${subtask.status.toLowerCase()}`, { defaultValue: subtask.status })}
                           </Badge>
                           <span className="text-xs font-mono text-muted-foreground flex-shrink-0">#{subtask.taskNumber.split('-').pop()}</span>
                           <span className="text-sm flex-1 truncate">{subtask.title}</span>
@@ -891,7 +893,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                               {subtask.assigneeName}
                             </span>
                           )}
-                        </ViewTransitionLink>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -934,7 +936,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 {/* Comments */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <MessageSquare className="h-4 w-4 text-blue-500" />
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
                     <h3 className="text-sm font-semibold">
                       {t('pm.comments', { defaultValue: 'Comments' })}
                       {task.comments.length > 0 && (
@@ -994,7 +996,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
-                            <div className="bg-muted/50 border border-border/40 rounded-lg px-3 py-2">
+                            <div className="bg-muted/60 dark:bg-muted/50 border border-border/60 dark:border-border rounded-lg px-3 py-2">
                               <p className="text-sm whitespace-pre-wrap text-foreground/90">{comment.content}</p>
                             </div>
                           </div>
@@ -1012,7 +1014,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
               </div>
 
               {/* ── Right sidebar ── */}
-              <div className="p-4 bg-muted/40 dark:bg-muted/20 space-y-4 overflow-y-auto border-l border-border/60">
+              <div className="p-4 bg-muted/50 dark:bg-muted/40 space-y-4 overflow-y-auto border-l border-border/70 dark:border-border">
 
                 {/* Status */}
                 <SidebarSection icon={CheckSquare} label={t('pm.status', { defaultValue: 'Status' })}>
@@ -1132,7 +1134,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                   </Popover>
                 </SidebarSection>
 
-                <div className="border-t border-border/30" />
+                <div className="border-t border-border/50 dark:border-border/70" />
 
                 {/* Reporter */}
                 <SidebarSection icon={UserCheck} label={t('pm.reporter', { defaultValue: 'Reporter' })}>
@@ -1156,7 +1158,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                   </SidebarSection>
                 )}
 
-                <div className="border-t border-border/30" />
+                <div className="border-t border-border/50 dark:border-border/70" />
 
                 {/* Timestamps */}
                 <div className="space-y-1.5 text-[10px] text-muted-foreground px-2">
@@ -1181,7 +1183,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 </div>
 
                 {/* Archive */}
-                <div className="border-t border-border/30 pt-3">
+                <div className="border-t border-border/50 dark:border-border/70 pt-3">
                   <button
                     className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-amber-600 cursor-pointer transition-colors py-1 rounded-md hover:bg-amber-500/10 disabled:opacity-50"
                     onClick={handleArchiveTask}
@@ -1211,6 +1213,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
           </div>
         )}
       </DialogContent>
+
     </Dialog>
   )
 }

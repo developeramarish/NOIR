@@ -9,11 +9,14 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
   useDroppable,
   useDraggable,
   type DragEndEvent,
   type DragStartEvent,
   type DragOverEvent,
+  type CollisionDetection,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -48,7 +51,7 @@ import type { TaskCardDto, KanbanColumnDto, ProjectMemberDto, TaskLabelBriefDto 
 import { TaskCard } from './TaskCard'
 import { TaskDetailModal } from './TaskDetailModal'
 import { ColumnSettingsDialog } from './ColumnSettingsDialog'
-import { TaskFilterPopover, matchDueDate, type DueDateFilter } from './TaskFilterPopover'
+import { TaskFilterPopover, matchDueDate, matchCompletion, type DueDateFilter, type CompletionFilter } from './TaskFilterPopover'
 
 // ─── Droppable body: makes empty columns valid drop targets ──────────────────
 
@@ -65,7 +68,7 @@ const DroppableColumnBody = ({
   return (
     <div
       ref={setNodeRef}
-      className={`space-y-2 p-2 min-h-[100px] rounded-b-lg transition-all duration-150 ${
+      className={`flex-1 space-y-2 p-2 min-h-[120px] transition-all duration-150 ${
         isCardOver ? 'bg-primary/5 ring-1 ring-inset ring-primary/25' : ''
       }`}
     >
@@ -95,7 +98,7 @@ const SortableColumnWrapper = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`min-w-[280px] max-w-[320px] flex-shrink-0 group/col ${isDragging ? 'opacity-40' : ''}`}
+      className={`min-w-[280px] max-w-[320px] flex-shrink-0 group/col flex flex-col ${isDragging ? 'opacity-40' : ''}`}
     >
       {children({ dragHandleProps: { ...listeners, ...attributes }, isDragging })}
     </div>
@@ -159,7 +162,11 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
 
   // ── Optimistic local state ─────────────────────────────────────────────────
   const [localColumns, setLocalColumns] = useState<KanbanColumnDto[]>([])
+  const localColumnsRef = useRef<KanbanColumnDto[]>([])
   const isDraggingRef = useRef(false)
+
+  // Keep ref in sync so handleDragEnd always reads the latest localColumns (avoids stale closure)
+  useEffect(() => { localColumnsRef.current = localColumns }, [localColumns])
 
   // ── Figma-style board pan ─────────────────────────────────────────────────
   const boardScrollRef = useRef<HTMLDivElement>(null)
@@ -168,8 +175,10 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   const handleBoardPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return
     const target = e.target as HTMLElement
+    // Skip if DOM target is outside the board (portalled menus, dialogs, etc.)
+    if (!boardScrollRef.current?.contains(target)) return
     // Skip pan if clicking interactive elements or dnd-kit draggable items
-    if (target.closest('button, input, textarea, a, select, [role="button"], [role="option"]')) return
+    if (target.closest('button, input, textarea, a, select, [role="button"], [role="option"], [role="menuitem"]')) return
     if (target.closest('.cursor-grab')) return
     panRef.current = { pointerId: e.pointerId, startX: e.clientX, scrollLeft: boardScrollRef.current?.scrollLeft ?? 0 }
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
@@ -243,11 +252,19 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
 
   const boardSearch = searchParams.get('board-search') ?? ''
   const boardAssignees = searchParams.get('board-assignees')?.split(',').filter(Boolean) ?? []
+  const boardReporters = searchParams.get('board-reporters')?.split(',').filter(Boolean) ?? []
   const boardPriorities = searchParams.get('board-priorities')?.split(',').filter(Boolean) ?? []
   const boardLabels = searchParams.get('board-labels')?.split(',').filter(Boolean) ?? []
   const boardDue = (searchParams.get('board-due') ?? '') as DueDateFilter
+  const boardDueStart = searchParams.get('board-due-start') ?? ''
+  const boardDueEnd = searchParams.get('board-due-end') ?? ''
+  const boardCompletion = (searchParams.get('board-completion') ?? '') as CompletionFilter
 
-  const advancedFilterCount = boardLabels.length + (boardDue ? 1 : 0)
+  const advancedFilterCount =
+    boardLabels.length +
+    (boardDue ? 1 : 0) +
+    boardReporters.length +
+    (boardCompletion ? 1 : 0)
   const hasActiveFilters =
     Boolean(boardSearch) ||
     boardAssignees.length > 0 ||
@@ -269,10 +286,14 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       const next = new URLSearchParams(prev)
       next.delete('board-search')
       next.delete('board-assignees')
+      next.delete('board-reporters')
       next.delete('board-priorities')
       next.delete('board-task-type')
       next.delete('board-labels')
       next.delete('board-due')
+      next.delete('board-due-start')
+      next.delete('board-due-end')
+      next.delete('board-completion')
       return next
     }, { replace: true })
   }
@@ -301,6 +322,11 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         (boardAssignees.includes('__unassigned__') && !task.assigneeName) ||
         (task.assigneeName != null &&
           boardAssignees.some(a => a !== '__unassigned__' && task.assigneeName!.toLowerCase().includes(a.toLowerCase())))
+      const matchReporter =
+        boardReporters.length === 0 ||
+        (boardReporters.includes('__no-reporter__') && !task.reporterName) ||
+        (task.reporterName != null &&
+          boardReporters.some(r => r !== '__no-reporter__' && task.reporterName!.toLowerCase().includes(r.toLowerCase())))
       const matchPriority = boardPriorities.length === 0 || boardPriorities.includes(task.priority)
       const matchTaskType =
         boardTaskType === 'all' ||
@@ -310,16 +336,51 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         boardLabels.length === 0 ||
         (boardLabels.includes('__no-label__') && task.labels.length === 0) ||
         task.labels.some(l => boardLabels.includes(l.id))
-      const matchDue = matchDueDate(task.dueDate, boardDue)
-      return matchSearch && matchAssignee && matchPriority && matchTaskType && matchLabel && matchDue
+      const matchDue = matchDueDate(task.dueDate, boardDue, boardDueStart || undefined, boardDueEnd || undefined)
+      const matchComp = matchCompletion(task.completedAt, boardCompletion)
+      return matchSearch && matchAssignee && matchReporter && matchPriority && matchTaskType && matchLabel && matchDue && matchComp
     }),
-  })), [localColumns, boardSearch, boardAssignees, boardPriorities, boardTaskType, boardLabels, boardDue])
+  })), [localColumns, boardSearch, boardAssignees, boardReporters, boardPriorities, boardTaskType, boardLabels, boardDue, boardDueStart, boardDueEnd, boardCompletion])
 
   // ── DnD sensors ────────────────────────────────────────────────────────────
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+
+  // ── Collision detection strategy ───────────────────────────────────────────
+  const collisionDetectionStrategy: CollisionDetection = useCallback((args) => {
+    const dragId = String(args.active.id)
+    const colIds = new Set(localColumnsRef.current.map(c => c.id))
+
+    // Column drag: only consider other columns — filtering out task droppables
+    // prevents closestCorners from resolving to a task id, which breaks handleDragOver
+    if (colIds.has(dragId)) {
+      return closestCorners({
+        ...args,
+        droppableContainers: args.droppableContainers.filter(c => colIds.has(String(c.id))),
+      })
+    }
+
+    // Member drag: only collide with task cards
+    if (dragId.startsWith('member-')) {
+      return closestCorners({
+        ...args,
+        droppableContainers: args.droppableContainers.filter(c => !colIds.has(String(c.id))),
+      })
+    }
+
+    // Card drag: pointerWithin fires as soon as cursor enters target — Trello-style
+    const pointerHits = pointerWithin(args)
+    if (pointerHits.length > 0) {
+      // Prefer a task target (precise position) over a column body (appends to end)
+      const taskHit = pointerHits.find(({ id }) => !colIds.has(String(id)))
+      return taskHit ? [taskHit] : [pointerHits[0]]
+    }
+
+    // Fallback: first bounding-box overlap — catches fast moves and edges
+    return rectIntersection(args)
+  }, [])
 
   // ── handleDragStart ────────────────────────────────────────────────────────
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -426,19 +487,18 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
     }
 
     const activeId = String(active.id)
-    const overId = String(over.id)
-    if (activeId === overId) return
 
     if (currentType === 'column') {
-      // Commit column order — localColumns already updated optimistically in onDragOver
-      const fromIdx = localColumns.findIndex(c => c.id === activeId)
-      const toIdx = localColumns.findIndex(c => c.id === overId)
-      const finalCols = fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx
-        ? arrayMove(localColumns, fromIdx, toIdx)
-        : localColumns
+      // handleDragOver already rearranged localColumns to the final order.
+      // Just persist that order — no need to re-arrayMove.
+      const latestCols = localColumnsRef.current
+      const originalIds = board.columns.map(c => c.id).join(',')
+      const newIds = latestCols.map(c => c.id)
+      // Skip save if order hasn't changed
+      if (newIds.join(',') === originalIds) return
 
       reorderColumnsMutation.mutate(
-        { projectId, request: { columnIds: finalCols.map(c => c.id) } },
+        { projectId, request: { columnIds: newIds } },
         {
           onError: (err) => {
             setLocalColumns(board.columns)
@@ -449,18 +509,23 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       return
     }
 
-    // Card: find its final position in localColumns and calculate sort order
-    const targetColIdx = localColumns.findIndex(col => col.tasks.some(t => t.id === activeId))
+    // Card: use localColumnsRef (always latest) to find where the task landed after drag-over.
+    // handleDragOver already moved the card to its final position in localColumns.
+    const latestCols = localColumnsRef.current
+    const targetColIdx = latestCols.findIndex(col => col.tasks.some(t => t.id === activeId))
     if (targetColIdx === -1) { setLocalColumns(board.columns); return }
 
-    const targetCol = localColumns[targetColIdx]
-    const taskIdx = targetCol.tasks.findIndex(t => t.id === activeId)
-    const tasks = targetCol.tasks
+    const targetCol = latestCols[targetColIdx]
+    const colTasks = targetCol.tasks
+    const taskIdx = colTasks.findIndex(t => t.id === activeId)
 
-    // Calculate sort order using only the neighbors' values (ignoring the task's own stale sort order).
-    // This correctly handles cross-column moves where the task still carries its source-column sort order.
-    const prevTask = taskIdx > 0 ? tasks[taskIdx - 1] : null
-    const nextTask = taskIdx < tasks.length - 1 ? tasks[taskIdx + 1] : null
+    // Check if card actually moved (different column or different position)
+    const origCol = board.columns.find(col => col.tasks.some(t => t.id === activeId))
+    const origIdx = origCol?.tasks.findIndex(t => t.id === activeId) ?? -1
+    if (origCol?.id === targetCol.id && origIdx === taskIdx) return // no change
+
+    const prevTask = taskIdx > 0 ? colTasks[taskIdx - 1] : null
+    const nextTask = taskIdx < colTasks.length - 1 ? colTasks[taskIdx + 1] : null
 
     let newSortOrder: number
     if (!prevTask && !nextTask) {
@@ -489,7 +554,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         },
       },
     )
-  }, [dragType, localColumns, board, projectId, moveTaskMutation, reorderColumnsMutation, t])
+  }, [dragType, board, projectId, moveTaskMutation, reorderColumnsMutation, t])
 
   // ── Other handlers ─────────────────────────────────────────────────────────
   const handleTaskClick = useCallback((task: TaskCardDto) => {
@@ -697,13 +762,27 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
 
         {/* Advanced filters: Labels + Due Date */}
         <TaskFilterPopover
+          showCompletion
+          showAssignees
+          showReporters
           showLabels
           showDueDate
+          members={members}
           availableLabels={availableLabels}
+          selectedAssignees={boardAssignees}
+          onAssigneesChange={(v) => setFilter('board-assignees', v.join(','))}
+          selectedReporters={boardReporters}
+          onReportersChange={(v) => setFilter('board-reporters', v.join(','))}
           selectedLabels={boardLabels}
-          selectedDueDate={boardDue}
           onLabelsChange={(v) => setFilter('board-labels', v.join(','))}
+          selectedDueDate={boardDue}
           onDueDateChange={(v) => setFilter('board-due', v)}
+          dueDateSpecificStart={boardDueStart}
+          onDueDateSpecificStartChange={(v) => setFilter('board-due-start', v)}
+          dueDateSpecificEnd={boardDueEnd}
+          onDueDateSpecificEndChange={(v) => setFilter('board-due-end', v)}
+          completionFilter={boardCompletion}
+          onCompletionChange={(v) => setFilter('board-completion', v)}
           onClearAll={clearAllFilters}
           activeCount={advancedFilterCount}
         />
@@ -722,7 +801,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       {/* ── Kanban board ── */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={collisionDetectionStrategy}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -731,7 +810,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         <SortableContext items={localColumns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
           <div
             ref={boardScrollRef}
-            className="flex gap-4 overflow-x-auto pb-1 cursor-default scrollbar-none select-none"
+            className="flex gap-4 overflow-x-auto pb-4 cursor-default scrollbar-none select-none min-h-[calc(100vh-18rem)]"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
             onPointerDown={handleBoardPointerDown}
             onPointerMove={handleBoardPointerMove}
@@ -747,15 +826,15 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
               return (
                 <SortableColumnWrapper key={column.id} id={column.id}>
                   {({ dragHandleProps, isDragging }) => (
-                    <div className={`bg-muted/30 rounded-lg border transition-all duration-150 ${
-                      isDragging ? 'border-primary/40 shadow-lg' : 'border-border/50'
+                    <div className={`flex flex-col flex-1 bg-muted/40 dark:bg-muted/50 rounded-lg border transition-all duration-150 ${
+                      isDragging ? 'border-primary/40 shadow-lg' : 'border-border dark:border-border/80'
                     }`}>
                       {/* Column color stripe */}
                       {column.color && (
                         <div className="h-1 rounded-t-lg" style={{ backgroundColor: column.color }} />
                       )}
                       {/* Column header — entire left area is draggable, title is inline editable */}
-                      <div className={`flex items-center justify-between px-2 py-2.5 border-b border-border/30 ${!column.color ? 'rounded-t-lg' : ''} ${
+                      <div className={`flex items-center justify-between px-2 py-2.5 border-b border-border/50 dark:border-border/70 ${!column.color ? 'rounded-t-lg' : ''} ${
                         wipExceeded ? 'bg-red-50 dark:bg-red-950/30' : ''
                       }`}>
                         <div
@@ -871,7 +950,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
                         </div>
                       </div>
 
-                      {/* Cards */}
+                      {/* Cards + quick-add inside the droppable body so the button sits right below the last card */}
                       <SortableContext items={column.tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         <DroppableColumnBody id={column.id} isCardOver={isCardOver}>
                           {column.tasks.map((task) => (
@@ -886,75 +965,75 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
                             />
                           ))}
                           {column.tasks.length === 0 && (
-                            <div className={`flex flex-col items-center justify-center py-6 text-center border-2 border-dashed rounded-lg m-2 transition-all duration-150 ${
-                              isCardOver ? 'border-primary/60 bg-primary/5' : 'border-border/30'
+                            <div className={`flex flex-col items-center justify-center py-6 text-center border-2 border-dashed rounded-lg transition-all duration-150 ${
+                              isCardOver ? 'border-primary/60 bg-primary/5' : 'border-border/50 dark:border-border/60'
                             }`}>
                               <p className="text-xs text-muted-foreground/50">
                                 {t('pm.dropHere', { defaultValue: 'Drop tasks here' })}
                               </p>
                             </div>
                           )}
+
+                          {/* Quick-add sits right below the last card */}
+                          {quickAddColumnId === column.id ? (
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <textarea
+                                autoFocus
+                                rows={2}
+                                value={quickAddTitle}
+                                onChange={(e) => setQuickAddTitle(e.target.value)}
+                                onPaste={(e) => {
+                                  const text = e.clipboardData.getData('text')
+                                  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+                                  if (lines.length > 1) {
+                                    e.preventDefault()
+                                    setMultiPasteLines(lines)
+                                    setMultiPasteColumnId(column.id)
+                                    setQuickAddColumnId(null)
+                                    setQuickAddTitle('')
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault()
+                                    if (quickAddTitle.trim()) handleQuickAddTask(column.id, quickAddTitle.trim())
+                                  }
+                                  if (e.key === 'Escape') { setQuickAddColumnId(null); setQuickAddTitle('') }
+                                }}
+                                placeholder={t('pm.taskTitlePlaceholder', { defaultValue: 'Task title...' })}
+                                className="w-full resize-none text-sm bg-background border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                              />
+                              <div className="flex items-center gap-2 mt-2">
+                                <Button
+                                  size="sm"
+                                  className="cursor-pointer h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
+                                  disabled={createTaskMutation.isPending}
+                                  onClick={() => { if (quickAddTitle.trim()) handleQuickAddTask(column.id, quickAddTitle.trim()) }}
+                                >
+                                  {createTaskMutation.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                  {t('pm.addCard', { defaultValue: 'Add card' })}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="cursor-pointer h-7 text-xs"
+                                  onClick={() => { setQuickAddColumnId(null); setQuickAddTitle('') }}
+                                >
+                                  {t('buttons.cancel')}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              className="w-full flex items-center gap-1.5 px-1 py-1.5 text-xs text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted/40 rounded-md transition-colors cursor-pointer"
+                              onClick={() => setQuickAddColumnId(column.id)}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              {t('pm.addCard', { defaultValue: 'Add card' })}
+                            </button>
+                          )}
                         </DroppableColumnBody>
                       </SortableContext>
-
-                      {/* Quick-add card */}
-                      {quickAddColumnId === column.id ? (
-                        <div className="p-2" onClick={(e) => e.stopPropagation()}>
-                          <textarea
-                            autoFocus
-                            rows={2}
-                            value={quickAddTitle}
-                            onChange={(e) => setQuickAddTitle(e.target.value)}
-                            onPaste={(e) => {
-                              const text = e.clipboardData.getData('text')
-                              const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
-                              if (lines.length > 1) {
-                                e.preventDefault()
-                                setMultiPasteLines(lines)
-                                setMultiPasteColumnId(column.id)
-                                setQuickAddColumnId(null)
-                                setQuickAddTitle('')
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault()
-                                if (quickAddTitle.trim()) handleQuickAddTask(column.id, quickAddTitle.trim())
-                              }
-                              if (e.key === 'Escape') { setQuickAddColumnId(null); setQuickAddTitle('') }
-                            }}
-                            placeholder={t('pm.taskTitlePlaceholder', { defaultValue: 'Task title...' })}
-                            className="w-full resize-none text-sm bg-background border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                          />
-                          <div className="flex items-center gap-2 mt-2">
-                            <Button
-                              size="sm"
-                              className="cursor-pointer h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
-                              disabled={createTaskMutation.isPending}
-                              onClick={() => { if (quickAddTitle.trim()) handleQuickAddTask(column.id, quickAddTitle.trim()) }}
-                            >
-                              {createTaskMutation.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                              {t('pm.addCard', { defaultValue: 'Add card' })}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="cursor-pointer h-7 text-xs"
-                              onClick={() => { setQuickAddColumnId(null); setQuickAddTitle('') }}
-                            >
-                              {t('buttons.cancel')}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          className="w-full flex items-center gap-1.5 px-3 py-2 text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/30 transition-colors cursor-pointer rounded-b-lg"
-                          onClick={() => setQuickAddColumnId(column.id)}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          {t('pm.addCard', { defaultValue: 'Add card' })}
-                        </button>
-                      )}
                     </div>
                   )}
                 </SortableColumnWrapper>
@@ -963,7 +1042,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
 
             {/* Inline add column */}
             {isAddingColumn ? (
-              <div className="min-w-[240px] max-w-[280px] flex-shrink-0 bg-muted/30 rounded-lg border border-border/50 p-3 space-y-2">
+              <div className="min-w-[240px] max-w-[280px] flex-shrink-0 bg-muted/40 dark:bg-muted/50 rounded-lg border border-border dark:border-border/80 p-3 space-y-2">
                 <input
                   autoFocus
                   value={newColumnName}
@@ -987,7 +1066,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
               </div>
             ) : (
               <button
-                className="min-w-[200px] flex-shrink-0 h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border/40 text-muted-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all cursor-pointer text-sm"
+                className="min-w-[200px] flex-shrink-0 h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border/50 dark:border-border/60 text-muted-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all cursor-pointer text-sm"
                 onClick={() => setIsAddingColumn(true)}
               >
                 <Plus className="h-4 w-4" />
@@ -1016,8 +1095,8 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
             </div>
           )}
           {activeColumn && (
-            <div className="min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg border border-primary/40 shadow-2xl rotate-1 overflow-hidden">
-              <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/30 bg-muted/50">
+            <div className="min-w-[280px] max-w-[320px] bg-muted/50 dark:bg-muted/60 rounded-lg border border-primary/40 shadow-2xl rotate-1 overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/50 bg-muted/60">
                 {activeColumn.color && <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: activeColumn.color }} />}
                 <h3 className="text-sm font-semibold">{activeColumn.name}</h3>
                 <span className="text-xs text-muted-foreground">{activeColumn.tasks.length}</span>
@@ -1103,7 +1182,10 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         open={taskModalOpen}
         onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}
         projectMembers={members}
-        onNavigateToTask={(taskId) => setSelectedTaskId(taskId)}
+        onNavigateToTask={(taskId) => {
+          const task = localColumnsRef.current.flatMap(c => c.tasks).find(t => t.id === taskId)
+          if (task) setSelectedTaskId(task.taskNumber)
+        }}
       />
 
       {/* Multi-line paste confirmation */}
