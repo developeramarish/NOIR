@@ -202,7 +202,6 @@ export const TaskDetailPage = () => {
     if (!task) return
     deleteTaskMutation.mutate(task.id, {
       onSuccess: () => {
-        toast.success(t('pm.deleteTask'))
         window.history.back()
       },
       onError: (err) => {

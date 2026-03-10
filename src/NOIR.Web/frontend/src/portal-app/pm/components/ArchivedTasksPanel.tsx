@@ -13,7 +13,6 @@ import {
   RotateCcw,
   Search,
   Trash2,
-  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -37,6 +36,7 @@ import {
   useEmptyProjectTrash,
 } from '@/portal-app/pm/queries'
 import type { ArchivedTaskCardDto, ProjectTaskStatus, TaskPriority } from '@/types/pm'
+import { TaskSearchInput } from './TaskSearchInput'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -267,22 +267,19 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
 
   const handleRestore = (task: ArchivedTaskCardDto) => {
     restoreMutation.mutate(task.id, {
-      onSuccess: () => toast.success(t('pm.taskRestored', { defaultValue: 'Task restored to board' })),
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
     })
   }
 
   const handlePermanentDelete = (task: ArchivedTaskCardDto) => {
     permanentDeleteMutation.mutate(task.id, {
-      onSuccess: () => toast.success(t('pm.taskDeleted', { defaultValue: 'Task permanently deleted' })),
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
     })
   }
 
   const handleEmptyTrash = () => {
     emptyTrashMutation.mutate(projectId, {
-      onSuccess: (count) => {
-        toast.success(t('pm.trashEmptied', { count: count as unknown as number, defaultValue: `${count} tasks permanently deleted` }))
+      onSuccess: () => {
         setEmptyConfirm(false)
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
@@ -333,24 +330,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
-        <div className="relative min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('pm.searchTasks', { defaultValue: 'Search tasks...' })}
-            className="w-full pl-8 pr-8 py-1.5 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          {search && (
-            <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={() => setSearch('')}
-              aria-label={t('buttons.clear', { defaultValue: 'Clear' })}
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+        <TaskSearchInput value={search} onChange={setSearch} />
 
         {/* Task count */}
         <span className="text-xs text-muted-foreground">

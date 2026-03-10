@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTask, updateTask, moveTask, deleteTask, changeTaskStatus, archiveTask, restoreTask, permanentDeleteTask, emptyProjectTrash } from '@/services/pm'
+import { createTask, updateTask, moveTask, deleteTask, changeTaskStatus, archiveTask, restoreTask, permanentDeleteTask, emptyProjectTrash, bulkArchiveTasks, bulkChangeTaskStatus } from '@/services/pm'
 import type { CreateTaskRequest, UpdateTaskRequest, MoveTaskRequest } from '@/types/pm'
 import { pmBoardKeys, pmTaskKeys, pmProjectKeys } from './queryKeys'
 
@@ -104,6 +104,28 @@ export const useEmptyProjectTrash = () => {
   return useMutation({
     mutationFn: (projectId: string) => emptyProjectTrash(projectId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pmTaskKeys.all })
+    },
+  })
+}
+
+export const useBulkArchiveTasks = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (taskIds: string[]) => bulkArchiveTasks(taskIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pmBoardKeys.all })
+      queryClient.invalidateQueries({ queryKey: pmTaskKeys.all })
+    },
+  })
+}
+
+export const useBulkChangeTaskStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ taskIds, status }: { taskIds: string[]; status: string }) => bulkChangeTaskStatus(taskIds, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pmBoardKeys.all })
       queryClient.invalidateQueries({ queryKey: pmTaskKeys.all })
     },
   })

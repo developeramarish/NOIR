@@ -38,7 +38,6 @@ export const LabelManager = ({ projectId }: LabelManagerProps) => {
       { projectId, request: { name: newName, color: newColor } },
       {
         onSuccess: () => {
-          toast.success(t('pm.addLabel'))
           setAddDialogOpen(false)
           setNewName('')
           setNewColor('#6366f1')
@@ -56,7 +55,6 @@ export const LabelManager = ({ projectId }: LabelManagerProps) => {
       { projectId, labelId: deleteLabelId },
       {
         onSuccess: () => {
-          toast.success(t('pm.deleteLabel'))
           setDeleteLabelId(null)
         },
         onError: (err) => {

@@ -144,7 +144,6 @@ export const ProjectDialog = ({ open, onOpenChange, project }: ProjectDialogProp
         { id: project.id, request },
         {
           onSuccess: () => {
-            toast.success(t('pm.editProject'))
             onOpenChange(false)
           },
           onError: (err) => {
@@ -155,7 +154,6 @@ export const ProjectDialog = ({ open, onOpenChange, project }: ProjectDialogProp
     } else {
       createMutation.mutate(request, {
         onSuccess: () => {
-          toast.success(t('pm.createProject'))
           onOpenChange(false)
         },
         onError: (err) => {

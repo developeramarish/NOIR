@@ -205,15 +205,33 @@ export interface ActivityPagedResult {
 
 // ─── Dashboard DTOs ────────────────────────────────────────────────────────
 
+export interface LeadsByStageDto {
+  stageName: string
+  color: string
+  count: number
+  totalValue: number
+}
+
+export interface LeadsByOwnerDto {
+  ownerName: string
+  count: number
+  totalValue: number
+}
+
 export interface CrmDashboardDto {
   totalContacts: number
   totalCompanies: number
-  activeDeals: number
+  activeLeads: number
+  wonLeads: number
+  lostLeads: number
   totalPipelineValue: number
+  wonDealValue: number
   wonDealsThisMonth: number
   wonValueThisMonth: number
   lostDealsThisMonth: number
   conversionRate: number
+  leadsByStage: LeadsByStageDto[]
+  leadsByOwner: LeadsByOwnerDto[]
 }
 
 // ─── Request Types ─────────────────────────────────────────────────────────

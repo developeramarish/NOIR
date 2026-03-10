@@ -1,3 +1,4 @@
+using MockQueryable;
 using NOIR.Application.Features.Pm.Commands.CreateTask;
 using NOIR.Application.Features.Pm.Specifications;
 using NOIR.Application.Features.Hr.Specifications;
@@ -75,6 +76,10 @@ public class CreateTaskCommandHandlerTests
         var columns = new List<ProjectColumn> { column }.BuildMockDbSet();
         _dbContextMock.Setup(x => x.ProjectColumns).Returns(columns.Object);
 
+        // Mock ProjectTasks DbSet so MaxAsync doesn't throw
+        var emptyTasks = new List<ProjectTask>().BuildMockDbSet();
+        _dbContextMock.Setup(x => x.ProjectTasks).Returns(emptyTasks.Object);
+
         // Mock reload
         var createdTask = ProjectTask.Create(project.Id, "PRJ-001", "Test Task", TestTenantId);
         _taskRepoMock
@@ -111,6 +116,10 @@ public class CreateTaskCommandHandlerTests
         var column = ProjectColumn.Create(project.Id, "Todo", 0, TestTenantId);
         var columns = new List<ProjectColumn> { column }.BuildMockDbSet();
         _dbContextMock.Setup(x => x.ProjectColumns).Returns(columns.Object);
+
+        // Mock ProjectTasks DbSet so MaxAsync doesn't throw
+        var emptyTasks = new List<ProjectTask>().BuildMockDbSet();
+        _dbContextMock.Setup(x => x.ProjectTasks).Returns(emptyTasks.Object);
 
         var createdTask = ProjectTask.Create(project.Id, "PRJ-001", "Test Task", TestTenantId, columnId: column.Id);
         _taskRepoMock

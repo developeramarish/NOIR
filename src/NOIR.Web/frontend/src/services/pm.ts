@@ -233,3 +233,30 @@ export const deleteColumn = async (projectId: string, columnId: string, moveToCo
     method: 'DELETE',
   })
 }
+
+export const moveAllColumnTasks = async (projectId: string, sourceColumnId: string, targetColumnId: string): Promise<number> => {
+  return apiClient<number>(`/pm/projects/${projectId}/columns/${sourceColumnId}/move-all-tasks`, {
+    method: 'POST',
+    body: JSON.stringify({ targetColumnId }),
+  })
+}
+
+export const duplicateColumn = async (projectId: string, columnId: string): Promise<ProjectColumnDto> => {
+  return apiClient<ProjectColumnDto>(`/pm/projects/${projectId}/columns/${columnId}/duplicate`, {
+    method: 'POST',
+  })
+}
+
+export const bulkArchiveTasks = async (taskIds: string[]): Promise<number> => {
+  return apiClient<number>('/pm/tasks/bulk-archive', {
+    method: 'POST',
+    body: JSON.stringify({ taskIds }),
+  })
+}
+
+export const bulkChangeTaskStatus = async (taskIds: string[], status: string): Promise<number> => {
+  return apiClient<number>('/pm/tasks/bulk-change-status', {
+    method: 'POST',
+    body: JSON.stringify({ taskIds, status }),
+  })
+}

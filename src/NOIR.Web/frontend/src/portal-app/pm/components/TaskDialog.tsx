@@ -126,7 +126,6 @@ export const TaskDialog = ({
         )
       }
 
-      toast.success(t('pm.createTask'))
       onOpenChange(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.unknown'))

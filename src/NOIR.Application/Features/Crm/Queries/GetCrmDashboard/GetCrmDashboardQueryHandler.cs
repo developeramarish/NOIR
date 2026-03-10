@@ -48,23 +48,32 @@ public class GetCrmDashboardQueryHandler
             .TagWith("CrmDashboard_WonDealValue")
             .SumAsync(l => l.Value, cancellationToken);
 
-        var leadsByStage = await _dbContext.Leads
-            .Where(l => !l.IsDeleted && l.Status == LeadStatus.Active)
-            .GroupBy(l => new { l.Stage!.Name, l.Stage.Color })
-            .Select(g => new Features.Crm.DTOs.LeadsByStageDto(
-                g.Key.Name, g.Key.Color, g.Count(), g.Sum(l => l.Value)))
-            .OrderByDescending(x => x.Count)
+        // Materialize projected data first, then group in-memory to avoid EF Core GroupBy translation issues
+        var stageProjections = await _dbContext.Leads
+            .Where(l => !l.IsDeleted && l.Status == LeadStatus.Active && l.Stage != null)
+            .Select(l => new { l.Value, StageName = l.Stage!.Name, StageColor = l.Stage.Color })
             .TagWith("CrmDashboard_LeadsByStage")
             .ToListAsync(cancellationToken);
 
-        var leadsByOwner = await _dbContext.Leads
+        var leadsByStage = stageProjections
+            .GroupBy(x => new { x.StageName, x.StageColor })
+            .Select(g => new Features.Crm.DTOs.LeadsByStageDto(
+                g.Key.StageName, g.Key.StageColor, g.Count(), g.Sum(x => x.Value)))
+            .OrderByDescending(x => x.Count)
+            .ToList();
+
+        var ownerProjections = await _dbContext.Leads
             .Where(l => !l.IsDeleted && l.Status == LeadStatus.Active && l.OwnerId != null)
-            .GroupBy(l => new { l.Owner!.FirstName, l.Owner.LastName })
-            .Select(g => new Features.Crm.DTOs.LeadsByOwnerDto(
-                g.Key.FirstName + " " + g.Key.LastName, g.Count(), g.Sum(l => l.Value)))
-            .OrderByDescending(x => x.TotalValue)
+            .Select(l => new { l.Value, OwnerFirstName = l.Owner!.FirstName, OwnerLastName = l.Owner.LastName })
             .TagWith("CrmDashboard_LeadsByOwner")
             .ToListAsync(cancellationToken);
+
+        var leadsByOwner = ownerProjections
+            .GroupBy(x => new { x.OwnerFirstName, x.OwnerLastName })
+            .Select(g => new Features.Crm.DTOs.LeadsByOwnerDto(
+                g.Key.OwnerFirstName + " " + g.Key.OwnerLastName, g.Count(), g.Sum(x => x.Value)))
+            .OrderByDescending(x => x.TotalValue)
+            .ToList();
 
         // "This month" metrics
         var monthStart = new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero);

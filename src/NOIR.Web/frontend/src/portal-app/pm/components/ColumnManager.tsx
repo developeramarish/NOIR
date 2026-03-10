@@ -51,7 +51,6 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
       { projectId, request: { name: newName, color: newColor, wipLimit: newWipLimit } },
       {
         onSuccess: () => {
-          toast.success(t('pm.addColumn'))
           setAddDialogOpen(false)
           setNewName('')
           setNewColor('#6366f1')
@@ -70,7 +69,6 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
       { projectId, columnId: deleteColumnId, moveToColumnId },
       {
         onSuccess: () => {
-          toast.success(t('pm.deleteColumn'))
           setDeleteColumnId(null)
           setMoveToColumnId('')
         },

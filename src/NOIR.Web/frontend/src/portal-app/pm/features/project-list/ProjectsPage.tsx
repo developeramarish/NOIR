@@ -129,7 +129,7 @@ const ProjectCard = ({
           <span
             className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-white/20 bg-black/20 text-white backdrop-blur-sm`}
           >
-            {t(`statuses.${project.status.toLowerCase()}`, { defaultValue: project.status })}
+            {t(`statuses.${project.status.charAt(0).toLowerCase() + project.status.slice(1)}`, { defaultValue: project.status })}
           </span>
         </div>
       </div>
@@ -444,7 +444,7 @@ export const ProjectsPage = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={getStatusBadgeClasses(statusColorMap[project.status])}>
-                            {t(`statuses.${project.status.toLowerCase()}`, { defaultValue: project.status })}
+                            {t(`statuses.${project.status.charAt(0).toLowerCase() + project.status.slice(1)}`, { defaultValue: project.status })}
                           </Badge>
                         </TableCell>
                         <TableCell>

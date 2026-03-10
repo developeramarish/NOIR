@@ -4,7 +4,7 @@ export { useProjectsQuery, useProjectQuery, useProjectByCodeQuery } from './useP
 export { useCreateProject, useUpdateProject, useArchiveProject, useDeleteProject } from './useProjectMutations'
 
 export { useKanbanBoardQuery, useTaskQuery, useProjectLabelsQuery, useArchivedTasksQuery } from './useTaskQueries'
-export { useCreateTask, useUpdateTask, useMoveTask, useDeleteTask, useChangeTaskStatus, useArchiveTask, useRestoreTask, usePermanentDeleteTask, useEmptyProjectTrash } from './useTaskMutations'
+export { useCreateTask, useUpdateTask, useMoveTask, useDeleteTask, useChangeTaskStatus, useArchiveTask, useRestoreTask, usePermanentDeleteTask, useEmptyProjectTrash, useBulkArchiveTasks, useBulkChangeTaskStatus } from './useTaskMutations'
 
 export { useAddMember, useRemoveMember, useChangeMemberRole } from './useMemberMutations'
 
@@ -12,4 +12,4 @@ export { useAddComment, useDeleteComment } from './useCommentMutations'
 
 export { useCreateLabel, useDeleteLabel, useAddLabelToTask, useRemoveLabelFromTask } from './useLabelMutations'
 
-export { useCreateColumn, useUpdateColumn, useReorderColumns, useDeleteColumn } from './useColumnMutations'
+export { useCreateColumn, useUpdateColumn, useReorderColumns, useDeleteColumn, useMoveAllColumnTasks, useDuplicateColumn } from './useColumnMutations'

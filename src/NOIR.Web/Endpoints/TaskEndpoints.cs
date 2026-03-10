@@ -14,6 +14,8 @@ using NOIR.Application.Features.Pm.Commands.AddLabelToTask;
 using NOIR.Application.Features.Pm.Commands.RemoveLabelFromTask;
 using NOIR.Application.Features.Pm.Commands.ReorderTask;
 using NOIR.Application.Features.Pm.Commands.AddSubtask;
+using NOIR.Application.Features.Pm.Commands.BulkArchiveTasks;
+using NOIR.Application.Features.Pm.Commands.BulkChangeTaskStatus;
 using NOIR.Application.Features.Pm.Queries.GetTasks;
 using NOIR.Application.Features.Pm.Queries.GetTaskById;
 using NOIR.Application.Features.Pm.Queries.GetArchivedTasks;
@@ -273,6 +275,36 @@ public static class TaskEndpoints
         .WithName("GetArchivedTasks")
         .WithSummary("Get all archived (trashed) tasks for a project")
         .Produces<List<ArchivedTaskCardDto>>(StatusCodes.Status200OK);
+
+        group.MapPost("/bulk-archive", async (
+            BulkArchiveTasksRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new BulkArchiveTasksCommand(request.TaskIds) { AuditUserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<int>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmTasksUpdate)
+        .WithName("BulkArchiveTasks")
+        .WithSummary("Bulk archive multiple tasks")
+        .Produces<int>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/bulk-change-status", async (
+            BulkChangeTaskStatusRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new BulkChangeTaskStatusCommand(request.TaskIds, request.Status) { AuditUserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<int>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmTasksUpdate)
+        .WithName("BulkChangeTaskStatus")
+        .WithSummary("Bulk change task status")
+        .Produces<int>(StatusCodes.Status200OK)
+        .ProducesValidationProblem();
 
         group.MapDelete("/archived", async (
             [FromQuery] Guid projectId,

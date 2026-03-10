@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronsUpDown,
+  Circle,
   Layers,
   ListTodo,
   Minus,
@@ -17,6 +18,12 @@ import {
 import {
   Avatar,
   Badge,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   EmptyState,
   Select,
   SelectContent,
@@ -35,10 +42,9 @@ import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { useKanbanBoardQuery } from '@/portal-app/pm/queries'
 import type { ProjectTaskStatus, TaskCardDto, TaskPriority, TaskLabelBriefDto, ProjectMemberDto } from '@/types/pm'
 import { TaskFilterPopover, matchDueDate, matchCompletion, type DueDateFilter, type CompletionFilter } from '@/portal-app/pm/components/TaskFilterPopover'
+import { TaskSearchInput } from '@/portal-app/pm/components/TaskSearchInput'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-
-const STATUS_VALUES = ['Todo', 'InProgress', 'InReview', 'Done', 'Cancelled'] as const
 
 const PRIORITY_VALUES = ['Low', 'Medium', 'High', 'Urgent'] as const
 
@@ -79,21 +85,12 @@ const PRIORITY_CLASSES: Record<TaskPriority, string> = {
   Urgent: 'bg-red-50 text-red-600 border-red-200',
 }
 
-// Priority chips: active = solid fill, inactive = icon-color tinted hover
-const PRIORITY_CHIP: Record<TaskPriority, { active: string; inactive: string }> = {
-  Low:    { active: 'bg-slate-500  text-white border-slate-500',  inactive: 'hover:bg-slate-50  hover:border-slate-300  hover:text-slate-600'  },
-  Medium: { active: 'bg-blue-500   text-white border-blue-500',   inactive: 'hover:bg-blue-50   hover:border-blue-300   hover:text-blue-600'   },
-  High:   { active: 'bg-orange-500 text-white border-orange-500', inactive: 'hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600' },
-  Urgent: { active: 'bg-red-500    text-white border-red-500',    inactive: 'hover:bg-red-50    hover:border-red-300    hover:text-red-600'    },
-}
 
-// Active chip: filled bg. Inactive chip: colored dot + subtle hover. Dot color matches status.
-const STATUS_CHIP: Record<string, { dot: string; active: string; inactive: string }> = {
-  Todo:       { dot: 'bg-slate-400',  active: 'bg-slate-500  text-white border-slate-500',  inactive: 'hover:bg-slate-50  hover:border-slate-300' },
-  InProgress: { dot: 'bg-blue-500',   active: 'bg-blue-500   text-white border-blue-500',   inactive: 'hover:bg-blue-50   hover:border-blue-300'  },
-  InReview:   { dot: 'bg-violet-500', active: 'bg-violet-500 text-white border-violet-500', inactive: 'hover:bg-violet-50 hover:border-violet-300' },
-  Done:       { dot: 'bg-green-500',  active: 'bg-green-500  text-white border-green-500',  inactive: 'hover:bg-green-50  hover:border-green-300'  },
-  Cancelled:  { dot: 'bg-red-400',    active: 'bg-red-400    text-white border-red-400',    inactive: 'hover:bg-red-50    hover:border-red-300'    },
+const PRIORITY_COLOR_MAP: Record<TaskPriority, string> = {
+  Low: 'text-slate-500',
+  Medium: 'text-blue-500',
+  High: 'text-orange-500',
+  Urgent: 'text-red-500',
 }
 
 // ─── SortableHead ─────────────────────────────────────────────────────────────
@@ -137,9 +134,10 @@ interface TaskRowProps {
   task: TaskCardDto
   onClick: (id: string) => void
   t: ReturnType<typeof useTranslation>['t']
+  columnColor?: string | null
 }
 
-const TaskRow = ({ task, onClick, t }: TaskRowProps) => {
+const TaskRow = ({ task, onClick, t, columnColor }: TaskRowProps) => {
   const PriorityIcon = PRIORITY_ICONS[task.priority]
 
   const dueDateNode = task.dueDate
@@ -173,7 +171,10 @@ const TaskRow = ({ task, onClick, t }: TaskRowProps) => {
       </TableCell>
       <TableCell className={`font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>{task.title}</TableCell>
       <TableCell>
-        <Badge variant="outline" className={getStatusBadgeClasses(statusColorMap[task.status])}>
+        <Badge variant="outline" className={`gap-1.5 ${getStatusBadgeClasses(statusColorMap[task.status])}`}>
+          {columnColor && (
+            <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: columnColor }} />
+          )}
           {t(`statuses.${STATUS_I18N_KEYS[task.status]}`, { defaultValue: task.status })}
         </Badge>
       </TableCell>
@@ -232,9 +233,10 @@ interface TaskTableProps {
   onSort: (field: string) => void
   onRowClick: (id: string) => void
   t: ReturnType<typeof useTranslation>['t']
+  columnColorMap?: Record<string, string | null>
 }
 
-const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t }: TaskTableProps) => (
+const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t, columnColorMap = {} }: TaskTableProps) => (
   <div className="rounded-md border">
     <Table>
       <TableHeader>
@@ -262,7 +264,7 @@ const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t }: TaskTab
       </TableHeader>
       <TableBody>
         {tasks.map((task) => (
-          <TaskRow key={task.id} task={task} onClick={onRowClick} t={t} />
+          <TaskRow key={task.id} task={task} onClick={onRowClick} t={t} columnColor={columnColorMap[task.status]} />
         ))}
       </TableBody>
     </Table>
@@ -480,6 +482,24 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
   }, [filteredTasks, sortField, sortDir])
 
   // ── Grouping ──
+  // Map task status → column color for display
+  // Map task status → column color for display (always has a color via defaults)
+  const DEFAULT_COLUMN_COLORS: Record<string, string> = {
+    'todo': '#94a3b8', 'in progress': '#3b82f6', 'in review': '#8b5cf6', 'done': '#22c55e',
+  }
+  const columnColorMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    const nameToStatus: Record<string, string> = {
+      'todo': 'Todo', 'in progress': 'InProgress', 'in review': 'InReview', 'done': 'Done',
+    }
+    for (const col of board?.columns ?? []) {
+      const key = col.name.toLowerCase()
+      const status = nameToStatus[key]
+      if (status) map[status] = col.color ?? DEFAULT_COLUMN_COLORS[key] ?? '#94a3b8'
+    }
+    return map
+  }, [board?.columns])
+
   const groupedTasks = useMemo(() => {
     if (groupBy === 'none') {
       return [{ key: 'all', label: null as string | null, tasks: sortedTasks }]
@@ -528,83 +548,125 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
-        <div className="relative min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <input
-            value={listSearch}
-            onChange={(e) => setFilter('list-search', e.target.value)}
-            placeholder={t('pm.searchTasks', { defaultValue: 'Search tasks...' })}
-            className="w-full pl-8 pr-8 py-1.5 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          {listSearch && (
-            <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={() => setFilter('list-search', '')}
-              aria-label={t('buttons.clear', { defaultValue: 'Clear' })}
-            >
-              <X className="h-3.5 w-3.5" />
+        <TaskSearchInput
+          value={listSearch}
+          onChange={(v) => setFilter('list-search', v)}
+        />
+
+        {/* Status multi-select dropdown — uses real board columns with their colors */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={`inline-flex items-center gap-1.5 rounded-full px-3 h-9 text-sm font-medium border cursor-pointer transition-all ${
+              listStatuses.length > 0 ? 'bg-primary/10 text-primary border-primary/30 hover:bg-primary/15' : 'bg-background border-border hover:bg-muted'
+            }`}>
+              <Circle className="h-3.5 w-3.5" />
+              {t('pm.status', { defaultValue: 'Status' })}
+              {listStatuses.length > 0 && (
+                <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[10px] font-bold leading-none bg-primary text-primary-foreground">
+                  {listStatuses.length}
+                </span>
+              )}
+              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </button>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            {(board?.columns ?? []).map((column) => {
+              // Map column name → status enum for filter matching
+              const columnStatusMap: Record<string, string> = {
+                'todo': 'Todo', 'in progress': 'InProgress', 'in review': 'InReview', 'done': 'Done',
+              }
+              const statusValue = columnStatusMap[column.name.toLowerCase()] ?? column.name
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={listStatuses.includes(statusValue)}
+                  onCheckedChange={(checked) => {
+                    const next = checked
+                      ? [...listStatuses, statusValue]
+                      : listStatuses.filter((x) => x !== statusValue)
+                    setFilter('list-status', next.join(','))
+                  }}
+                  onSelect={(e) => e.preventDefault()}
+                  className="cursor-pointer"
+                >
+                  <span
+                    className="h-2.5 w-2.5 rounded-full mr-1.5 flex-shrink-0"
+                    style={{ backgroundColor: column.color ?? DEFAULT_COLUMN_COLORS[column.name.toLowerCase()] ?? '#94a3b8' }}
+                  />
+                  {column.name}
+                </DropdownMenuCheckboxItem>
+              )
+            })}
+            {listStatuses.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setFilter('list-status', '')}
+                  className="cursor-pointer text-muted-foreground text-xs"
+                >
+                  <X className="h-3 w-3 mr-1.5" />
+                  {t('buttons.clearFilters', { defaultValue: 'Clear' })}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        {/* Status filter chips */}
-        <div className="flex flex-wrap gap-1.5">
-          {STATUS_VALUES.map((s) => {
-            const active = listStatuses.includes(s)
-            const chip = STATUS_CHIP[s]
-            return (
-              <button
-                key={s}
-                onClick={() => {
-                  const next = active
-                    ? listStatuses.filter((x) => x !== s)
-                    : [...listStatuses, s]
-                  setFilter('list-status', next.join(','))
-                }}
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium leading-[1.1] border cursor-pointer transition-all ${
-                  active
-                    ? chip.active
-                    : `bg-background border-border text-foreground ${chip.inactive}`
-                }`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${active ? 'bg-white/80' : chip.dot}`} />
-                {t(`statuses.${STATUS_I18N_KEYS[s]}`, { defaultValue: s })}
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Priority filter chips */}
-        <div className="flex flex-wrap gap-1.5">
-          {PRIORITY_VALUES.map((p) => {
-            const active = listPriorities.includes(p)
-            const Icon = PRIORITY_ICONS[p]
-            const chip = PRIORITY_CHIP[p]
-            return (
-              <button
-                key={p}
-                onClick={() => {
-                  const next = active
-                    ? listPriorities.filter((x) => x !== p)
-                    : [...listPriorities, p]
-                  setFilter('list-priority', next.join(','))
-                }}
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium leading-[1.1] border cursor-pointer transition-all ${
-                  active
-                    ? chip.active
-                    : `bg-background border-border text-foreground ${chip.inactive}`
-                }`}
-              >
-                <Icon className="h-3 w-3" />
-                {t(`priorities.${p.toLowerCase()}`, { defaultValue: p })}
-              </button>
-            )
-          })}
-        </div>
+        {/* Priority multi-select dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={`inline-flex items-center gap-1.5 rounded-full px-3 h-9 text-sm font-medium border cursor-pointer transition-all ${
+              listPriorities.length > 0 ? 'bg-primary/10 text-primary border-primary/30 hover:bg-primary/15' : 'bg-background border-border hover:bg-muted'
+            }`}>
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t('pm.priority', { defaultValue: 'Priority' })}
+              {listPriorities.length > 0 && (
+                <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[10px] font-bold leading-none bg-primary text-primary-foreground">
+                  {listPriorities.length}
+                </span>
+              )}
+              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            {PRIORITY_VALUES.map((p) => {
+              const Icon = PRIORITY_ICONS[p]
+              return (
+                <DropdownMenuCheckboxItem
+                  key={p}
+                  checked={listPriorities.includes(p)}
+                  onCheckedChange={(checked) => {
+                    const next = checked
+                      ? [...listPriorities, p]
+                      : listPriorities.filter((x) => x !== p)
+                    setFilter('list-priority', next.join(','))
+                  }}
+                  onSelect={(e) => e.preventDefault()}
+                  className="cursor-pointer"
+                >
+                  <Icon className={`h-3.5 w-3.5 mr-1.5 ${PRIORITY_COLOR_MAP[p]}`} />
+                  {t(`priorities.${p.toLowerCase()}`, { defaultValue: p })}
+                </DropdownMenuCheckboxItem>
+              )
+            })}
+            {listPriorities.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setFilter('list-priority', '')}
+                  className="cursor-pointer text-muted-foreground text-xs"
+                >
+                  <X className="h-3 w-3 mr-1.5" />
+                  {t('buttons.clearFilters', { defaultValue: 'Clear' })}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Advanced filters */}
         <TaskFilterPopover
@@ -711,6 +773,7 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
                 onSort={setSortField}
                 onRowClick={handleRowClick}
                 t={t}
+                columnColorMap={columnColorMap}
               />
             </div>
           ))}

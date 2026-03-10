@@ -13,6 +13,8 @@ using NOIR.Application.Features.Pm.Commands.CreateColumn;
 using NOIR.Application.Features.Pm.Commands.UpdateColumn;
 using NOIR.Application.Features.Pm.Commands.ReorderColumns;
 using NOIR.Application.Features.Pm.Commands.DeleteColumn;
+using NOIR.Application.Features.Pm.Commands.MoveAllColumnTasks;
+using NOIR.Application.Features.Pm.Commands.DuplicateColumn;
 using NOIR.Application.Features.Pm.Queries.GetProjects;
 using NOIR.Application.Features.Pm.Queries.SearchProjects;
 using NOIR.Application.Features.Pm.Queries.GetProjectById;
@@ -396,6 +398,46 @@ public static class ProjectEndpoints
         .WithName("ReorderProjectColumns")
         .WithSummary("Reorder project columns")
         .Produces<List<ProjectColumnDto>>(StatusCodes.Status200OK);
+
+        group.MapPost("/{id:guid}/columns/{columnId:guid}/move-all-tasks", async (
+            Guid id,
+            Guid columnId,
+            MoveAllColumnTasksRequest request,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new MoveAllColumnTasksCommand(id, columnId, request.TargetColumnId)
+            {
+                AuditUserId = currentUser.UserId
+            };
+            var result = await bus.InvokeAsync<Result<int>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmTasksUpdate)
+        .WithName("MoveAllColumnTasks")
+        .WithSummary("Move all tasks from one column to another")
+        .Produces<int>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/columns/{columnId:guid}/duplicate", async (
+            Guid id,
+            Guid columnId,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var command = new DuplicateColumnCommand(id, columnId)
+            {
+                AuditUserId = currentUser.UserId
+            };
+            var result = await bus.InvokeAsync<Result<ProjectColumnDto>>(command);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.PmProjectsUpdate)
+        .WithName("DuplicateProjectColumn")
+        .WithSummary("Duplicate a column (no tasks copied)")
+        .Produces<ProjectColumnDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/columns/{columnId:guid}", async (
             Guid id,

@@ -28,10 +28,11 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
-import { Plus, Kanban, Search, X, ArrowDown, Minus, ArrowUp, AlertTriangle, Loader2, MoreHorizontal, Pencil, Trash2, UserCheck, UserX, ChevronDown, Layers } from 'lucide-react'
+import { Plus, Kanban, X, ArrowDown, Minus, ArrowUp, AlertTriangle, Loader2, MoreHorizontal, Pencil, Trash2, UserCheck, UserX, ChevronDown, Layers, ArrowUpDown, Check, ChevronsUpDown, Archive, Copy, Hand, MousePointer2, Square, CheckSquare } from 'lucide-react'
 import {
-  Avatar, Button, EmptyState, Skeleton, Input,
+  Avatar, Button, EmptyState, Skeleton,
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem,
+  DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger,
   Credenza, CredenzaContent, CredenzaHeader, CredenzaTitle, CredenzaDescription, CredenzaFooter, CredenzaBody,
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
   Tooltip, TooltipContent, TooltipTrigger,
@@ -46,12 +47,34 @@ import {
   useDeleteColumn,
   useChangeTaskStatus,
   useReorderColumns,
+  useMoveAllColumnTasks,
+  useDuplicateColumn,
+  useArchiveTask,
+  useBulkArchiveTasks,
+  useBulkChangeTaskStatus,
 } from '@/portal-app/pm/queries'
-import type { TaskCardDto, KanbanColumnDto, ProjectMemberDto, TaskLabelBriefDto } from '@/types/pm'
+import type { TaskCardDto, KanbanColumnDto, ProjectMemberDto, TaskLabelBriefDto, TaskPriority } from '@/types/pm'
 import { TaskCard } from './TaskCard'
 import { TaskDetailModal } from './TaskDetailModal'
 import { ColumnSettingsDialog } from './ColumnSettingsDialog'
 import { TaskFilterPopover, matchDueDate, matchCompletion, type DueDateFilter, type CompletionFilter } from './TaskFilterPopover'
+import { TaskSearchInput } from './TaskSearchInput'
+
+// ─── Column ↔ Status mapping + default colors ──────────────────────────────
+
+/** Map column name (lowercase) → backend status enum value */
+const COLUMN_STATUS_MAP: Record<string, string> = {
+  'todo': 'Todo', 'in progress': 'InProgress', 'in review': 'InReview', 'done': 'Done',
+}
+
+/** Default colors for known columns when no custom color is set */
+const DEFAULT_COLUMN_COLORS: Record<string, string> = {
+  'todo': '#94a3b8', 'in progress': '#3b82f6', 'in review': '#8b5cf6', 'done': '#22c55e',
+}
+
+/** Get display color for a column: custom color > default by name > gray fallback */
+const getColumnColor = (column: { name: string; color: string | null }): string =>
+  column.color ?? DEFAULT_COLUMN_COLORS[column.name.toLowerCase()] ?? '#94a3b8'
 
 // ─── Droppable body: makes empty columns valid drop targets ──────────────────
 
@@ -68,9 +91,10 @@ const DroppableColumnBody = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 space-y-2 p-2 min-h-[120px] transition-all duration-150 ${
+      className={`flex-1 min-h-0 overflow-y-auto space-y-2 p-2 transition-all duration-150 ${
         isCardOver ? 'bg-primary/5 ring-1 ring-inset ring-primary/25' : ''
       }`}
+      style={{ scrollbarWidth: 'thin', scrollbarColor: 'color-mix(in oklch, var(--border) 80%, transparent) transparent' } as React.CSSProperties}
     >
       {children}
     </div>
@@ -98,7 +122,7 @@ const SortableColumnWrapper = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`min-w-[280px] max-w-[320px] flex-shrink-0 group/col flex flex-col ${isDragging ? 'opacity-40' : ''}`}
+      className={`min-w-[280px] max-w-[320px] flex-shrink-0 group/col flex flex-col h-full ${isDragging ? 'opacity-40' : ''}`}
     >
       {children({ dragHandleProps: { ...listeners, ...attributes }, isDragging })}
     </div>
@@ -159,6 +183,11 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   const deleteColumnMutation = useDeleteColumn()
   const changeStatusMutation = useChangeTaskStatus()
   const reorderColumnsMutation = useReorderColumns()
+  const moveAllColumnTasksMutation = useMoveAllColumnTasks()
+  const duplicateColumnMutation = useDuplicateColumn()
+  const archiveTaskMutation = useArchiveTask()
+  const bulkArchiveTasksMutation = useBulkArchiveTasks()
+  const bulkChangeStatusMutation = useBulkChangeTaskStatus()
 
   // ── Optimistic local state ─────────────────────────────────────────────────
   const [localColumns, setLocalColumns] = useState<KanbanColumnDto[]>([])
@@ -168,34 +197,122 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   // Keep ref in sync so handleDragEnd always reads the latest localColumns (avoids stale closure)
   useEffect(() => { localColumnsRef.current = localColumns }, [localColumns])
 
+  // ── Pan / Select mode ─────────────────────────────────────────────────────
+  const [boardMode, setBoardMode] = useState<'pan' | 'select'>('pan')
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
+
+  const toggleTaskSelection = useCallback((taskId: string) => {
+    setSelectedTaskIds(prev => {
+      const next = new Set(prev)
+      if (next.has(taskId)) next.delete(taskId)
+      else next.add(taskId)
+      return next
+    })
+  }, [])
+
+  const clearSelection = useCallback(() => {
+    setSelectedTaskIds(new Set())
+  }, [])
+
+  // When switching to pan mode, clear selection
+  const switchMode = useCallback((mode: 'pan' | 'select') => {
+    setBoardMode(mode)
+    if (mode === 'pan') setSelectedTaskIds(new Set())
+  }, [])
+
   // ── Figma-style board pan ─────────────────────────────────────────────────
   const boardScrollRef = useRef<HTMLDivElement>(null)
   const panRef = useRef<{ pointerId: number; startX: number; scrollLeft: number } | null>(null)
+
+  // ── Rubber-band / lasso selection ───────────────────────────────────────────
+  const [lassoRect, setLassoRect] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null)
+  const lassoRef = useRef<{ pointerId: number; startX: number; startY: number } | null>(null)
+
+  const getIntersectingTaskIds = useCallback((screenRect: { left: number; top: number; right: number; bottom: number }): string[] => {
+    const cards = boardScrollRef.current?.querySelectorAll('[data-task-id]')
+    if (!cards) return []
+    const ids: string[] = []
+    cards.forEach(card => {
+      const cr = card.getBoundingClientRect()
+      if (!(cr.right < screenRect.left || cr.left > screenRect.right ||
+            cr.bottom < screenRect.top || cr.top > screenRect.bottom)) {
+        const id = card.getAttribute('data-task-id')
+        if (id) ids.push(id)
+      }
+    })
+    return ids
+  }, [])
 
   const handleBoardPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return
     const target = e.target as HTMLElement
     // Skip if DOM target is outside the board (portalled menus, dialogs, etc.)
     if (!boardScrollRef.current?.contains(target)) return
-    // Skip pan if clicking interactive elements or dnd-kit draggable items
+    // Skip if clicking interactive elements or dnd-kit draggable items
     if (target.closest('button, input, textarea, a, select, [role="button"], [role="option"], [role="menuitem"]')) return
     if (target.closest('.cursor-grab')) return
-    panRef.current = { pointerId: e.pointerId, startX: e.clientX, scrollLeft: boardScrollRef.current?.scrollLeft ?? 0 }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-    ;(e.currentTarget as HTMLElement).style.cursor = 'grabbing'
-  }, [])
+
+    if (boardMode === 'pan') {
+      panRef.current = { pointerId: e.pointerId, startX: e.clientX, scrollLeft: boardScrollRef.current?.scrollLeft ?? 0 }
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+      ;(e.currentTarget as HTMLElement).style.cursor = 'grabbing'
+    } else if (boardMode === 'select') {
+      // Don't start lasso if clicking on a card
+      if (target.closest('[data-task-id]')) return
+      const board = boardScrollRef.current!
+      const boardRect = board.getBoundingClientRect()
+      const x = e.clientX - boardRect.left + board.scrollLeft
+      const y = e.clientY - boardRect.top + board.scrollTop
+      lassoRef.current = { pointerId: e.pointerId, startX: x, startY: y }
+      setLassoRect({ startX: x, startY: y, endX: x, endY: y })
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
+  }, [boardMode])
 
   const handleBoardPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!panRef.current || !boardScrollRef.current) return
-    const dx = e.clientX - panRef.current.startX
-    boardScrollRef.current.scrollLeft = panRef.current.scrollLeft - dx
+    if (panRef.current && boardScrollRef.current) {
+      const dx = e.clientX - panRef.current.startX
+      boardScrollRef.current.scrollLeft = panRef.current.scrollLeft - dx
+      return
+    }
+    if (lassoRef.current && boardScrollRef.current) {
+      const board = boardScrollRef.current
+      const boardRect = board.getBoundingClientRect()
+      const x = e.clientX - boardRect.left + board.scrollLeft
+      const y = e.clientY - boardRect.top + board.scrollTop
+      setLassoRect({ startX: lassoRef.current.startX, startY: lassoRef.current.startY, endX: x, endY: y })
+    }
   }, [])
 
   const handleBoardPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!panRef.current) return
-    panRef.current = null
-    ;(e.currentTarget as HTMLElement).style.cursor = ''
-  }, [])
+    if (panRef.current) {
+      panRef.current = null
+      ;(e.currentTarget as HTMLElement).style.cursor = ''
+      return
+    }
+    if (lassoRef.current && lassoRect && boardScrollRef.current) {
+      const board = boardScrollRef.current
+      const boardRect = board.getBoundingClientRect()
+      // Convert lasso rect (in scroll-space) to screen-space for intersection check
+      const screenLeft = Math.min(lassoRect.startX, lassoRect.endX) - board.scrollLeft + boardRect.left
+      const screenTop = Math.min(lassoRect.startY, lassoRect.endY) - board.scrollTop + boardRect.top
+      const screenRight = Math.max(lassoRect.startX, lassoRect.endX) - board.scrollLeft + boardRect.left
+      const screenBottom = Math.max(lassoRect.startY, lassoRect.endY) - board.scrollTop + boardRect.top
+      // Only count as lasso if dragged more than 5px (avoid accidental micro-drags)
+      if (Math.abs(lassoRect.endX - lassoRect.startX) > 5 || Math.abs(lassoRect.endY - lassoRect.startY) > 5) {
+        const ids = getIntersectingTaskIds({ left: screenLeft, top: screenTop, right: screenRight, bottom: screenBottom })
+        if (ids.length > 0) {
+          setSelectedTaskIds(prev => {
+            const next = new Set(prev)
+            ids.forEach(id => next.add(id))
+            return next
+          })
+        }
+      }
+      lassoRef.current = null
+      setLassoRect(null)
+    }
+  }, [lassoRect, getIntersectingTaskIds])
 
   // Sync from server only when not mid-drag (prevents snap-back)
   useEffect(() => {
@@ -214,6 +331,23 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   const activeTask = activeId && dragType === 'card' ? allTasks.find(t => t.id === activeId) ?? null : null
   const activeColumn = activeId && dragType === 'column' ? localColumns.find(c => c.id === activeId) ?? null : null
 
+  // ── Column sort overrides (frontend-only, ephemeral) ──────────────────────
+  type SortOption = 'default' | 'priority' | 'dueDate' | 'alpha'
+  const priorityOrder: Record<string, number> = { Urgent: 4, High: 3, Medium: 2, Low: 1 }
+  const [columnSortOverrides, setColumnSortOverrides] = useState<Record<string, SortOption>>({})
+
+  // ── Collapsed columns (frontend-only, ephemeral) ──────────────────────────
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(new Set())
+
+  const toggleColumnCollapse = useCallback((columnId: string) => {
+    setCollapsedColumns(prev => {
+      const next = new Set(prev)
+      if (next.has(columnId)) next.delete(columnId)
+      else next.add(columnId)
+      return next
+    })
+  }, [])
+
   // ── UI state ───────────────────────────────────────────────────────────────
   const [quickAddColumnId, setQuickAddColumnId] = useState<string | null>(null)
   const [quickAddTitle, setQuickAddTitle] = useState('')
@@ -226,6 +360,9 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   const [columnSettingsId, setColumnSettingsId] = useState<string | null>(null)
   const [deleteColumnId, setDeleteColumnId] = useState<string | null>(null)
   const [deleteColumnMoveToId, setDeleteColumnMoveToId] = useState<string>('')
+  const [moveAllColumnId, setMoveAllColumnId] = useState<string | null>(null)
+  const [moveAllTargetColumnId, setMoveAllTargetColumnId] = useState<string>('')
+  const [archiveAllColumnId, setArchiveAllColumnId] = useState<string | null>(null)
 
   // ── URL-synced state ───────────────────────────────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams()
@@ -313,9 +450,22 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
   }, [localColumns])
 
   // ── Filtered view (display only — DnD operates on localColumns) ────────────
-  const filteredColumns = useMemo(() => localColumns.map(col => ({
+  const filteredColumns = useMemo(() => localColumns.map(col => {
+    const sortedTasks = [...col.tasks].sort((a, b) => {
+      const sort = columnSortOverrides[col.id] ?? 'default'
+      if (sort === 'priority') return (priorityOrder[b.priority] ?? 0) - (priorityOrder[a.priority] ?? 0)
+      if (sort === 'dueDate') {
+        if (!a.dueDate && !b.dueDate) return 0
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      }
+      if (sort === 'alpha') return a.title.localeCompare(b.title)
+      return a.sortOrder - b.sortOrder // default
+    })
+    return {
     ...col,
-    tasks: col.tasks.filter(task => {
+    tasks: sortedTasks.filter(task => {
       const matchSearch = !boardSearch || task.title.toLowerCase().includes(boardSearch.toLowerCase())
       const matchAssignee =
         boardAssignees.length === 0 ||
@@ -340,11 +490,12 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       const matchComp = matchCompletion(task.completedAt, boardCompletion)
       return matchSearch && matchAssignee && matchReporter && matchPriority && matchTaskType && matchLabel && matchDue && matchComp
     }),
-  })), [localColumns, boardSearch, boardAssignees, boardReporters, boardPriorities, boardTaskType, boardLabels, boardDue, boardDueStart, boardDueEnd, boardCompletion])
+  }
+  }), [localColumns, boardSearch, boardAssignees, boardReporters, boardPriorities, boardTaskType, boardLabels, boardDue, boardDueStart, boardDueEnd, boardCompletion, columnSortOverrides])
 
-  // ── DnD sensors ────────────────────────────────────────────────────────────
+  // ── DnD sensors — effectively disabled in select mode via huge activation distance ──
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: boardMode === 'pan' ? 8 : 999999 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
@@ -548,13 +699,21 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
     moveTaskMutation.mutate(
       { id: activeId, request: { columnId: targetCol.id, sortOrder: newSortOrder } },
       {
+        onSuccess: () => {
+          // Sync task status when moving to a column that maps to a known status
+          const matchedStatus = COLUMN_STATUS_MAP[targetCol.name.toLowerCase()]
+          const movedTask = origCol?.tasks.find(t => t.id === activeId)
+          if (matchedStatus && movedTask && movedTask.status !== matchedStatus) {
+            changeStatusMutation.mutate({ id: activeId, status: matchedStatus })
+          }
+        },
         onError: (err) => {
           setLocalColumns(board.columns)
           toast.error(err instanceof Error ? err.message : t('errors.unknown'))
         },
       },
     )
-  }, [dragType, board, projectId, moveTaskMutation, reorderColumnsMutation, t])
+  }, [dragType, board, projectId, moveTaskMutation, changeStatusMutation, reorderColumnsMutation, t])
 
   // ── Other handlers ─────────────────────────────────────────────────────────
   const handleTaskClick = useCallback((task: TaskCardDto) => {
@@ -604,6 +763,61 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       { onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')) },
     )
   }, [changeStatusMutation, t])
+
+  const handleArchiveTask = useCallback((task: TaskCardDto) => {
+    archiveTaskMutation.mutate(task.id, {
+      onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+    })
+  }, [archiveTaskMutation, t])
+
+  const handleMoveToColumn = useCallback((task: TaskCardDto, columnId: string) => {
+    const targetColumn = board?.columns.find(c => c.id === columnId)
+    if (!targetColumn) return
+
+    // Move the task to the target column
+    moveTaskMutation.mutate(
+      { id: task.id, request: { columnId, sortOrder: targetColumn.tasks.length } },
+      {
+        onSuccess: () => {
+          // Also sync status if column maps to a known status
+          const matchedStatus = COLUMN_STATUS_MAP[targetColumn.name.toLowerCase()]
+          if (matchedStatus && task.status !== matchedStatus) {
+            changeStatusMutation.mutate({ id: task.id, status: matchedStatus })
+          }
+        },
+        onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+      },
+    )
+  }, [board?.columns, moveTaskMutation, changeStatusMutation, t])
+
+  // When user picks a column in the detail modal, move the task + sync status
+  const handleModalMoveToColumn = useCallback((taskId: string, columnId: string) => {
+    if (!board?.columns) return
+    const targetColumn = board.columns.find(c => c.id === columnId)
+    if (!targetColumn) return
+    const currentColumn = board.columns.find(c => c.tasks.some(t => t.id === taskId))
+    if (currentColumn?.id === columnId) return
+    moveTaskMutation.mutate(
+      { id: taskId, request: { columnId, sortOrder: targetColumn.tasks.length } },
+      {
+        onSuccess: () => {
+          // Sync status if column maps to a known status
+          const matchedStatus = COLUMN_STATUS_MAP[targetColumn.name.toLowerCase()]
+          const task = currentColumn?.tasks.find(t => t.id === taskId)
+          if (matchedStatus && task && task.status !== matchedStatus) {
+            changeStatusMutation.mutate({ id: taskId, status: matchedStatus })
+          }
+        },
+      },
+    )
+  }, [board?.columns, moveTaskMutation, changeStatusMutation])
+
+  const handleContextMenuChangePriority = useCallback((task: TaskCardDto, priority: string) => {
+    updateTaskMutation.mutate(
+      { id: task.id, request: { priority: priority as TaskPriority } },
+      { onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')) },
+    )
+  }, [updateTaskMutation, t])
 
   const handleColumnRenameStart = useCallback((column: KanbanColumnDto) => {
     setEditingColumnId(column.id)
@@ -655,24 +869,10 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
       {/* ── Filter bar ── */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Search input */}
-        <div className="relative min-w-[220px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            value={boardSearch}
-            onChange={(e) => setFilter('board-search', e.target.value)}
-            placeholder={t('pm.searchTasks', { defaultValue: 'Search tasks...' })}
-            className="pl-9 pr-8 h-9 rounded-full text-sm"
-          />
-          {boardSearch && (
-            <button
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={() => setFilter('board-search', '')}
-              aria-label={t('buttons.clear', { defaultValue: 'Clear' })}
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+        <TaskSearchInput
+          value={boardSearch}
+          onChange={(v) => setFilter('board-search', v)}
+        />
 
         {/* Task type dropdown */}
         <DropdownMenu>
@@ -839,7 +1039,143 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
             {t('buttons.clearFilters', { defaultValue: 'Clear filters' })}
           </button>
         )}
+
+        {/* Pan / Select mode toggle */}
+        <div className="ml-auto flex items-center rounded-full border border-border bg-muted/40 p-0.5 gap-0.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all ${
+                  boardMode === 'pan' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => switchMode('pan')}
+                aria-label={t('pm.panMode', { defaultValue: 'Pan mode' })}
+              >
+                <Hand className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t('pm.panMode', { defaultValue: 'Pan mode' })}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all ${
+                  boardMode === 'select' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => switchMode('select')}
+                aria-label={t('pm.selectMode', { defaultValue: 'Select mode' })}
+              >
+                <MousePointer2 className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t('pm.selectMode', { defaultValue: 'Select mode' })}</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
+
+      {/* ── Bulk action bar — shown when tasks are selected in select mode ── */}
+      {boardMode === 'select' && selectedTaskIds.size > 0 && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 text-sm">
+          <span className="font-medium text-primary">
+            {t('pm.selectedCount', { count: selectedTaskIds.size, defaultValue: '{{count}} selected' })}
+          </span>
+          <div className="flex items-center gap-1 ml-2">
+            {/* Bulk move to column */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center justify-center gap-1.5 rounded-md px-2.5 h-7 text-xs font-medium border border-border bg-background hover:bg-muted cursor-pointer transition-all">
+                  <Check className="h-3 w-3 shrink-0" />
+                  {t('pm.bulkMoveToColumn', { defaultValue: 'Move to' })}
+                  <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                {filteredColumns.map(column => {
+                  const status = COLUMN_STATUS_MAP[column.name.toLowerCase()]
+                  return (
+                    <DropdownMenuItem
+                      key={column.id}
+                      className="cursor-pointer gap-2"
+                      onSelect={() => {
+                        const ids = Array.from(selectedTaskIds)
+                        if (status) {
+                          // Status-mapped column: use bulk API (changes status + moves)
+                          bulkChangeStatusMutation.mutate(
+                            { taskIds: ids, status },
+                            {
+                              onSuccess: () => {
+                                clearSelection()
+                              },
+                              onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+                            },
+                          )
+                        } else {
+                          // Custom column: move tasks individually
+                          Promise.all(ids.map(id =>
+                            moveTaskMutation.mutateAsync({ id, request: { columnId: column.id, sortOrder: 999 } })
+                          )).then(() => {
+                            clearSelection()
+                          }).catch((err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')))
+                        }
+                      }}
+                    >
+                      <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getColumnColor(column) }} />
+                      {column.name}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Bulk archive */}
+            <button
+              className="inline-flex items-center justify-center gap-1.5 rounded-md px-2.5 h-7 text-xs font-medium border border-border bg-background hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 cursor-pointer transition-all"
+              onClick={() => {
+                bulkArchiveTasksMutation.mutate(Array.from(selectedTaskIds), {
+                  onSuccess: () => {
+                    clearSelection()
+                  },
+                  onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+                })
+              }}
+            >
+              <Archive className="h-3 w-3 shrink-0" />
+              {t('pm.bulkArchive', { defaultValue: 'Archive' })}
+            </button>
+
+            {/* Select all / Deselect all toggle */}
+            {(() => {
+              const allIds = filteredColumns.flatMap(c => c.tasks.map(t => t.id))
+              const isAllSelected = allIds.length > 0 && allIds.every(id => selectedTaskIds.has(id))
+              return (
+                <button
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md px-2.5 h-7 text-xs font-medium border border-border bg-background hover:bg-muted cursor-pointer transition-all"
+                  onClick={() => {
+                    if (isAllSelected) {
+                      clearSelection()
+                    } else {
+                      setSelectedTaskIds(new Set(allIds))
+                    }
+                  }}
+                >
+                  {isAllSelected ? <CheckSquare className="h-3 w-3 shrink-0" /> : <Square className="h-3 w-3 shrink-0" />}
+                  {isAllSelected
+                    ? t('pm.deselectAll', { defaultValue: 'Deselect all' })
+                    : t('pm.selectAll', { defaultValue: 'Select all' })}
+                </button>
+              )
+            })()}
+          </div>
+
+          <button
+            className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+            onClick={clearSelection}
+          >
+            <X className="h-3 w-3" />
+            {t('pm.clearSelection', { defaultValue: 'Clear' })}
+          </button>
+        </div>
+      )}
 
       {/* ── Kanban board ── */}
       <DndContext
@@ -853,7 +1189,7 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         <SortableContext items={localColumns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
           <div
             ref={boardScrollRef}
-            className="flex gap-4 overflow-x-auto pb-4 cursor-default scrollbar-none select-none min-h-[calc(100vh-18rem)]"
+            className="relative flex gap-4 overflow-x-auto pb-2 cursor-default scrollbar-none select-none h-[calc(100vh-9.5rem)] min-h-[400px]"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
             onPointerDown={handleBoardPointerDown}
             onPointerMove={handleBoardPointerMove}
@@ -866,27 +1202,48 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
               const wipExceeded = column.wipLimit != null && originalTaskCount > column.wipLimit
               const isCardOver = overColumnId === column.id && dragType === 'card'
 
+              const isCollapsed = collapsedColumns.has(column.id)
+
               return (
                 <SortableColumnWrapper key={column.id} id={column.id}>
-                  {({ dragHandleProps, isDragging }) => (
-                    <div className={`flex flex-col flex-1 bg-muted/40 dark:bg-muted/50 rounded-lg border transition-all duration-150 ${
+                  {({ dragHandleProps, isDragging }) => isCollapsed ? (
+                    /* ── Collapsed column: thin vertical strip ── */
+                    <div
+                      className={`w-10 flex-shrink-0 flex flex-col items-center rounded-lg border bg-muted/40 dark:bg-muted/50 cursor-pointer transition-all duration-150 overflow-hidden ${
+                        isDragging ? 'border-primary/40 shadow-lg opacity-40' : 'border-border dark:border-border/80 hover:border-primary/40'
+                      }`}
+                      {...dragHandleProps}
+                      onClick={() => toggleColumnCollapse(column.id)}
+                      title={t('pm.expandColumn', { defaultValue: 'Expand column' })}
+                    >
+                      <div className="h-1 w-full rounded-t-lg flex-shrink-0" style={{ backgroundColor: getColumnColor(column) }} />
+                      <div className="flex-1 flex flex-col items-center justify-center gap-2 py-3 px-0 w-full overflow-hidden">
+                        <span
+                          className="text-[11px] font-semibold text-muted-foreground leading-none select-none max-h-32 overflow-hidden"
+                          style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
+                        >
+                          {column.name}
+                        </span>
+                        <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full px-1 text-[10px] font-medium bg-muted text-muted-foreground tabular-nums">
+                          {originalTaskCount}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`flex flex-col h-full bg-muted/40 dark:bg-muted/50 rounded-lg border transition-all duration-150 ${
                       isDragging ? 'border-primary/40 shadow-lg' : 'border-border dark:border-border/80'
                     }`}>
                       {/* Column color stripe */}
-                      {column.color && (
-                        <div className="h-1 rounded-t-lg" style={{ backgroundColor: column.color }} />
-                      )}
+                      <div className="h-1 rounded-t-lg" style={{ backgroundColor: getColumnColor(column) }} />
                       {/* Column header — entire left area is draggable, title is inline editable */}
-                      <div className={`flex items-center justify-between px-2 py-2.5 border-b border-border/50 dark:border-border/70 ${!column.color ? 'rounded-t-lg' : ''} ${
+                      <div className={`flex items-center justify-between px-2 py-2.5 border-b border-border/50 dark:border-border/70 ${
                         wipExceeded ? 'bg-red-50 dark:bg-red-950/30' : ''
                       }`}>
                         <div
                           {...dragHandleProps}
                           className="flex items-center gap-1.5 min-w-0 flex-1 cursor-grab active:cursor-grabbing"
                         >
-                          {column.color && (
-                            <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: column.color }} />
-                          )}
+                          <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getColumnColor(column) }} />
                           {editingColumnId === column.id ? (
                             <input
                               autoFocus
@@ -978,6 +1335,74 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
                                 {t('pm.editColumn', { defaultValue: 'Edit column' })}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
+                              {/* Sort submenu */}
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="cursor-pointer gap-2">
+                                  <ArrowUpDown className="h-3.5 w-3.5" />
+                                  {t('pm.sortCards', { defaultValue: 'Sort by' })}
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  {([
+                                    { key: 'default', label: t('pm.sortDefault', { defaultValue: 'Default order' }) },
+                                    { key: 'priority', label: t('pm.sortByPriority', { defaultValue: 'Priority' }) },
+                                    { key: 'dueDate', label: t('pm.sortByDueDate', { defaultValue: 'Due date' }) },
+                                    { key: 'alpha', label: t('pm.sortByAlpha', { defaultValue: 'Alphabetical' }) },
+                                  ] as const).map(({ key, label }) => (
+                                    <DropdownMenuItem
+                                      key={key}
+                                      className="cursor-pointer gap-2"
+                                      onClick={() => setColumnSortOverrides(prev => ({ ...prev, [column.id]: key }))}
+                                    >
+                                      <Check className={`h-3.5 w-3.5 ${(columnSortOverrides[column.id] ?? 'default') === key ? 'opacity-100' : 'opacity-0'}`} />
+                                      {label}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              {/* Collapse/expand */}
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={() => toggleColumnCollapse(column.id)}
+                              >
+                                <ChevronsUpDown className="h-3.5 w-3.5" />
+                                {collapsedColumns.has(column.id)
+                                  ? t('pm.expandColumn', { defaultValue: 'Expand column' })
+                                  : t('pm.collapseColumn', { defaultValue: 'Collapse column' })
+                                }
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {/* Move all cards */}
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={() => {
+                                  setMoveAllColumnId(column.id)
+                                  setMoveAllTargetColumnId(localColumns.find(c => c.id !== column.id)?.id ?? '')
+                                }}
+                              >
+                                <ArrowUp className="h-3.5 w-3.5" />
+                                {t('pm.moveAllCards', { defaultValue: 'Move all cards to...' })}
+                              </DropdownMenuItem>
+                              {/* Archive all cards */}
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={() => setArchiveAllColumnId(column.id)}
+                              >
+                                <Archive className="h-3.5 w-3.5" />
+                                {t('pm.archiveAllCards', { defaultValue: 'Archive all cards' })}
+                              </DropdownMenuItem>
+                              {/* Duplicate column */}
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={() => {
+                                  duplicateColumnMutation.mutate(
+                                    { projectId, columnId: column.id },
+                                  )
+                                }}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                                {t('pm.duplicateColumn', { defaultValue: 'Duplicate column' })}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="cursor-pointer gap-2 text-destructive focus:text-destructive"
                                 onClick={() => {
@@ -1001,10 +1426,17 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
                               key={task.id}
                               task={task}
                               onClick={handleTaskClick}
-                              isDraggable
-                              onComplete={handleQuickComplete}
-                              onUnassign={handleUnassignTask}
+                              isDraggable={boardMode === 'pan'}
+                              onComplete={boardMode === 'pan' ? handleQuickComplete : undefined}
+                              onUnassign={boardMode === 'pan' ? handleUnassignTask : undefined}
+                              onArchive={boardMode === 'pan' ? handleArchiveTask : undefined}
+                              onChangePriority={boardMode === 'pan' ? handleContextMenuChangePriority : undefined}
+                              onMoveToColumn={boardMode === 'pan' ? handleMoveToColumn : undefined}
+                              columns={filteredColumns}
+                              currentColumnId={column.id}
                               isMemberDragTarget={dragType === 'member' && overTaskId === task.id}
+                              isSelected={selectedTaskIds.has(task.id)}
+                              onSelect={boardMode === 'select' ? toggleTaskSelection : undefined}
                             />
                           ))}
                           {column.tasks.length === 0 && (
@@ -1084,6 +1516,19 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
             })}
 
             {/* Inline add column */}
+            {/* Rubber-band lasso overlay */}
+            {lassoRect && (
+              <div
+                className="absolute bg-primary/10 border border-primary/40 rounded-sm pointer-events-none z-50"
+                style={{
+                  left: Math.min(lassoRect.startX, lassoRect.endX),
+                  top: Math.min(lassoRect.startY, lassoRect.endY),
+                  width: Math.abs(lassoRect.endX - lassoRect.startX),
+                  height: Math.abs(lassoRect.endY - lassoRect.startY),
+                }}
+              />
+            )}
+
             {isAddingColumn ? (
               <div className="min-w-[240px] max-w-[280px] flex-shrink-0 bg-muted/40 dark:bg-muted/50 rounded-lg border border-border dark:border-border/80 p-3 space-y-2">
                 <input
@@ -1219,6 +1664,94 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
         </CredenzaContent>
       </Credenza>
 
+      {/* Move all cards dialog */}
+      <Credenza open={moveAllColumnId !== null} onOpenChange={(open) => { if (!open) setMoveAllColumnId(null) }}>
+        <CredenzaContent>
+          <CredenzaHeader>
+            <CredenzaTitle>{t('pm.moveAllCards', { defaultValue: 'Move all cards to...' })}</CredenzaTitle>
+            <CredenzaDescription>
+              {t('pm.moveAllCardsDesc', { defaultValue: 'All cards in this column will be moved to the selected column.' })}
+            </CredenzaDescription>
+          </CredenzaHeader>
+          <CredenzaBody className="space-y-3">
+            <div>
+              <label className="text-sm font-medium">{t('pm.targetColumn', { defaultValue: 'Target column' })}</label>
+              <Select value={moveAllTargetColumnId} onValueChange={setMoveAllTargetColumnId}>
+                <SelectTrigger className="mt-1 cursor-pointer">
+                  <SelectValue placeholder={t('pm.selectColumn', { defaultValue: 'Select column' })} />
+                </SelectTrigger>
+                <SelectContent>
+                  {localColumns.filter(c => c.id !== moveAllColumnId).map(c => (
+                    <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CredenzaBody>
+          <CredenzaFooter>
+            <Button variant="outline" className="cursor-pointer" onClick={() => setMoveAllColumnId(null)}>
+              {t('buttons.cancel')}
+            </Button>
+            <Button
+              className="cursor-pointer"
+              disabled={!moveAllTargetColumnId || moveAllColumnTasksMutation.isPending}
+              onClick={() => {
+                if (!moveAllColumnId || !moveAllTargetColumnId) return
+                moveAllColumnTasksMutation.mutate(
+                  { projectId, sourceColumnId: moveAllColumnId, targetColumnId: moveAllTargetColumnId },
+                  {
+                    onSuccess: () => {
+                      setMoveAllColumnId(null)
+                    },
+                    onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+                  }
+                )
+              }}
+            >
+              {moveAllColumnTasksMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('pm.moveCards', { defaultValue: 'Move cards' })}
+            </Button>
+          </CredenzaFooter>
+        </CredenzaContent>
+      </Credenza>
+
+      {/* Archive all cards confirmation */}
+      <Credenza open={archiveAllColumnId !== null} onOpenChange={(open) => { if (!open) setArchiveAllColumnId(null) }}>
+        <CredenzaContent className="border-destructive/30">
+          <CredenzaHeader>
+            <CredenzaTitle>{t('pm.archiveAllCards', { defaultValue: 'Archive all cards' })}</CredenzaTitle>
+            <CredenzaDescription>
+              {t('pm.archiveAllCardsDesc', { defaultValue: 'All cards in this column will be moved to the archive. You can restore them later.' })}
+            </CredenzaDescription>
+          </CredenzaHeader>
+          <CredenzaFooter>
+            <Button variant="outline" className="cursor-pointer" onClick={() => setArchiveAllColumnId(null)}>
+              {t('buttons.cancel')}
+            </Button>
+            <Button
+              className="cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+              disabled={bulkArchiveTasksMutation.isPending}
+              onClick={() => {
+                if (!archiveAllColumnId) return
+                const column = localColumns.find(c => c.id === archiveAllColumnId)
+                const taskIds = column?.tasks.map(t => t.id) ?? []
+                if (taskIds.length === 0) { setArchiveAllColumnId(null); return }
+                bulkArchiveTasksMutation.mutate(taskIds, {
+                  onSuccess: () => {
+                    setArchiveAllColumnId(null)
+                  },
+                  onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+                })
+              }}
+            >
+              {bulkArchiveTasksMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Archive className="h-4 w-4 mr-1.5" />
+              {t('pm.archiveAll', { defaultValue: 'Archive all' })}
+            </Button>
+          </CredenzaFooter>
+        </CredenzaContent>
+      </Credenza>
+
       {/* Trello-style centered task modal */}
       <TaskDetailModal
         taskId={selectedTaskId}
@@ -1229,6 +1762,8 @@ export const KanbanBoard = ({ projectId, members, onCreateTask }: KanbanBoardPro
           const task = localColumnsRef.current.flatMap(c => c.tasks).find(t => t.id === taskId)
           if (task) setSelectedTaskId(task.taskNumber)
         }}
+        boardColumns={filteredColumns}
+        onMoveToColumn={handleModalMoveToColumn}
       />
 
       {/* Multi-line paste confirmation */}

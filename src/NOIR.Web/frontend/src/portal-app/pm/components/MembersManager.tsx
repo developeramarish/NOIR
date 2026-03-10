@@ -94,7 +94,6 @@ export const MembersManager = ({ projectId, members }: MembersManagerProps) => {
       { projectId, request: { employeeId: selectedEmployee.id, role: newRole } },
       {
         onSuccess: () => {
-          toast.success(t('pm.addMember'))
           setSelectedEmployee(null)
           setSearchInput('')
           setDropdownOpen(false)
@@ -112,7 +111,6 @@ export const MembersManager = ({ projectId, members }: MembersManagerProps) => {
       { projectId, memberId },
       {
         onSuccess: () => {
-          toast.success(t('pm.removeMember'))
           setConfirmRemoveId(null)
         },
         onError: (err) => {

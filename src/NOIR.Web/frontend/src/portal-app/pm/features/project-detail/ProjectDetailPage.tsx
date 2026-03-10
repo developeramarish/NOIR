@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Users,
@@ -44,6 +45,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@uikit'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { useProjectByCodeQuery, useProjectQuery, useArchiveProject } from '@/portal-app/pm/queries'
@@ -68,6 +72,7 @@ const statusColorMap: Record<ProjectStatus, 'green' | 'blue' | 'gray' | 'yellow'
 
 export const ProjectDetailPage = () => {
   const { t } = useTranslation('common')
+  const { formatDate } = useRegionalSettings()
   const { id: projectParam } = useParams<{ id: string }>()
 
   const { activeTab, handleTabChange, isPending } = useUrlTab({ defaultTab: 'board' })
@@ -108,7 +113,6 @@ export const ProjectDetailPage = () => {
     if (!project) return
     archiveMutation.mutate(project.id, {
       onSuccess: () => {
-        toast.success(t('pm.archiveProject'))
         navigate('/portal/projects')
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown', { defaultValue: 'Something went wrong' })),
@@ -133,137 +137,128 @@ export const ProjectDetailPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <OfflineBanner visible={isReconnecting} />
       <EntityConflictDialog signal={conflictSignal} onContinueEditing={dismissConflict} onReloadAndRestart={reloadAndRestart} />
       <EntityDeletedDialog signal={deletedSignal} onGoBack={() => navigate('/portal/projects')} />
 
-      {/* Breadcrumb */}
-      <nav className="text-sm text-muted-foreground">
-        <ViewTransitionLink to="/portal/projects" className="hover:text-foreground transition-colors">
-          {t('pm.projects')}
-        </ViewTransitionLink>
-        <span className="mx-2">/</span>
-        <span className="text-foreground">{project.name}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="h-10 w-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold text-lg select-none shadow-sm"
-            style={{
-              background: `linear-gradient(135deg, ${project.color ?? '#6366f1'} 0%, ${project.color ? project.color + 'cc' : '#4f46e5'} 100%)`,
-            }}
-            aria-hidden="true"
-          >
-            {project.name.charAt(0).toUpperCase()}
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
-          <Badge variant="outline" className={getStatusBadgeClasses(statusColorMap[project.status])}>
-            {t(`statuses.${project.status.toLowerCase()}`, { defaultValue: project.status })}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          {project.members.length > 0 && (
-            <ProjectMemberAvatars
-              members={project.members}
-              onClickMore={() => setMembersDialogOpen(true)}
-            />
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="cursor-pointer gap-1.5"
-            onClick={() => setMembersDialogOpen(true)}
-          >
-            <UserPlus className="h-3.5 w-3.5" />
-            {t('pm.share', { defaultValue: 'Share' })}
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8 cursor-pointer" aria-label={t('pm.boardMenu', { defaultValue: 'Board menu' })}>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setEditDialogOpen(true)}>
-                <Pencil className="h-3.5 w-3.5" />
-                {t('pm.editProject')}
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setLabelsDialogOpen(true)}>
-                <Tag className="h-3.5 w-3.5" />
-                {t('pm.labels', { defaultValue: 'Labels' })}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer gap-2 text-destructive focus:text-destructive"
-                onClick={() => setArchiveConfirmOpen(true)}
-              >
-                <Archive className="h-3.5 w-3.5" />
-                {t('pm.archiveProject', { defaultValue: 'Archive Project' })}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Stats bar */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-sm text-muted-foreground py-2 border-b border-border/30">
-        <span className="flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5" />
-          {project.members.length} {t('pm.members', { defaultValue: 'members' }).toLowerCase()}
-        </span>
-        {project.dueDate && (
-          <span
-            className={`flex items-center gap-1.5 ${
-              new Date(project.dueDate) < new Date() ? 'text-red-500 font-medium' : ''
-            }`}
-          >
-            <Calendar className="h-3.5 w-3.5" />
-            {new Date(project.dueDate).toLocaleDateString()}
-          </span>
-        )}
-        {project.description && (
-          <span className="text-xs text-muted-foreground/80 truncate max-w-xs hidden md:flex items-center gap-1.5">
-            <Info className="h-3.5 w-3.5 flex-shrink-0" />
-            {project.description.slice(0, 80)}
-            {project.description.length > 80 ? '...' : ''}
-          </span>
-        )}
-        <span className="flex items-center gap-1.5 ml-auto">
-          {project.visibility === 'Private' ? (
-            <Lock className="h-3.5 w-3.5" />
-          ) : project.visibility === 'Public' ? (
-            <Globe className="h-3.5 w-3.5" />
-          ) : (
-            <Building2 className="h-3.5 w-3.5" />
-          )}
-          <span className="text-xs">
-            {t(`pm.visibility${project.visibility}`, { defaultValue: project.visibility ?? '' })}
-          </span>
-        </span>
-      </div>
-
-      {/* Tabs */}
+      {/* Compact header: breadcrumb + icon + title + tabs + actions — all in one row */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="board" className="cursor-pointer flex items-center gap-1.5">
-            <KanbanSquare className="h-3.5 w-3.5" />
-            {t('pm.board')}
-          </TabsTrigger>
-          <TabsTrigger value="list" className="cursor-pointer flex items-center gap-1.5">
-            <LayoutList className="h-3.5 w-3.5" />
-            {t('pm.listView')}
-          </TabsTrigger>
-          <TabsTrigger value="archived" className="cursor-pointer flex items-center gap-1.5">
-            <Archive className="h-3.5 w-3.5" />
-            {t('pm.archived', { defaultValue: 'Archived' })}
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center gap-2 flex-wrap py-2 border-b border-border/30 mb-2">
+          {/* Left: breadcrumb → project info */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <ViewTransitionLink
+              to="/portal/projects"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 hidden sm:block"
+            >
+              {t('pm.projects')}
+            </ViewTransitionLink>
+            <span className="text-muted-foreground/50 flex-shrink-0 hidden sm:block">/</span>
+            <div
+              className="h-6 w-6 rounded-md flex-shrink-0 flex items-center justify-center text-white font-bold text-[11px] select-none shadow-sm"
+              style={{ background: `linear-gradient(135deg, ${project.color ?? '#6366f1'} 0%, ${project.color ? project.color + 'cc' : '#4f46e5'} 100%)` }}
+              aria-hidden="true"
+            >
+              {project.name.charAt(0).toUpperCase()}
+            </div>
+            <h1 className="text-sm font-semibold tracking-tight truncate">{project.name}</h1>
+            <Badge variant="outline" className={`${getStatusBadgeClasses(statusColorMap[project.status])} flex-shrink-0 text-[10px] px-1.5 py-0`}>
+              {t(`statuses.${project.status.charAt(0).toLowerCase() + project.status.slice(1)}`, { defaultValue: project.status })}
+            </Badge>
+            {/* Info tooltip: members, due date, description, visibility */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="flex-shrink-0 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer transition-colors"
+                  aria-label={t('pm.projectInfo', { defaultValue: 'Project info' })}
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs space-y-1 max-w-xs p-2">
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-3 w-3 flex-shrink-0" />
+                  {project.members.length} {t('pm.members', { defaultValue: 'members' }).toLowerCase()}
+                </div>
+                {project.dueDate && (
+                  <div className={`flex items-center gap-1.5 ${new Date(project.dueDate) < new Date() ? 'text-red-500 font-medium' : ''}`}>
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    {formatDate(project.dueDate)}
+                  </div>
+                )}
+                {project.description && (
+                  <div className="flex items-start gap-1.5 text-muted-foreground">
+                    <Info className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                    <span>{project.description.slice(0, 120)}{project.description.length > 120 ? '…' : ''}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  {project.visibility === 'Private'
+                    ? <Lock className="h-3 w-3 flex-shrink-0" />
+                    : project.visibility === 'Public'
+                      ? <Globe className="h-3 w-3 flex-shrink-0" />
+                      : <Building2 className="h-3 w-3 flex-shrink-0" />}
+                  {t(`pm.visibility${project.visibility}`, { defaultValue: project.visibility ?? '' })}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Center: view mode tabs */}
+          <TabsList className="h-8 flex-shrink-0">
+            <TabsTrigger value="board" className="cursor-pointer flex items-center gap-1.5 text-xs h-7 px-2.5">
+              <KanbanSquare className="h-3.5 w-3.5" />
+              {t('pm.board')}
+            </TabsTrigger>
+            <TabsTrigger value="list" className="cursor-pointer flex items-center gap-1.5 text-xs h-7 px-2.5">
+              <LayoutList className="h-3.5 w-3.5" />
+              {t('pm.listView')}
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="cursor-pointer flex items-center gap-1.5 text-xs h-7 px-2.5">
+              <Archive className="h-3.5 w-3.5" />
+              {t('pm.archived', { defaultValue: 'Archived' })}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Right: members + share + menu */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {project.members.length > 0 && (
+              <ProjectMemberAvatars members={project.members} onClickMore={() => setMembersDialogOpen(true)} />
+            )}
+            <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 h-8 text-xs" onClick={() => setMembersDialogOpen(true)}>
+              <UserPlus className="h-3.5 w-3.5" />
+              {t('pm.share', { defaultValue: 'Share' })}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8 cursor-pointer" aria-label={t('pm.boardMenu', { defaultValue: 'Board menu' })}>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setEditDialogOpen(true)}>
+                  <Pencil className="h-3.5 w-3.5" />
+                  {t('pm.editProject')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setLabelsDialogOpen(true)}>
+                  <Tag className="h-3.5 w-3.5" />
+                  {t('pm.labels', { defaultValue: 'Labels' })}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  onClick={() => setArchiveConfirmOpen(true)}
+                >
+                  <Archive className="h-3.5 w-3.5" />
+                  {t('pm.archiveProject', { defaultValue: 'Archive Project' })}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
 
         <div style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 200ms' }}>
-          <TabsContent value="board" className="mt-6">
+          <TabsContent value="board" className="mt-0">
             <KanbanBoard
               projectId={project.id}
               members={project.members}
@@ -271,11 +266,11 @@ export const ProjectDetailPage = () => {
             />
           </TabsContent>
 
-          <TabsContent value="list" className="mt-6">
+          <TabsContent value="list" className="mt-0">
             <TaskListView projectId={project.id} members={project.members} onTaskClick={(id) => setListDetailTaskId(id)} />
           </TabsContent>
 
-          <TabsContent value="archived" className="mt-6">
+          <TabsContent value="archived" className="mt-0">
             <ArchivedTasksPanel
               projectId={project.id}
               onViewDetail={(taskId) => setArchivedDetailTaskId(taskId)}

@@ -23,8 +23,9 @@ const createSchema = (t: (key: string) => string) =>
   z.object({
     name: z.string().min(1, t('validation.required')),
     color: z.string().min(1),
-    wipLimit: z.union([z.coerce.number().int().min(0).optional(), z.literal('')]).transform((val) =>
-      val === '' ? undefined : val,
+    wipLimit: z.preprocess(
+      (val) => (val === '' || val === undefined || val === null) ? undefined : val,
+      z.coerce.number().int().min(1).optional(),
     ),
   })
 
@@ -83,12 +84,11 @@ export const ColumnSettingsDialog = ({
         request: {
           name: data.name,
           color: data.color,
-          wipLimit: data.wipLimit === '' ? undefined : (data.wipLimit as number | undefined),
+          wipLimit: data.wipLimit || undefined,
         },
       },
       {
         onSuccess: () => {
-          toast.success(t('pm.editColumn'))
           onOpenChange(false)
         },
         onError: (err) => {

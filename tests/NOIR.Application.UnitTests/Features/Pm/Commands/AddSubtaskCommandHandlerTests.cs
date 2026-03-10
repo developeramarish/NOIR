@@ -1,3 +1,4 @@
+using MockQueryable;
 using NOIR.Application.Features.Pm.Commands.AddSubtask;
 using NOIR.Application.Features.Pm.Specifications;
 using NOIR.Domain.Entities.Pm;
@@ -8,6 +9,7 @@ public class AddSubtaskCommandHandlerTests
 {
     private readonly Mock<IRepository<ProjectTask, Guid>> _taskRepoMock;
     private readonly Mock<IRepository<Project, Guid>> _projectRepoMock;
+    private readonly Mock<IApplicationDbContext> _dbContextMock = new();
     private readonly Mock<ITaskNumberGenerator> _taskNumberGeneratorMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ICurrentUser> _currentUserMock;
@@ -36,6 +38,7 @@ public class AddSubtaskCommandHandlerTests
         _handler = new AddSubtaskCommandHandler(
             _taskRepoMock.Object,
             _projectRepoMock.Object,
+            _dbContextMock.Object,
             _taskNumberGeneratorMock.Object,
             _unitOfWorkMock.Object,
             _currentUserMock.Object,
@@ -59,6 +62,10 @@ public class AddSubtaskCommandHandlerTests
         _projectRepoMock
             .Setup(x => x.GetByIdAsync(projectId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(project);
+
+        // Mock ProjectTasks DbSet so MaxAsync in the handler doesn't throw
+        var emptyTasks = new List<ProjectTask>().BuildMockDbSet();
+        _dbContextMock.Setup(x => x.ProjectTasks).Returns(emptyTasks.Object);
 
         var command = new AddSubtaskCommand(parentTask.Id, "Subtask Title", "Description", TaskPriority.Medium, null);
 

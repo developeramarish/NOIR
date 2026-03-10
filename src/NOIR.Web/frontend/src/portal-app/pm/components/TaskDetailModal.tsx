@@ -70,7 +70,7 @@ import {
   useRemoveLabelFromTask,
   useCreateLabel,
 } from '@/portal-app/pm/queries'
-import type { ProjectTaskStatus, TaskPriority, ProjectMemberDto } from '@/types/pm'
+import type { ProjectTaskStatus, TaskPriority, ProjectMemberDto, KanbanColumnDto } from '@/types/pm'
 
 // ─── Status mapping ──────────────────────────────────────────────────────────
 
@@ -81,6 +81,9 @@ const statusColorMap: Record<ProjectTaskStatus, 'gray' | 'blue' | 'purple' | 'gr
   Done: 'green',
   Cancelled: 'red',
 }
+
+/** Convert PascalCase enum (e.g. "InProgress") to camelCase i18n key (e.g. "inProgress") */
+const statusI18nKey = (status: string) => status.charAt(0).toLowerCase() + status.slice(1)
 
 // ─── Priority config ─────────────────────────────────────────────────────────
 
@@ -416,6 +419,10 @@ interface TaskDetailModalProps {
   onOpenChange: (open: boolean) => void
   projectMembers?: ProjectMemberDto[]
   onNavigateToTask?: (taskNumber: string) => void
+  /** Board columns — when provided, status dropdown shows columns instead of hardcoded enum */
+  boardColumns?: KanbanColumnDto[]
+  /** Called when user picks a column — parent moves the task */
+  onMoveToColumn?: (taskId: string, columnId: string) => void
 }
 
 // ─── Sidebar section header ───────────────────────────────────────────────────
@@ -456,7 +463,7 @@ const SidebarSection = ({ icon: Icon, label, children }: { icon: React.ElementTy
 
 // ─── TaskDetailModal ─────────────────────────────────────────────────────────
 
-export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, onNavigateToTask }: TaskDetailModalProps) => {
+export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, onNavigateToTask, boardColumns, onMoveToColumn }: TaskDetailModalProps) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { formatDate, formatRelativeTime } = useRegionalSettings()
@@ -551,6 +558,12 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
     })
   }
 
+  /** When user picks a column from the board-columns dropdown */
+  const handleColumnChange = (columnId: string) => {
+    if (!task) return
+    onMoveToColumn?.(task.id, columnId)
+  }
+
   const handlePriorityChange = (priority: string) => {
     if (!task) return
     updateTaskMutation.mutate({ id: task.id, request: { priority: priority as TaskPriority } }, {
@@ -608,7 +621,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
   const handleArchiveTask = () => {
     if (!task) return
     archiveTaskMutation.mutate(task.id, {
-      onSuccess: () => { toast.success(t('pm.taskArchived', { defaultValue: 'Task archived' })); onOpenChange(false) },
+      onSuccess: () => { onOpenChange(false) },
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
     })
   }
@@ -679,7 +692,9 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 variant="outline"
                 className={`text-xs flex-shrink-0 ml-1.5 ${getStatusBadgeClasses(statusColorMap[task.status])}`}
               >
-                {t(`statuses.${task.status.toLowerCase()}`, { defaultValue: task.status })}
+                {boardColumns && task.columnId
+                  ? (boardColumns.find(c => c.id === task.columnId)?.name ?? task.columnName ?? t(`statuses.${statusI18nKey(task.status)}`, { defaultValue: task.status }))
+                  : t(`statuses.${statusI18nKey(task.status)}`, { defaultValue: task.status })}
               </Badge>
             )}
           </nav>
@@ -884,7 +899,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                             variant="outline"
                             className={`text-[10px] px-1.5 py-0 flex-shrink-0 ${subtask.columnName ? 'text-muted-foreground' : getStatusBadgeClasses(statusColorMap[subtask.status])}`}
                           >
-                            {subtask.columnName ?? t(`statuses.${subtask.status.toLowerCase()}`, { defaultValue: subtask.status })}
+                            {subtask.columnName ?? t(`statuses.${statusI18nKey(subtask.status)}`, { defaultValue: subtask.status })}
                           </Badge>
                           <span className="text-xs font-mono text-muted-foreground flex-shrink-0">#{subtask.taskNumber.split('-').pop()}</span>
                           <span className="text-sm flex-1 truncate">{subtask.title}</span>
@@ -1016,36 +1031,66 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
               {/* ── Right sidebar ── */}
               <div className="p-4 bg-muted/50 dark:bg-muted/40 space-y-4 overflow-y-auto border-l border-border/70 dark:border-border">
 
-                {/* Status */}
-                <SidebarSection icon={CheckSquare} label={t('pm.status', { defaultValue: 'Status' })}>
-                  <Select value={task.status} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="cursor-pointer h-8 text-xs" aria-label={t('pm.status')}>
-                      <SelectValue>
-                        <span className="flex items-center gap-2">
-                          <span className={`h-2 w-2 rounded-full flex-shrink-0 ${statusDot[task.status] ?? 'bg-slate-400'}`} />
-                          {t(`statuses.${task.status.toLowerCase()}`, { defaultValue: task.status })}
-                        </span>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Todo" className="cursor-pointer text-xs">
-                        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-slate-400" />{t('statuses.todo', { defaultValue: 'To Do' })}</span>
-                      </SelectItem>
-                      <SelectItem value="InProgress" className="cursor-pointer text-xs">
-                        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-blue-500" />{t('statuses.inProgress', { defaultValue: 'In Progress' })}</span>
-                      </SelectItem>
-                      <SelectItem value="InReview" className="cursor-pointer text-xs">
-                        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-violet-500" />{t('statuses.inReview', { defaultValue: 'In Review' })}</span>
-                      </SelectItem>
-                      <SelectItem value="Done" className="cursor-pointer text-xs">
-                        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-green-500" />{t('statuses.done', { defaultValue: 'Done' })}</span>
-                      </SelectItem>
-                      <SelectItem value="Cancelled" className="cursor-pointer text-xs">
-                        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-red-500" />{t('statuses.cancelled', { defaultValue: 'Cancelled' })}</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SidebarSection>
+                {/* Status / Column — board context shows columns, list context shows status enum */}
+                {boardColumns && boardColumns.length > 0 ? (
+                  <SidebarSection icon={CheckSquare} label={t('pm.columns', { defaultValue: 'Column' })}>
+                    <Select value={task.columnId ?? ''} onValueChange={handleColumnChange}>
+                      <SelectTrigger className="cursor-pointer h-8 text-xs" aria-label={t('pm.columns')}>
+                        <SelectValue>
+                          <span className="flex items-center gap-2">
+                            {task.columnId && (() => {
+                              const col = boardColumns.find(c => c.id === task.columnId)
+                              return col ? (
+                                <>
+                                  {col.color && <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: col.color }} />}
+                                  {col.name}
+                                </>
+                              ) : (task.columnName ?? t('pm.unassigned', { defaultValue: 'Unassigned' }))
+                            })()}
+                            {!task.columnId && (task.columnName ?? t('pm.unassigned', { defaultValue: 'Unassigned' }))}
+                          </span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {boardColumns.map(col => (
+                          <SelectItem key={col.id} value={col.id} className="cursor-pointer text-xs">
+                            <span className="flex items-center gap-2">
+                              {col.color && <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: col.color }} />}
+                              {col.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </SidebarSection>
+                ) : (
+                  <SidebarSection icon={CheckSquare} label={t('pm.status', { defaultValue: 'Status' })}>
+                    <Select value={task.status} onValueChange={handleStatusChange}>
+                      <SelectTrigger className="cursor-pointer h-8 text-xs" aria-label={t('pm.status')}>
+                        <SelectValue>
+                          <span className="flex items-center gap-2">
+                            <span className={`h-2 w-2 rounded-full flex-shrink-0 ${statusDot[task.status] ?? 'bg-slate-400'}`} />
+                            {t(`statuses.${statusI18nKey(task.status)}`, { defaultValue: task.status })}
+                          </span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Todo" className="cursor-pointer text-xs">
+                          <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-slate-400" />{t('statuses.todo', { defaultValue: 'To Do' })}</span>
+                        </SelectItem>
+                        <SelectItem value="InProgress" className="cursor-pointer text-xs">
+                          <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-blue-500" />{t('statuses.inProgress', { defaultValue: 'In Progress' })}</span>
+                        </SelectItem>
+                        <SelectItem value="InReview" className="cursor-pointer text-xs">
+                          <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-violet-500" />{t('statuses.inReview', { defaultValue: 'In Review' })}</span>
+                        </SelectItem>
+                        <SelectItem value="Done" className="cursor-pointer text-xs">
+                          <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-green-500" />{t('statuses.done', { defaultValue: 'Done' })}</span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </SidebarSection>
+                )}
 
                 {/* Priority */}
                 <SidebarSection icon={ArrowUp} label={t('pm.priority', { defaultValue: 'Priority' })}>
@@ -1151,8 +1196,8 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 )}
 
 
-                {/* Column */}
-                {task.columnName && (
+                {/* Column — only show read-only when not in board context */}
+                {!boardColumns && task.columnName && (
                   <SidebarSection icon={MessageSquare} label={t('pm.columns', { defaultValue: 'Column' })}>
                     <p className="text-xs font-medium px-2">{task.columnName}</p>
                   </SidebarSection>

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createColumn, updateColumn, reorderColumns, deleteColumn } from '@/services/pm'
+import { createColumn, updateColumn, reorderColumns, deleteColumn, moveAllColumnTasks, duplicateColumn } from '@/services/pm'
 import type { CreateColumnRequest, UpdateColumnRequest, ReorderColumnsRequest } from '@/types/pm'
 import { pmProjectKeys, pmBoardKeys } from './queryKeys'
 
@@ -46,6 +46,28 @@ export const useDeleteColumn = () => {
       deleteColumn(projectId, columnId, moveToColumnId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: pmProjectKeys.detail(variables.projectId) })
+      queryClient.invalidateQueries({ queryKey: pmBoardKeys.board(variables.projectId) })
+    },
+  })
+}
+
+export const useMoveAllColumnTasks = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ projectId, sourceColumnId, targetColumnId }: { projectId: string; sourceColumnId: string; targetColumnId: string }) =>
+      moveAllColumnTasks(projectId, sourceColumnId, targetColumnId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: pmBoardKeys.board(variables.projectId) })
+    },
+  })
+}
+
+export const useDuplicateColumn = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ projectId, columnId }: { projectId: string; columnId: string }) =>
+      duplicateColumn(projectId, columnId),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: pmBoardKeys.board(variables.projectId) })
     },
   })

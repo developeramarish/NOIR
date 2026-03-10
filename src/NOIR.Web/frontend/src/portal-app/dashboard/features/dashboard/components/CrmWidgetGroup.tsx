@@ -37,7 +37,7 @@ export const CrmWidgetGroup = () => {
       {/* Active Pipeline — Active Deals & Pipeline Value */}
       <MetricCard
         title={t('crm.dashboard.activePipeline')}
-        value={data.activeDeals.toLocaleString()}
+        value={data.activeLeads.toLocaleString()}
         subtitle={`${t('crm.dashboard.totalPipelineValue')}: ${formatCurrency(data.totalPipelineValue)}`}
         icon={Target}
         iconColor="text-violet-600"

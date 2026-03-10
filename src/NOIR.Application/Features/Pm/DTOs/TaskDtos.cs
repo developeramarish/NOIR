@@ -230,3 +230,18 @@ public sealed record AddSubtaskRequest(
 /// Request body for changing project status.
 /// </summary>
 public sealed record ChangeProjectStatusRequest(ProjectStatus Status);
+
+/// <summary>
+/// Request body for moving all tasks from one column to another.
+/// </summary>
+public sealed record MoveAllColumnTasksRequest(Guid TargetColumnId);
+
+/// <summary>
+/// Request body for bulk archiving tasks.
+/// </summary>
+public sealed record BulkArchiveTasksRequest(List<Guid> TaskIds);
+
+/// <summary>
+/// Request body for bulk changing task status.
+/// </summary>
+public sealed record BulkChangeTaskStatusRequest(List<Guid> TaskIds, ProjectTaskStatus Status);
