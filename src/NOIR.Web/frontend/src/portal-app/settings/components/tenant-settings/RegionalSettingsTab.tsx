@@ -20,10 +20,9 @@ import {
 import { ApiError } from '@/services/apiClient'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
-  getRegionalSettings,
-  updateRegionalSettings,
-  type RegionalSettingsDto,
-} from '@/services/tenantSettings'
+  useRegionalSettingsQuery,
+  useUpdateRegionalSettings,
+} from '@/portal-app/settings/queries'
 
 const TIMEZONE_OPTIONS = [
   { value: 'UTC', label: 'UTC' },
@@ -61,9 +60,8 @@ export interface RegionalSettingsTabProps {
 export const RegionalSettingsTab = ({ canEdit }: RegionalSettingsTabProps) => {
   const { t } = useTranslation('common')
   const { reloadRegional } = useRegionalSettings()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [data, setData] = useState<RegionalSettingsDto | null>(null)
+  const { data, isLoading } = useRegionalSettingsQuery()
+  const updateMutation = useUpdateRegionalSettings()
 
   // Form state
   const [timezone, setTimezone] = useState('UTC')
@@ -71,45 +69,34 @@ export const RegionalSettingsTab = ({ canEdit }: RegionalSettingsTabProps) => {
   const [dateFormat, setDateFormat] = useState('YYYY-MM-DD')
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await getRegionalSettings()
-        setData(settings)
-        setTimezone(settings.timezone)
-        setLanguage(settings.language)
-        setDateFormat(settings.dateFormat)
-      } catch (error) {
-        if (error instanceof ApiError) {
-          toast.error(error.message)
-        }
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      setTimezone(data.timezone)
+      setLanguage(data.language)
+      setDateFormat(data.dateFormat)
     }
-    loadSettings()
-  }, [])
+  }, [data])
 
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const updated = await updateRegionalSettings({
+  const handleSave = () => {
+    updateMutation.mutate(
+      {
         timezone,
         language,
         dateFormat,
-      })
-      setData(updated)
-      // Reload regional context to apply changes globally (timezone, date format, language default)
-      await reloadRegional()
-      toast.success(t('tenantSettings.saved'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+      },
+      {
+        onSuccess: async () => {
+          await reloadRegional()
+          toast.success(t('tenantSettings.saved'))
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('messages.operationFailed'))
+          }
+        },
+      },
+    )
   }
 
   const hasChanges = data && (
@@ -118,7 +105,7 @@ export const RegionalSettingsTab = ({ canEdit }: RegionalSettingsTabProps) => {
     dateFormat !== data.dateFormat
   )
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardContent className="py-8">
@@ -197,9 +184,9 @@ export const RegionalSettingsTab = ({ canEdit }: RegionalSettingsTabProps) => {
 
         {canEdit && (
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            <Button onClick={handleSave} disabled={updateMutation.isPending || !hasChanges}>
               <Save className="h-4 w-4 mr-2" />
-              {saving ? t('buttons.saving') : t('buttons.save')}
+              {updateMutation.isPending ? t('buttons.saving') : t('buttons.save')}
             </Button>
           </div>
         )}

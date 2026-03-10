@@ -67,11 +67,7 @@ import {
 } from '@uikit'
 
 import {
-  getEmailTemplate,
-  updateEmailTemplate,
   previewEmailTemplate,
-  revertToPlatformDefault,
-  toggleEmailTemplateActive,
   getDefaultSampleData,
   type EmailTemplateDto,
   type EmailPreviewResponse,
@@ -79,6 +75,12 @@ import {
 import { ApiError } from '@/services/apiClient'
 import { EmailPreviewDialog } from '../../components/tenant-settings/EmailPreviewDialog'
 import { TestEmailDialog } from '../../components/tenant-settings/TestEmailDialog'
+import {
+  useEmailTemplateQuery,
+  useUpdateEmailTemplate,
+  useToggleEmailTemplateActive,
+  useRevertEmailTemplate,
+} from '@/portal-app/settings/queries'
 
 // Extended schema for form validation (includes plainTextBody which is optional)
 const emailTemplateFormSchema = updateEmailTemplateSchema.omit({ id: true }).extend({
@@ -113,11 +115,14 @@ export const EmailTemplateEditPage = () => {
   // Ref to handlePreview for use in useEffect without dependency cycle
   const handlePreviewRef = useRef<(() => Promise<void>) | null>(null)
 
-  // State
+  // TanStack Query + Mutations
+  const { data: queryTemplate, isLoading: loading } = useEmailTemplateQuery(id)
+  const updateMutation = useUpdateEmailTemplate()
+  const toggleMutation = useToggleEmailTemplateActive()
+  const revertMutation = useRevertEmailTemplate()
+
+  // Local template state (synced from query, updated optimistically by mutations)
   const [template, setTemplate] = useState<EmailTemplateDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [toggling, setToggling] = useState(false)
 
   // Form state
   const [subject, setSubject] = useState('')
@@ -137,16 +142,34 @@ export const EmailTemplateEditPage = () => {
   // Track unsaved changes
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Sync local state when query data arrives or changes
+  useEffect(() => {
+    if (queryTemplate) {
+      setTemplate(queryTemplate)
+      setSubject(queryTemplate.subject)
+      setHtmlBody(queryTemplate.htmlBody)
+      setPlainTextBody(queryTemplate.plainTextBody || '')
+      setDescription(queryTemplate.description || '')
+      setHasChanges(false)
+      // Reset editor tracking when data loads
+      editorInitializedRef.current = false
+      initialHtmlBodyRef.current = null
+    }
+  }, [queryTemplate])
+
   const refreshTemplate = useCallback(() => {
     if (id) {
-      getEmailTemplate(id).then((data) => {
-        setTemplate(data)
-        setSubject(data.subject)
-        setHtmlBody(data.htmlBody)
-        setPlainTextBody(data.plainTextBody || '')
-        setDescription(data.description || '')
-        setHasChanges(false)
-      }).catch(() => {})
+      // Re-fetch via import to update query cache
+      import('@/services/emailTemplates').then(({ getEmailTemplate }) => {
+        getEmailTemplate(id).then((data) => {
+          setTemplate(data)
+          setSubject(data.subject)
+          setHtmlBody(data.htmlBody)
+          setPlainTextBody(data.plainTextBody || '')
+          setDescription(data.description || '')
+          setHasChanges(false)
+        }).catch(() => {})
+      })
     }
   }, [id])
 
@@ -160,38 +183,6 @@ export const EmailTemplateEditPage = () => {
 
   // Validation errors
   const [errors, setErrors] = useState<EmailTemplateFormErrors>({})
-
-  // Load template
-  useEffect(() => {
-    const loadTemplate = async () => {
-      if (!id) return
-
-      // Reset editor tracking when loading new template
-      editorInitializedRef.current = false
-      initialHtmlBodyRef.current = null
-
-      setLoading(true)
-      try {
-        const data = await getEmailTemplate(id)
-        setTemplate(data)
-        setSubject(data.subject)
-        setHtmlBody(data.htmlBody)
-        setPlainTextBody(data.plainTextBody || '')
-        setDescription(data.description || '')
-      } catch (error) {
-        if (error instanceof ApiError) {
-          toast.error(error.message)
-        } else {
-          toast.error(t('messages.operationFailed'))
-        }
-        navigate(settingsBackUrl)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadTemplate()
-  }, [id, navigate, t, settingsBackUrl])
 
   // Auto-open preview when navigated with ?mode=preview
   useEffect(() => {
@@ -225,7 +216,7 @@ export const EmailTemplateEditPage = () => {
   }, [subject, htmlBody, plainTextBody, description, template])
 
   // Handle save with validation
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!id || !template) return
 
     // Validate form data using Zod schema
@@ -252,28 +243,33 @@ export const EmailTemplateEditPage = () => {
     // Clear validation errors
     setErrors({})
 
-    setSaving(true)
-    try {
-      const updated = await updateEmailTemplate(id, {
-        subject,
-        htmlBody,
-        plainTextBody: plainTextBody || null,
-        description: description || null,
-      })
-      setTemplate(updated)
-      // Update the initial reference to the current content after successful save
-      initialHtmlBodyRef.current = htmlBody
-      setHasChanges(false)
-      toast.success(t('messages.updateSuccess'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+    updateMutation.mutate(
+      {
+        id,
+        request: {
+          subject,
+          htmlBody,
+          plainTextBody: plainTextBody || null,
+          description: description || null,
+        },
+      },
+      {
+        onSuccess: (updated) => {
+          setTemplate(updated)
+          // Update the initial reference to the current content after successful save
+          initialHtmlBodyRef.current = htmlBody
+          setHasChanges(false)
+          toast.success(t('messages.updateSuccess'))
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('messages.operationFailed'))
+          }
+        },
+      },
+    )
   }
 
   // Handle preview
@@ -302,52 +298,53 @@ export const EmailTemplateEditPage = () => {
   handlePreviewRef.current = handlePreview
 
   // Handle revert to platform default
-  const handleRevert = async () => {
+  const handleRevert = () => {
     if (!id || !template) return
 
     if (!confirm(t('emailTemplates.revertConfirm'))) {
       return
     }
 
-    setSaving(true)
-    try {
-      const reverted = await revertToPlatformDefault(id)
-      setTemplate(reverted)
-      setSubject(reverted.subject)
-      setHtmlBody(reverted.htmlBody)
-      setPlainTextBody(reverted.plainTextBody || '')
-      setDescription(reverted.description || '')
-      setHasChanges(false)
-      toast.success(t('emailTemplates.revertSuccess'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+    revertMutation.mutate(id, {
+      onSuccess: (reverted) => {
+        setTemplate(reverted)
+        setSubject(reverted.subject)
+        setHtmlBody(reverted.htmlBody)
+        setPlainTextBody(reverted.plainTextBody || '')
+        setDescription(reverted.description || '')
+        setHasChanges(false)
+        toast.success(t('emailTemplates.revertSuccess'))
+      },
+      onError: (error) => {
+        if (error instanceof ApiError) {
+          toast.error(error.message)
+        } else {
+          toast.error(t('messages.operationFailed'))
+        }
+      },
+    })
   }
 
   // Toggle active status
-  const handleToggleActive = async (isActive: boolean) => {
+  const handleToggleActive = (isActive: boolean) => {
     if (!id || !template) return
 
-    setToggling(true)
-    try {
-      const updated = await toggleEmailTemplateActive(id, isActive)
-      setTemplate(updated)
-      toast.success(isActive ? t('emailTemplates.templateActivated') : t('emailTemplates.templateDeactivated'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('emailTemplates.toggleStatusFailed'))
-      }
-    } finally {
-      setToggling(false)
-    }
+    toggleMutation.mutate(
+      { id, isActive },
+      {
+        onSuccess: (updated) => {
+          setTemplate(updated)
+          toast.success(isActive ? t('emailTemplates.templateActivated') : t('emailTemplates.templateDeactivated'))
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('emailTemplates.toggleStatusFailed'))
+          }
+        },
+      },
+    )
   }
 
   // Insert variable into editor
@@ -380,14 +377,14 @@ export const EmailTemplateEditPage = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
-        if (hasChanges && !saving) {
+        if (hasChanges && !updateMutation.isPending) {
           handleSave()
         }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [hasChanges, saving])
+  }, [hasChanges, updateMutation.isPending])
 
   if (loading) {
     return (
@@ -472,14 +469,14 @@ export const EmailTemplateEditPage = () => {
             {t('emailTemplates.sendTestEmail')}
           </Button>
           {template.isInherited === false && (
-            <Button variant="outline" className="cursor-pointer" onClick={handleRevert} disabled={saving}>
+            <Button variant="outline" className="cursor-pointer" onClick={handleRevert} disabled={revertMutation.isPending}>
               <GitFork className="h-4 w-4 mr-2" />
               {t('buttons.revert')}
             </Button>
           )}
-          <Button className="cursor-pointer" onClick={handleSave} disabled={!hasChanges || saving}>
+          <Button className="cursor-pointer" onClick={handleSave} disabled={!hasChanges || updateMutation.isPending}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? t('labels.loading') : t('buttons.save')}
+            {updateMutation.isPending ? t('labels.loading') : t('buttons.save')}
           </Button>
         </div>
       </div>
@@ -779,7 +776,7 @@ export const EmailTemplateEditPage = () => {
                     id="template-active"
                     checked={template.isActive}
                     onCheckedChange={handleToggleActive}
-                    disabled={toggling}
+                    disabled={toggleMutation.isPending}
                     className="cursor-pointer"
                   />
                 </div>

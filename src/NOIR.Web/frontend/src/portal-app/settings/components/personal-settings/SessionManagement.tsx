@@ -4,7 +4,7 @@
  * Displays and manages active sessions for the current user.
  * Users can view all their active sessions and revoke any except current.
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { Monitor, Smartphone, Globe, Trash2, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react'
@@ -29,7 +29,7 @@ import {
 
 import { toast } from 'sonner'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
-import { getActiveSessions, revokeSession } from '@/services/auth'
+import { useActiveSessionsQuery, useRevokeSession } from '@/hooks/queries/useSessionQueries'
 import type { ActiveSession } from '@/types'
 
 const getDeviceIcon = (userAgent: string | null) => {
@@ -68,41 +68,25 @@ const getDeviceInfo = (session: ActiveSession): string => {
 export const SessionManagement = () => {
   const { t } = useTranslation('auth')
   const { formatRelativeTime } = useRegionalSettings()
-  const [sessions, setSessions] = useState<ActiveSession[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRevoking, setIsRevoking] = useState<string | null>(null)
+  const { data: sessions = [], isLoading, refetch } = useActiveSessionsQuery()
+  const revokeMutation = useRevokeSession()
   const [sessionToRevoke, setSessionToRevoke] = useState<ActiveSession | null>(null)
 
-  const loadSessions = async () => {
-    setIsLoading(true)
-    try {
-      const data = await getActiveSessions()
-      setSessions(data)
-    } catch {
-      toast.error(t('sessions.loadError'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const isRevoking = revokeMutation.isPending ? sessionToRevoke?.id ?? null : null
 
-  useEffect(() => {
-    loadSessions()
-  }, [])
-
-  const handleRevoke = async () => {
+  const handleRevoke = () => {
     if (!sessionToRevoke) return
 
-    setIsRevoking(sessionToRevoke.id)
-    try {
-      await revokeSession(sessionToRevoke.id)
-      setSessions((prev) => prev.filter((s) => s.id !== sessionToRevoke.id))
-      toast.success(t('sessions.revokeSuccess'))
-    } catch {
-      toast.error(t('sessions.revokeError'))
-    } finally {
-      setIsRevoking(null)
-      setSessionToRevoke(null)
-    }
+    revokeMutation.mutate(sessionToRevoke.id, {
+      onSuccess: () => {
+        toast.success(t('sessions.revokeSuccess'))
+        setSessionToRevoke(null)
+      },
+      onError: () => {
+        toast.error(t('sessions.revokeError'))
+        setSessionToRevoke(null)
+      },
+    })
   }
 
   return (
@@ -119,7 +103,7 @@ export const SessionManagement = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={loadSessions}
+            onClick={() => refetch()}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />

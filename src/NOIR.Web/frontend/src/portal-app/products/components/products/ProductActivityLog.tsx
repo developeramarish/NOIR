@@ -4,7 +4,7 @@
  * Displays a compact activity timeline for a specific product.
  * Uses the existing audit system to fetch and display activity entries.
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ViewTransitionLink } from '@/components/navigation/ViewTransitionLink'
 import {
@@ -35,10 +35,8 @@ import {
 
 import { cn } from '@/lib/utils'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
-import {
-  searchActivityTimeline,
-  type ActivityTimelineEntry,
-} from '@/services/audit'
+import { type ActivityTimelineEntry } from '@/services/audit'
+import { useActivityTimelineQuery } from '@/portal-app/systems/queries'
 import { ActivityDetailsDialog } from '@/portal-app/systems/components/activity-timeline/ActivityDetailsDialog'
 
 interface ProductActivityLogProps {
@@ -125,32 +123,17 @@ export const ProductActivityLog = ({
   maxEntries = 10,
 }: ProductActivityLogProps) => {
   const { t } = useTranslation('common')
-  const [entries, setEntries] = useState<ActivityTimelineEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [selectedEntry, setSelectedEntry] = useState<ActivityTimelineEntry | null>(null)
 
-  const fetchActivity = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const result = await searchActivityTimeline({
-        targetId: productId,
-        pageContext: 'Products',
-        pageSize: maxEntries,
-        page: 1,
-      })
-      setEntries(result.items)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('activityTimeline.loadFailed', 'Failed to load activity'))
-    } finally {
-      setLoading(false)
-    }
-  }, [productId, maxEntries])
+  const { data: timelineData, isLoading: loading, error: queryError, refetch } = useActivityTimelineQuery({
+    targetId: productId,
+    pageContext: 'Products',
+    pageSize: maxEntries,
+    page: 1,
+  })
 
-  useEffect(() => {
-    fetchActivity()
-  }, [fetchActivity])
+  const entries = timelineData?.items ?? []
+  const error = queryError ? (queryError instanceof Error ? queryError.message : t('activityTimeline.loadFailed', 'Failed to load activity')) : null
 
   return (
     <>
@@ -167,7 +150,7 @@ export const ProductActivityLog = ({
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={fetchActivity}
+              onClick={() => refetch()}
               disabled={loading}
               aria-label={t('buttons.refresh', 'Refresh')}
             >
@@ -199,7 +182,7 @@ export const ProductActivityLog = ({
                 variant="ghost"
                 size="sm"
                 className="mt-2 cursor-pointer"
-                onClick={fetchActivity}
+                onClick={() => refetch()}
               >
                 {t('buttons.retry', 'Retry')}
               </Button>

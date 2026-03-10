@@ -71,10 +71,10 @@ import {
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
-import { getPostById, createPost, updatePost, publishPost, unpublishPost } from '@/services/blog'
+import { createPost, updatePost, publishPost, unpublishPost } from '@/services/blog'
 
 import { uploadMedia } from '@/services/media'
-import { useBlogCategoriesQuery, useBlogTagsQuery } from '@/portal-app/blogs/queries'
+import { useBlogCategoriesQuery, useBlogTagsQuery, useBlogPostDetailQuery } from '@/portal-app/blogs/queries'
 import { ApiError } from '@/services/apiClient'
 import type { Post, CreatePostRequest } from '@/types'
 
@@ -105,7 +105,6 @@ export const BlogPostEditPage = () => {
   const { formatDateTime, formatDate } = useRegionalSettings()
   const editorRef = useRef<TinyMCEEditor | null>(null)
 
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [post, setPost] = useState<Post | null>(null)
@@ -117,6 +116,9 @@ export const BlogPostEditPage = () => {
   const [publishOption, setPublishOption] = useState<PublishOption>('draft')
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined)
   const [scheduledTime, setScheduledTime] = useState('09:00')
+
+  const { data: queryPost, isLoading: queryLoading, refetch: refetchPost } = useBlogPostDetailQuery(isEdit ? id : undefined)
+  const loading = isEdit && queryLoading
 
   const { data: categories = [] } = useBlogCategoriesQuery({})
   const { data: tags = [] } = useBlogTagsQuery({})
@@ -144,28 +146,44 @@ export const BlogPostEditPage = () => {
 
   const { isDirty } = form.formState
 
-  const refreshPost = useCallback(() => {
-    if (id) {
-      getPostById(id).then((data) => {
-        setPost(data)
-        form.reset({
-          title: data.title,
-          slug: data.slug,
-          excerpt: data.excerpt || '',
-          categoryId: data.categoryId || '',
-          tagIds: data.tags?.map((tg) => tg.id) || [],
-          metaTitle: data.metaTitle || '',
-          metaDescription: data.metaDescription || '',
-          canonicalUrl: data.canonicalUrl || '',
-          allowIndexing: data.allowIndexing,
-          featuredImageId: data.featuredImageId || '',
-          featuredImageUrl: data.featuredImageUrl || '',
-          featuredImageAlt: data.featuredImageAlt || '',
-        })
-        setContentHtml(data.contentHtml || '')
-      }).catch(() => {})
+  // Sync local state from query data
+  useEffect(() => {
+    if (queryPost) {
+      setPost(queryPost)
+      form.reset({
+        title: queryPost.title,
+        slug: queryPost.slug,
+        excerpt: queryPost.excerpt || '',
+        categoryId: queryPost.categoryId || '',
+        tagIds: queryPost.tags?.map((tg) => tg.id) || [],
+        metaTitle: queryPost.metaTitle || '',
+        metaDescription: queryPost.metaDescription || '',
+        canonicalUrl: queryPost.canonicalUrl || '',
+        allowIndexing: queryPost.allowIndexing,
+        featuredImageId: queryPost.featuredImageId || '',
+        featuredImageUrl: queryPost.featuredImageUrl || '',
+        featuredImageAlt: queryPost.featuredImageAlt || '',
+      })
+      setContentHtml(queryPost.contentHtml || '')
+
+      // Set publish option based on post status
+      if (queryPost.status === 'Published') {
+        setPublishOption('publish')
+      } else if (queryPost.status === 'Scheduled' && queryPost.scheduledPublishAt) {
+        setPublishOption('schedule')
+        const scheduleDate = new Date(queryPost.scheduledPublishAt)
+        setScheduledDate(scheduleDate)
+        setScheduledTime(scheduleDate.toTimeString().slice(0, 5))
+      } else {
+        setPublishOption('draft')
+      }
     }
-  }, [id, form])
+  }, [queryPost, form])
+
+  const refreshPost = useCallback(() => {
+    refetchPost()
+  }, [refetchPost])
+
   const { conflictSignal, deletedSignal, dismissConflict, reloadAndRestart, isReconnecting } = useEntityUpdateSignal({
     entityType: 'BlogPost',
     entityId: id,
@@ -173,51 +191,6 @@ export const BlogPostEditPage = () => {
     onAutoReload: refreshPost,
     onNavigateAway: () => navigate('/portal/blog/posts'),
   })
-
-  // Load post data if editing
-  useEffect(() => {
-    if (isEdit && id) {
-      setLoading(true)
-      getPostById(id)
-        .then((data) => {
-          setPost(data)
-          form.reset({
-            title: data.title,
-            slug: data.slug,
-            excerpt: data.excerpt || '',
-            categoryId: data.categoryId || '',
-            tagIds: data.tags?.map((t) => t.id) || [],
-            metaTitle: data.metaTitle || '',
-            metaDescription: data.metaDescription || '',
-            canonicalUrl: data.canonicalUrl || '',
-            allowIndexing: data.allowIndexing,
-            featuredImageId: data.featuredImageId || '',
-            featuredImageUrl: data.featuredImageUrl || '',
-            featuredImageAlt: data.featuredImageAlt || '',
-          })
-          // Load HTML content
-          setContentHtml(data.contentHtml || '')
-
-          // Set initial publish option based on post status
-          if (data.status === 'Published') {
-            setPublishOption('publish')
-          } else if (data.status === 'Scheduled' && data.scheduledPublishAt) {
-            setPublishOption('schedule')
-            const scheduleDate = new Date(data.scheduledPublishAt)
-            setScheduledDate(scheduleDate)
-            setScheduledTime(scheduleDate.toTimeString().slice(0, 5))
-          } else {
-            setPublishOption('draft')
-          }
-        })
-        .catch((err) => {
-          const message = err instanceof ApiError ? err.message : t('blog.failedToLoad')
-          toast.error(message)
-          navigate('/portal/blog/posts')
-        })
-        .finally(() => setLoading(false))
-    }
-  }, [id, isEdit, form, navigate])
 
   // Auto-generate slug from title
   const watchTitle = form.watch('title')

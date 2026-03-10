@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { getUserPermissions, type UserPermissions } from '@/services/auth'
+import { getUserPermissions } from '@/services/auth'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { authKeys } from '@/hooks/queries/queryKeys'
 
 interface UsePermissionsResult {
   /** Raw permissions array from the server */
@@ -32,40 +34,19 @@ interface UsePermissionsResult {
 export const usePermissions = (): UsePermissionsResult => {
   const { t } = useTranslation('common')
   const { isAuthenticated, user } = useAuthContext()
-  const [permissionsData, setPermissionsData] = useState<UserPermissions | null>(null)
-  // Start as loading when authenticated to prevent ProtectedRoute from
-  // redirecting before the first fetch completes (race condition)
-  const [isLoading, setIsLoading] = useState(isAuthenticated)
-  const [error, setError] = useState<Error | null>(null)
 
-  const fetchPermissions = useCallback(async () => {
-    if (!isAuthenticated) {
-      setPermissionsData(null)
-      return
-    }
+  const { data: permissionsData, isLoading, error: queryError, refetch } = useQuery({
+    queryKey: authKeys.permissions(),
+    queryFn: () => getUserPermissions(),
+    enabled: isAuthenticated && !!user,
+    staleTime: 2 * 60_000,
+  })
 
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await getUserPermissions()
-      setPermissionsData(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(t('errors.failedToFetchPermissions', 'Failed to fetch permissions')))
-      setPermissionsData(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [isAuthenticated, t])
-
-  // Fetch permissions when authentication state changes
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchPermissions()
-    } else {
-      setPermissionsData(null)
-      setIsLoading(false)
-    }
-  }, [isAuthenticated, user?.id, fetchPermissions])
+  const error = queryError instanceof Error
+    ? queryError
+    : queryError
+      ? new Error(t('errors.failedToFetchPermissions', 'Failed to fetch permissions'))
+      : null
 
   // Create a Set for O(1) permission lookup
   const permissionSet = useMemo(
@@ -106,6 +87,10 @@ export const usePermissions = (): UsePermissionsResult => {
     [roleSet]
   )
 
+  const refreshPermissions = useCallback(async () => {
+    await refetch()
+  }, [refetch])
+
   return {
     permissions: permissionsData?.permissions ?? [],
     roles: permissionsData?.roles ?? [],
@@ -115,7 +100,7 @@ export const usePermissions = (): UsePermissionsResult => {
     hasAllPermissions,
     hasAnyPermission,
     hasRole,
-    refreshPermissions: fetchPermissions,
+    refreshPermissions,
   }
 }
 

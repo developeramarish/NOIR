@@ -42,11 +42,11 @@ import {
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { ApiError } from '@/services/apiClient'
 import {
-  getTenantSmtpSettings,
-  updateTenantSmtpSettings,
-  revertTenantSmtpSettings,
-  testTenantSmtpConnection,
-} from '@/services/tenantSettings'
+  useTenantSmtpSettingsQuery,
+  useUpdateTenantSmtpSettings,
+  useRevertTenantSmtpSettings,
+  useTestTenantSmtpConnection,
+} from '@/portal-app/settings/queries'
 
 // ============================================================================
 // Form Schema Factories
@@ -78,14 +78,15 @@ export interface SmtpSettingsTabProps {
 export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
   const { t } = useTranslation('common')
 
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [testing, setTesting] = useState(false)
+  const { data: smtpData, isLoading } = useTenantSmtpSettingsQuery()
+  const updateMutation = useUpdateTenantSmtpSettings()
+  const revertMutation = useRevertTenantSmtpSettings()
+  const testMutation = useTestTenantSmtpConnection()
+
   const [testDialogOpen, setTestDialogOpen] = useState(false)
   const [isConfigured, setIsConfigured] = useState(false)
   const [isInherited, setIsInherited] = useState(true)
   const [hasPassword, setHasPassword] = useState(false)
-  const [reverting, setReverting] = useState(false)
 
   const form = useForm<TenantSmtpFormData>({
     // TypeScript cannot infer resolver types from dynamic schema factories
@@ -114,37 +115,26 @@ export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
   })
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await getTenantSmtpSettings()
-        setIsConfigured(settings.isConfigured)
-        setIsInherited(settings.isInherited)
-        setHasPassword(settings.hasPassword)
+    if (smtpData) {
+      setIsConfigured(smtpData.isConfigured)
+      setIsInherited(smtpData.isInherited)
+      setHasPassword(smtpData.hasPassword)
 
-        form.reset({
-          host: settings.host,
-          port: settings.port,
-          username: settings.username ?? '',
-          password: '',
-          fromEmail: settings.fromEmail,
-          fromName: settings.fromName,
-          useSsl: settings.useSsl,
-        })
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : t('platformSettings.smtp.failedToLoadSettings')
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
+      form.reset({
+        host: smtpData.host,
+        port: smtpData.port,
+        username: smtpData.username ?? '',
+        password: '',
+        fromEmail: smtpData.fromEmail,
+        fromName: smtpData.fromName,
+        useSsl: smtpData.useSsl,
+      })
     }
+  }, [smtpData, form])
 
-    loadSettings()
-  }, [form])
-
-  const onSubmit = async (data: TenantSmtpFormData) => {
-    setSaving(true)
-    try {
-      const result = await updateTenantSmtpSettings({
+  const onSubmit = (data: TenantSmtpFormData) => {
+    updateMutation.mutate(
+      {
         host: data.host,
         port: data.port,
         username: data.username || null,
@@ -152,68 +142,70 @@ export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
         fromEmail: data.fromEmail,
         fromName: data.fromName,
         useSsl: data.useSsl,
-      })
-
-      setIsConfigured(result.isConfigured)
-      setIsInherited(result.isInherited)
-      setHasPassword(result.hasPassword)
-      form.reset({
-        ...data,
-        password: '',
-      })
-
-      toast.success(t('tenantSettings.saved'))
-    } catch (err) {
-      const message = err instanceof ApiError ? err.message : t('platformSettings.smtp.failedToSaveSettings')
-      toast.error(message)
-    } finally {
-      setSaving(false)
-    }
+      },
+      {
+        onSuccess: (result) => {
+          setIsConfigured(result.isConfigured)
+          setIsInherited(result.isInherited)
+          setHasPassword(result.hasPassword)
+          form.reset({
+            ...data,
+            password: '',
+          })
+          toast.success(t('tenantSettings.saved'))
+        },
+        onError: (error) => {
+          const message = error instanceof ApiError ? error.message : t('platformSettings.smtp.failedToSaveSettings')
+          toast.error(message)
+        },
+      },
+    )
   }
 
-  const handleRevert = async () => {
-    setReverting(true)
-    try {
-      const result = await revertTenantSmtpSettings()
-      setIsConfigured(result.isConfigured)
-      setIsInherited(result.isInherited)
-      setHasPassword(result.hasPassword)
+  const handleRevert = () => {
+    revertMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        setIsConfigured(result.isConfigured)
+        setIsInherited(result.isInherited)
+        setHasPassword(result.hasPassword)
 
-      form.reset({
-        host: result.host,
-        port: result.port,
-        username: result.username ?? '',
-        password: '',
-        fromEmail: result.fromEmail,
-        fromName: result.fromName,
-        useSsl: result.useSsl,
-      })
+        form.reset({
+          host: result.host,
+          port: result.port,
+          username: result.username ?? '',
+          password: '',
+          fromEmail: result.fromEmail,
+          fromName: result.fromName,
+          useSsl: result.useSsl,
+        })
 
-      toast.success(t('tenantSettings.saved'))
-    } catch (err) {
-      const message = err instanceof ApiError ? err.message : t('platformSettings.smtp.failedToSaveSettings')
-      toast.error(message)
-    } finally {
-      setReverting(false)
-    }
+        toast.success(t('tenantSettings.saved'))
+      },
+      onError: (error) => {
+        const message = error instanceof ApiError ? error.message : t('platformSettings.smtp.failedToSaveSettings')
+        toast.error(message)
+      },
+    })
   }
 
-  const onTestSubmit = async (data: TestEmailFormData) => {
-    setTesting(true)
-    try {
-      await testTenantSmtpConnection({ recipientEmail: data.recipientEmail })
-      toast.success(t('platformSettings.smtp.testSuccess'))
-      setTestDialogOpen(false)
-      testForm.reset()
-    } catch (err) {
-      const message = err instanceof ApiError ? err.message : t('platformSettings.smtp.testFailed')
-      toast.error(message)
-    } finally {
-      setTesting(false)
-    }
+  const onTestSubmit = (data: TestEmailFormData) => {
+    testMutation.mutate(
+      { recipientEmail: data.recipientEmail },
+      {
+        onSuccess: () => {
+          toast.success(t('platformSettings.smtp.testSuccess'))
+          setTestDialogOpen(false)
+          testForm.reset()
+        },
+        onError: (error) => {
+          const message = error instanceof ApiError ? error.message : t('platformSettings.smtp.testFailed')
+          toast.error(message)
+        },
+      },
+    )
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -249,7 +241,7 @@ export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
                   variant="outline"
                   size="sm"
                   onClick={handleRevert}
-                  disabled={reverting}
+                  disabled={revertMutation.isPending}
                 >
                   <RotateCcw className="h-3 w-3 mr-1" />
                   {t('legalPages.revertToDefault')}
@@ -429,13 +421,13 @@ export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
                     type="button"
                     variant="outline"
                     onClick={() => setTestDialogOpen(true)}
-                    disabled={!isConfigured || saving}
+                    disabled={!isConfigured || updateMutation.isPending}
                   >
                     <Send className="h-4 w-4 mr-2" />
                     {t('platformSettings.smtp.testConnection')}
                   </Button>
-                  <Button type="submit" disabled={saving || !form.formState.isDirty}>
-                    {saving ? (
+                  <Button type="submit" disabled={updateMutation.isPending || !form.formState.isDirty}>
+                    {updateMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         {t('buttons.saving')}
@@ -478,11 +470,11 @@ export const SmtpSettingsTab = ({ canEdit }: SmtpSettingsTabProps) => {
                 )}
               />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setTestDialogOpen(false)} disabled={testing} className="cursor-pointer">
+                <Button type="button" variant="outline" onClick={() => setTestDialogOpen(false)} disabled={testMutation.isPending} className="cursor-pointer">
                   {t('buttons.cancel')}
                 </Button>
-                <Button type="submit" disabled={testing} className="cursor-pointer">
-                  {testing ? (
+                <Button type="submit" disabled={testMutation.isPending} className="cursor-pointer">
+                  {testMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       {t('platformSettings.smtp.sendingTest')}

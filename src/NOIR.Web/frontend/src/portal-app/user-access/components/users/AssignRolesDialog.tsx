@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Shield, Loader2, Check } from 'lucide-react'
 import {
@@ -18,8 +18,8 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { getUserRoles, assignRolesToUser } from '@/services/users'
-import { useAvailableRolesQuery } from '@/portal-app/user-access/queries'
+import { assignRolesToUser } from '@/services/users'
+import { useAvailableRolesQuery, useUserRolesQuery } from '@/portal-app/user-access/queries'
 import { RolePermissionInfo } from './RolePermissionInfo'
 import type { UserListItem } from '@/types'
 
@@ -33,9 +33,10 @@ interface AssignRolesDialogProps {
 export const AssignRolesDialog = ({ user, open, onOpenChange, onSuccess }: AssignRolesDialogProps) => {
   const { t } = useTranslation('common')
   const { data: availableRoles = [], isLoading: loadingRoles } = useAvailableRolesQuery()
+  const { data: userRolesData, isLoading: loadingUserRoles } = useUserRolesQuery(user?.id, open && !!user)
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
+  const [initializedForUser, setInitializedForUser] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [loadingUserRoles, setLoadingUserRoles] = useState(false)
   const [permissionsCache] = useState(() => new Map<string, string[]>())
 
   // Callback to cache loaded permissions
@@ -43,23 +44,15 @@ export const AssignRolesDialog = ({ user, open, onOpenChange, onSuccess }: Assig
     permissionsCache.set(roleId, permissions)
   }, [permissionsCache])
 
-  // Load user's current roles when dialog opens
-  useEffect(() => {
-    if (user && open) {
-      setLoadingUserRoles(true)
-      getUserRoles(user.id)
-        .then((roles) => {
-          setSelectedRoles(new Set(roles))
-        })
-        .catch(() => {
-          // Fall back to roles from user list item
-          setSelectedRoles(new Set(user.roles))
-        })
-        .finally(() => {
-          setLoadingUserRoles(false)
-        })
-    }
-  }, [user, open])
+  // Sync selected roles from query data when dialog opens
+  if (user && open && userRolesData && initializedForUser !== user.id) {
+    setSelectedRoles(new Set(userRolesData))
+    setInitializedForUser(user.id)
+  }
+  // Reset when dialog closes
+  if (!open && initializedForUser) {
+    setInitializedForUser(null)
+  }
 
   const handleToggleRole = (roleName: string) => {
     setSelectedRoles((prev) => {

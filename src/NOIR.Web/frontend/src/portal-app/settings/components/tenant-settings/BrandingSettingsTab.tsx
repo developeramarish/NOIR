@@ -18,10 +18,9 @@ import {
 import { ApiError } from '@/services/apiClient'
 import { useBranding } from '@/contexts/BrandingContext'
 import {
-  getBrandingSettings,
-  updateBrandingSettings,
-  type BrandingSettingsDto,
-} from '@/services/tenantSettings'
+  useBrandingSettingsQuery,
+  useUpdateBrandingSettings,
+} from '@/portal-app/settings/queries'
 
 export interface BrandingSettingsTabProps {
   canEdit: boolean
@@ -30,9 +29,8 @@ export interface BrandingSettingsTabProps {
 export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
   const { t } = useTranslation('common')
   const { reloadBranding } = useBranding()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [data, setData] = useState<BrandingSettingsDto | null>(null)
+  const { data, isLoading } = useBrandingSettingsQuery()
+  const updateMutation = useUpdateBrandingSettings()
 
   // Form state
   const [logoUrl, setLogoUrl] = useState('')
@@ -42,49 +40,38 @@ export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
   const [darkModeDefault, setDarkModeDefault] = useState(false)
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await getBrandingSettings()
-        setData(settings)
-        setLogoUrl(settings.logoUrl || '')
-        setFaviconUrl(settings.faviconUrl || '')
-        setPrimaryColor(settings.primaryColor || '')
-        setSecondaryColor(settings.secondaryColor || '')
-        setDarkModeDefault(settings.darkModeDefault)
-      } catch (error) {
-        if (error instanceof ApiError) {
-          toast.error(error.message)
-        }
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      setLogoUrl(data.logoUrl || '')
+      setFaviconUrl(data.faviconUrl || '')
+      setPrimaryColor(data.primaryColor || '')
+      setSecondaryColor(data.secondaryColor || '')
+      setDarkModeDefault(data.darkModeDefault)
     }
-    loadSettings()
-  }, [])
+  }, [data])
 
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const updated = await updateBrandingSettings({
+  const handleSave = () => {
+    updateMutation.mutate(
+      {
         logoUrl: logoUrl.trim() || null,
         faviconUrl: faviconUrl.trim() || null,
         primaryColor: primaryColor.trim() || null,
         secondaryColor: secondaryColor.trim() || null,
         darkModeDefault,
-      })
-      setData(updated)
-      // Reload branding context to apply changes globally (theme colors, favicon, dark mode)
-      await reloadBranding()
-      toast.success(t('tenantSettings.saved'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+      },
+      {
+        onSuccess: async () => {
+          await reloadBranding()
+          toast.success(t('tenantSettings.saved'))
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('messages.operationFailed'))
+          }
+        },
+      },
+    )
   }
 
   const hasChanges = data && (
@@ -95,7 +82,7 @@ export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
     darkModeDefault !== data.darkModeDefault
   )
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardContent className="py-8">
@@ -237,9 +224,9 @@ export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
 
         {canEdit && (
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            <Button onClick={handleSave} disabled={updateMutation.isPending || !hasChanges}>
               <Save className="h-4 w-4 mr-2" />
-              {saving ? t('buttons.saving') : t('buttons.save')}
+              {updateMutation.isPending ? t('buttons.saving') : t('buttons.save')}
             </Button>
           </div>
         )}

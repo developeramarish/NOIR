@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Loader2, Shield } from 'lucide-react'
 import { useForm, type Resolver } from 'react-hook-form'
@@ -33,9 +33,9 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { createRole, getRoles } from '@/services/roles'
+import { createRole } from '@/services/roles'
+import { useAvailableRolesQuery } from '@/portal-app/user-access/queries'
 import { ApiError } from '@/services/apiClient'
-import type { RoleListItem } from '@/types'
 
 const createFormSchema = (t: (key: string, options?: Record<string, unknown>) => string) =>
   z.object({
@@ -60,7 +60,7 @@ interface CreateRoleDialogProps {
 export const CreateRoleDialog = ({ open, onOpenChange, onSuccess }: CreateRoleDialogProps) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
-  const [existingRoles, setExistingRoles] = useState<RoleListItem[]>([])
+  const { data: existingRoles = [] } = useAvailableRolesQuery()
   const [apiError, setApiError] = useState<string | null>(null)
 
   const form = useForm<FormValues>({
@@ -76,16 +76,6 @@ export const CreateRoleDialog = ({ open, onOpenChange, onSuccess }: CreateRoleDi
       iconName: '',
     },
   })
-
-  useEffect(() => {
-    if (open) {
-      setApiError(null)
-      // Fetch existing roles for parent selection
-      getRoles({ pageSize: 100 })
-        .then(result => setExistingRoles(result.items))
-        .catch(() => setExistingRoles([]))
-    }
-  }, [open])
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true)

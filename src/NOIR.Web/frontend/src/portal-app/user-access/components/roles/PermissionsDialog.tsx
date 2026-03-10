@@ -24,8 +24,8 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { usePermissionsQuery, usePermissionTemplatesQuery } from '@/portal-app/user-access/queries'
-import { assignPermissions, getRoleById } from '@/services/roles'
+import { usePermissionsQuery, usePermissionTemplatesQuery, useRoleDetailQuery } from '@/portal-app/user-access/queries'
+import { assignPermissions } from '@/services/roles'
 import { ApiError } from '@/services/apiClient'
 import type { RoleListItem, Permission } from '@/types'
 import { translatePermissionCategory, translatePermissionDisplayName, translatePermissionDescription, comparePermissionCategories, CATEGORY_ICONS } from '@/portal-app/user-access/utils/permissionTranslation'
@@ -66,33 +66,25 @@ export const PermissionsDialog = ({ role, open, onOpenChange, onSuccess }: Permi
     return grouped
   }, [permissions])
 
+  const { data: fullRole, isLoading: loadingPermissions } = useRoleDetailQuery(role?.id, open && !!role)
+
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set())
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
-  const [loadingPermissions, setLoadingPermissions] = useState(false)
 
-  // Initialize selected permissions when role changes - fetch role's current permissions
+  // Initialize selected permissions when role detail data loads
   useEffect(() => {
     if (role && open) {
       setExpandedCategories(new Set(Object.keys(permissionsByCategory)))
-
-      // Fetch the role's current permissions
-      setLoadingPermissions(true)
-      getRoleById(role.id)
-        .then((fullRole) => {
-          // Use the role's direct permissions (not inherited)
-          setSelectedPermissions(new Set(fullRole.permissions || []))
-        })
-        .catch(() => {
-          // Start with empty if we can't load
-          setSelectedPermissions(new Set())
-        })
-        .finally(() => {
-          setLoadingPermissions(false)
-        })
     }
   }, [role, open, permissionsByCategory])
+
+  useEffect(() => {
+    if (fullRole) {
+      setSelectedPermissions(new Set(fullRole.permissions || []))
+    }
+  }, [fullRole])
 
   // Filter permissions by search query
   const filteredPermissionsByCategory = useMemo(() => {

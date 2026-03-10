@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRegionalSettings, getLocaleForFormat } from '@/contexts/RegionalSettingsContext'
 import {
@@ -42,11 +42,10 @@ import {
 
 import { cn } from '@/lib/utils'
 import {
-  getActivityDetails,
   type ActivityTimelineEntry,
-  type ActivityDetails,
   type FieldChange,
 } from '@/services/audit'
+import { useActivityDetailsQuery } from '@/portal-app/systems/queries'
 
 interface ActivityDetailsDialogProps {
   entry: ActivityTimelineEntry | null
@@ -208,23 +207,9 @@ export const ActivityDetailsDialog = ({
   onOpenChange,
 }: ActivityDetailsDialogProps) => {
   const { t } = useTranslation('common')
-  const [details, setDetails] = useState<ActivityDetails | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const { timezone, dateFormat } = useRegionalSettings()
-
-  useEffect(() => {
-    if (entry && open) {
-      setLoading(true)
-      setError(null)
-      getActivityDetails(entry.id)
-        .then(setDetails)
-        .catch((err) => setError(err instanceof Error ? err.message : t('activityTimeline.failedToLoadDetails')))
-        .finally(() => setLoading(false))
-    } else {
-      setDetails(null)
-    }
-  }, [entry, open])
+  const { data: details, isLoading: loading, error: queryError } = useActivityDetailsQuery(entry?.id, open)
+  const error = queryError ? (queryError instanceof Error ? queryError.message : t('activityTimeline.failedToLoadDetails')) : null
 
   if (!entry) return null
 

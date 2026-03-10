@@ -10,10 +10,12 @@
  * - Updates favicon dynamically
  * - Exposes dark mode default for ThemeContext integration
  */
-import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthContext } from './AuthContext'
 import { useTheme } from './ThemeContext'
 import { getBrandingSettings, type BrandingSettingsDto } from '@/services/tenantSettings'
+import { tenantSettingsKeys } from '@/portal-app/settings/queries/queryKeys'
 
 // Fallback defaults when no tenant branding is configured
 const DEFAULT_FAVICON = '/favicon.svg'
@@ -118,11 +120,9 @@ interface BrandingProviderProps {
 export const BrandingProvider = ({ children }: BrandingProviderProps) => {
   const { isAuthenticated, user } = useAuthContext()
   const { setTheme, hasUserPreference } = useTheme()
-  const [branding, setBranding] = useState<BrandingSettingsDto | null>(null)
-  const [loading, setLoading] = useState(false)
   // Track if we've already applied the tenant default to avoid loops
   const appliedTenantDefaultRef = useRef(false)
-  // Use refs for callback values that shouldn't trigger re-creation of loadBranding
+  // Use refs for callback values that shouldn't trigger re-creation of effects
   const setThemeRef = useRef(setTheme)
   const hasUserPreferenceRef = useRef(hasUserPreference)
 
@@ -133,45 +133,42 @@ export const BrandingProvider = ({ children }: BrandingProviderProps) => {
   // Platform Admin has tenantId = null — skip tenant-scoped API calls
   const tenantId = user?.tenantId
 
-  const loadBranding = useCallback(async () => {
-    if (!isAuthenticated || !tenantId) {
-      setBranding(null)
-      // Clear branding overrides when not authenticated or no tenant (Platform Admin)
-      applyBrandingColors(null, null)
-      updateFavicon(null)
-      appliedTenantDefaultRef.current = false
-      return
-    }
+  const { data: brandingData, isLoading: loading, refetch } = useQuery({
+    queryKey: tenantSettingsKeys.branding(),
+    queryFn: () => getBrandingSettings(),
+    enabled: isAuthenticated && !!tenantId,
+    staleTime: 5 * 60_000,
+  })
 
-    setLoading(true)
-    try {
-      const settings = await getBrandingSettings()
-      setBranding(settings)
-      applyBrandingColors(settings.primaryColor, settings.secondaryColor)
-      updateFavicon(settings.faviconUrl)
+  // Apply branding side effects when data changes
+  useEffect(() => {
+    if (brandingData) {
+      applyBrandingColors(brandingData.primaryColor, brandingData.secondaryColor)
+      updateFavicon(brandingData.faviconUrl)
 
       // Apply tenant dark mode default only if user hasn't set their own preference
       // and we haven't already applied it in this session
-      if (!hasUserPreferenceRef.current && !appliedTenantDefaultRef.current && settings.darkModeDefault) {
+      if (!hasUserPreferenceRef.current && !appliedTenantDefaultRef.current && brandingData.darkModeDefault) {
         setThemeRef.current('dark')
         appliedTenantDefaultRef.current = true
       }
-    } catch (error) {
-      console.error('Failed to load branding settings:', error)
-      setBranding(null)
-    } finally {
-      setLoading(false)
+    }
+  }, [brandingData])
+
+  // Clear branding when auth/tenant changes
+  useEffect(() => {
+    if (!isAuthenticated || !tenantId) {
+      applyBrandingColors(null, null)
+      updateFavicon(null)
+      appliedTenantDefaultRef.current = false
     }
   }, [isAuthenticated, tenantId])
 
-  // Load branding when authentication state or tenant changes
-  useEffect(() => {
-    loadBranding()
-  }, [loadBranding])
-
   const reloadBranding = useCallback(async () => {
-    await loadBranding()
-  }, [loadBranding])
+    await refetch()
+  }, [refetch])
+
+  const branding = brandingData ?? null
 
   const tenantDarkModeDefault = branding?.darkModeDefault ?? false
   const primaryColor = branding?.primaryColor ?? DEFAULT_PRIMARY_COLOR

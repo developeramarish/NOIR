@@ -26,8 +26,9 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { getUserById, updateUser } from '@/services/users'
-import type { UserListItem, UserProfile } from '@/types'
+import { updateUser } from '@/services/users'
+import { useUserDetailQuery } from '@/portal-app/user-access/queries'
+import type { UserListItem } from '@/types'
 
 const createFormSchema = (t: (key: string, options?: Record<string, unknown>) => string) =>
   z.object({
@@ -49,8 +50,7 @@ interface EditUserDialogProps {
 export const EditUserDialog = ({ user, open, onOpenChange, onSuccess }: EditUserDialogProps) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
-  const [loadingProfile, setLoadingProfile] = useState(false)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const { data: profile, isLoading: loadingProfile } = useUserDetailQuery(user?.id, open && !!user)
 
   const form = useForm<FormData>({
     // TypeScript cannot infer resolver types from dynamic schema factories
@@ -65,28 +65,17 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSuccess }: EditUser
     },
   })
 
-  // Load full user profile when dialog opens
+  // Sync form state from query data
   useEffect(() => {
-    if (user && open) {
-      setLoadingProfile(true)
-      getUserById(user.id)
-        .then((data) => {
-          setProfile(data)
-          form.reset({
-            firstName: data.firstName || '',
-            lastName: data.lastName || '',
-            displayName: data.displayName || '',
-            lockoutEnabled: !data.isActive,
-          })
-        })
-        .catch(() => {
-          toast.error(t('users.loadError', 'Failed to load user details'))
-        })
-        .finally(() => {
-          setLoadingProfile(false)
-        })
+    if (profile) {
+      form.reset({
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        displayName: profile.displayName || '',
+        lockoutEnabled: !profile.isActive,
+      })
     }
-  }, [user, open, t, form])
+  }, [profile, form])
 
   const onSubmit = async (values: FormData) => {
     if (!user) return

@@ -33,7 +33,8 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { updateRole, getRoles } from '@/services/roles'
+import { updateRole } from '@/services/roles'
+import { useAvailableRolesQuery } from '@/portal-app/user-access/queries'
 import { ApiError } from '@/services/apiClient'
 import type { RoleListItem } from '@/types'
 
@@ -62,7 +63,8 @@ interface EditRoleDialogProps {
 export const EditRoleDialog = ({ role, open, onOpenChange, onSuccess }: EditRoleDialogProps) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
-  const [existingRoles, setExistingRoles] = useState<RoleListItem[]>([])
+  const { data: existingRolesData } = useAvailableRolesQuery()
+  const existingRoles = (existingRolesData ?? []).filter(r => r.id !== role?.id)
   const [apiError, setApiError] = useState<string | null>(null)
 
   const form = useForm<FormValues>({
@@ -93,16 +95,6 @@ export const EditRoleDialog = ({ role, open, onOpenChange, onSuccess }: EditRole
       })
     }
   }, [role, form])
-
-  useEffect(() => {
-    if (open) {
-      setApiError(null)
-      // Fetch existing roles for parent selection (exclude current role)
-      getRoles({ pageSize: 100 })
-        .then(result => setExistingRoles(result.items.filter((r: RoleListItem) => r.id !== role?.id)))
-        .catch(() => setExistingRoles([]))
-    }
-  }, [open, role?.id])
 
   const onSubmit = async (values: FormValues) => {
     if (!role) return

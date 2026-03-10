@@ -5,7 +5,7 @@
  * When a file is selected, shows HistoryFileViewer with search, level filtering,
  * pagination, and fullscreen support.
  */
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DateRange } from 'react-day-picker'
 import {
@@ -41,12 +41,10 @@ import {
 import { cn } from '@/lib/utils'
 import { parseISO } from 'date-fns'
 import {
-  getAvailableLogDates,
-  getHistoricalLogs,
   type LogEntryDto,
   type DevLogLevel,
-  type LogEntriesPagedResponse,
 } from '@/services/developerLogs'
+import { useAvailableLogDatesQuery, useHistoricalLogsQuery } from '@/portal-app/systems/queries'
 import { LogTable } from './LogTable'
 import { LogDetailDialog } from './LogDetailDialog'
 import { LOG_LEVELS, LOG_STREAM_CONFIG, getLevelConfig, formatDateDisplay } from './log-utils'
@@ -104,11 +102,7 @@ const HistoryFileViewer = ({
   onBack: () => void
 }) => {
   const { t } = useTranslation('common')
-  const [entries, setEntries] = useState<LogEntryDto[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLevels, setSelectedLevels] = useState<Set<DevLogLevel>>(new Set())
   const [errorsOnly, setErrorsOnly] = useState(false)
@@ -117,37 +111,24 @@ const HistoryFileViewer = ({
   const [detailEntry, setDetailEntry] = useState<LogEntryDto | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
-  const fetchLogs = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      // Determine levels to filter
-      let levelsToFilter: DevLogLevel[] | undefined
-      if (errorsOnly) {
-        levelsToFilter = ['Error', 'Warning', 'Fatal']
-      } else if (selectedLevels.size > 0) {
-        levelsToFilter = Array.from(selectedLevels)
-      }
+  // Determine levels to filter
+  const levelsToFilter = useMemo(() => {
+    if (errorsOnly) return ['Error', 'Warning', 'Fatal'] as DevLogLevel[]
+    if (selectedLevels.size > 0) return Array.from(selectedLevels)
+    return undefined
+  }, [errorsOnly, selectedLevels])
 
-      const response: LogEntriesPagedResponse = await getHistoricalLogs(date, {
-        page,
-        pageSize: LOG_STREAM_CONFIG.HISTORY_PAGE_SIZE,
-        search: searchTerm || undefined,
-        levels: levelsToFilter,
-        sortOrder,
-      })
-      setEntries(response.items)
-      setTotalPages(response.totalPages)
-      setTotalCount(response.totalCount)
-    } catch {
-      // Error visible in network tab
-    } finally {
-      setIsLoading(false)
-    }
-  }, [date, page, searchTerm, selectedLevels, errorsOnly, sortOrder])
+  const { data: logsData, isLoading } = useHistoricalLogsQuery(date, {
+    page,
+    pageSize: LOG_STREAM_CONFIG.HISTORY_PAGE_SIZE,
+    search: searchTerm || undefined,
+    levels: levelsToFilter,
+    sortOrder,
+  })
 
-  useEffect(() => {
-    fetchLogs()
-  }, [fetchLogs])
+  const entries = logsData?.items ?? []
+  const totalPages = logsData?.totalPages ?? 0
+  const totalCount = logsData?.totalCount ?? 0
 
   const toggleEntryExpanded = useCallback((id: number) => {
     setExpandedEntries(prev => {
@@ -354,26 +335,9 @@ const HistoryFileViewer = ({
 // Main History Tab Content Component
 export const HistoryTab = () => {
   const { t } = useTranslation('common')
-  const [availableDates, setAvailableDates] = useState<string[]>([])
-  const [isLoadingDates, setIsLoadingDates] = useState(true)
+  const { data: availableDates = [], isLoading: isLoadingDates } = useAvailableLogDatesQuery()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
-
-  const fetchDates = useCallback(async () => {
-    setIsLoadingDates(true)
-    try {
-      const dates = await getAvailableLogDates()
-      setAvailableDates(dates)
-    } catch {
-      // Error visible in network tab
-    } finally {
-      setIsLoadingDates(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchDates()
-  }, [fetchDates])
 
   // Filter available dates by date range
   const filteredDates = useMemo(() => {

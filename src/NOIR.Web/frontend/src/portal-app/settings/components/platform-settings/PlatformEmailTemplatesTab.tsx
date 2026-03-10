@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Mail, Pencil, Eye, GitFork } from 'lucide-react'
@@ -7,7 +7,6 @@ import { getStatusBadgeClasses } from '@/utils/statusBadge'
 
 import { ApiError } from '@/services/apiClient'
 import {
-  getEmailTemplates,
   previewEmailTemplate,
   getDefaultSampleData,
   type EmailTemplateListDto,
@@ -15,6 +14,7 @@ import {
 } from '@/services/emailTemplates'
 import { formatDisplayName } from '@/lib/utils'
 import { EmailPreviewDialog } from '../tenant-settings/EmailPreviewDialog'
+import { useEmailTemplatesQuery } from '@/portal-app/settings/queries'
 
 export interface PlatformEmailTemplatesTabProps {
   onEdit: (id: string) => void
@@ -22,28 +22,12 @@ export interface PlatformEmailTemplatesTabProps {
 
 export const PlatformEmailTemplatesTab = ({ onEdit }: PlatformEmailTemplatesTabProps) => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState(true)
-  const [templates, setTemplates] = useState<EmailTemplateListDto[]>([])
+  const { data: templates = [], isLoading } = useEmailTemplatesQuery()
 
   // Preview dialog state
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewData, setPreviewData] = useState<EmailPreviewResponse | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
-
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const data = await getEmailTemplates()
-        setTemplates(data)
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : t('emailTemplates.failedToLoad')
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadTemplates()
-  }, [])
 
   const handlePreview = async (template: EmailTemplateListDto) => {
     setPreviewData(null)
@@ -63,7 +47,7 @@ export const PlatformEmailTemplatesTab = ({ onEdit }: PlatformEmailTemplatesTabP
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardHeader>

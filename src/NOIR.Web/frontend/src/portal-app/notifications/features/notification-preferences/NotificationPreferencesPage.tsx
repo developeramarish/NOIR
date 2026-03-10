@@ -22,7 +22,7 @@ import {
 } from '@uikit'
 
 import { toast } from 'sonner'
-import { getPreferences, updatePreferences } from '@/services/notifications'
+import { useNotificationPreferencesQuery, useUpdateNotificationPreferences } from '@/portal-app/notifications/queries'
 import type { NotificationPreference, NotificationCategory, EmailFrequency } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -47,25 +47,18 @@ const toCamelCase = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 export const NotificationPreferencesPage = () => {
   const { t } = useTranslation('common')
   usePageContext('NotificationPreferences')
+  const { data: preferencesData, isLoading } = useNotificationPreferencesQuery()
+  const updateMutation = useUpdateNotificationPreferences()
   const [preferences, setPreferences] = useState<NotificationPreference[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Fetch preferences on mount
+  // Sync local form state from query data
   useEffect(() => {
-    const fetchPreferences = async () => {
-      try {
-        const data = await getPreferences()
-        setPreferences(data)
-      } catch {
-        toast.error(t('notifications.failedToLoad'))
-      } finally {
-        setIsLoading(false)
-      }
+    if (preferencesData) {
+      setPreferences(preferencesData)
+      setHasChanges(false)
     }
-    fetchPreferences()
-  }, [])
+  }, [preferencesData])
 
   const handleInAppToggle = (category: NotificationCategory) => {
     setPreferences((prev) =>
@@ -85,23 +78,25 @@ export const NotificationPreferencesPage = () => {
     setHasChanges(true)
   }
 
-  const handleSave = async () => {
-    setIsSaving(true)
-    try {
-      await updatePreferences({
-        preferences: preferences.map((p) => ({
-          category: p.category,
-          inAppEnabled: p.inAppEnabled,
-          emailFrequency: p.emailFrequency,
-        })),
-      })
-      toast.success(t('notifications.savedSuccessfully'))
-      setHasChanges(false)
-    } catch {
-      toast.error(t('notifications.failedToSave'))
-    } finally {
-      setIsSaving(false)
-    }
+  const isSaving = updateMutation.isPending
+
+  const handleSave = () => {
+    updateMutation.mutate(
+      preferences.map((p) => ({
+        category: p.category,
+        inAppEnabled: p.inAppEnabled,
+        emailFrequency: p.emailFrequency,
+      })),
+      {
+        onSuccess: () => {
+          toast.success(t('notifications.savedSuccessfully'))
+          setHasChanges(false)
+        },
+        onError: () => {
+          toast.error(t('notifications.failedToSave'))
+        },
+      }
+    )
   }
 
   if (isLoading) {

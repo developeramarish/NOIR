@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
-import { toast } from 'sonner'
 import { FileText, Pencil, Eye, GitFork } from 'lucide-react'
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyState, Skeleton } from '@uikit'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 
-import { ApiError } from '@/services/apiClient'
-import { getLegalPages, type LegalPageListDto } from '@/services/legalPages'
+import { useLegalPagesQuery } from '@/portal-app/settings/queries'
 
 export interface LegalPagesTabProps {
   onEdit: (id: string) => void
@@ -16,23 +13,7 @@ export interface LegalPagesTabProps {
 export const LegalPagesTab = ({ onEdit }: LegalPagesTabProps) => {
   const { t } = useTranslation('common')
   const { formatDate } = useRegionalSettings()
-  const [loading, setLoading] = useState(true)
-  const [pages, setPages] = useState<LegalPageListDto[]>([])
-
-  useEffect(() => {
-    const loadPages = async () => {
-      try {
-        const data = await getLegalPages()
-        setPages(data)
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : t('legalPages.failedToLoad')
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadPages()
-  }, [])
+  const { data: pages = [], isLoading: loading } = useLegalPagesQuery()
 
   if (loading) {
     return (

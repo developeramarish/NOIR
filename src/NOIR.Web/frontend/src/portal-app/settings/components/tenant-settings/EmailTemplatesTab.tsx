@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Mail, Pencil, Eye, GitFork } from 'lucide-react'
@@ -7,12 +7,12 @@ import { getStatusBadgeClasses } from '@/utils/statusBadge'
 
 import { ApiError } from '@/services/apiClient'
 import {
-  getEmailTemplates,
   previewEmailTemplate,
   getDefaultSampleData,
   type EmailTemplateListDto,
   type EmailPreviewResponse,
 } from '@/services/emailTemplates'
+import { useEmailTemplatesQuery } from '@/portal-app/settings/queries'
 import { formatDisplayName } from '@/lib/utils'
 import { EmailPreviewDialog } from './EmailPreviewDialog'
 
@@ -22,28 +22,12 @@ export interface EmailTemplatesTabProps {
 
 export const EmailTemplatesTab = ({ onEdit }: EmailTemplatesTabProps) => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState(true)
-  const [templates, setTemplates] = useState<EmailTemplateListDto[]>([])
+  const { data: templates = [], isLoading: loading } = useEmailTemplatesQuery()
 
   // Preview dialog state
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewData, setPreviewData] = useState<EmailPreviewResponse | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
-
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const data = await getEmailTemplates()
-        setTemplates(data)
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : t('emailTemplates.failedToLoad')
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadTemplates()
-  }, [])
 
   const handlePreview = async (template: EmailTemplateListDto) => {
     setPreviewData(null)

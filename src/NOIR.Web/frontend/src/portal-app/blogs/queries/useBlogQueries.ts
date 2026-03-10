@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   getPosts,
+  getPostById,
   getCategories,
   getTags,
   type GetPostsParams,
@@ -13,6 +14,13 @@ export const useBlogPostsQuery = (params: GetPostsParams) =>
   useQuery({
     queryKey: blogPostKeys.list(params),
     queryFn: () => getPosts(params),
+  })
+
+export const useBlogPostDetailQuery = (id: string | undefined) =>
+  useQuery({
+    queryKey: blogPostKeys.detail(id!),
+    queryFn: () => getPostById(id!),
+    enabled: !!id,
   })
 
 export const useBlogCategoriesQuery = (params: GetCategoriesParams = {}) =>

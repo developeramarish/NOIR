@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ViewTransitionLink } from '@/components/navigation/ViewTransitionLink'
 import { ShieldCheck, ArrowLeft } from 'lucide-react'
 import { Button } from '@uikit'
-import { getPublicLegalPage, type PublicLegalPageDto } from '@/services/legalPages'
+import { usePublicLegalPageQuery } from '@/hooks/queries/usePublicQueries'
 
 /**
  * Public Terms of Service page.
@@ -11,23 +10,8 @@ import { getPublicLegalPage, type PublicLegalPageDto } from '@/services/legalPag
  */
 export const TermsPage = () => {
   const { t } = useTranslation('common')
-  const [page, setPage] = useState<PublicLegalPageDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchPage = async () => {
-      try {
-        const data = await getPublicLegalPage('terms-of-service')
-        setPage(data)
-      } catch {
-        setError(t('welcome.terms.loadError'))
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchPage()
-  }, [])
+  const { data: page, isLoading: loading, isError } = usePublicLegalPageQuery('terms-of-service')
+  const error = isError ? t('welcome.terms.loadError') : null
 
   if (loading) {
     return (

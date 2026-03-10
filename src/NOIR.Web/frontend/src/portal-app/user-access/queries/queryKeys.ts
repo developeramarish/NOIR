@@ -18,6 +18,7 @@ export const roleKeys = {
   all: ['roles'] as const,
   lists: () => [...roleKeys.all, 'list'] as const,
   list: (params: RolesParams) => [...roleKeys.lists(), params] as const,
+  detail: (id: string) => [...roleKeys.all, 'detail', id] as const,
   permissions: () => [...roleKeys.all, 'permissions'] as const,
   permissionTemplates: () => [...roleKeys.all, 'permissionTemplates'] as const,
 }
@@ -26,11 +27,14 @@ export const userKeys = {
   all: ['users'] as const,
   lists: () => [...userKeys.all, 'list'] as const,
   list: (params: UsersParams) => [...userKeys.lists(), params] as const,
+  detail: (id: string) => [...userKeys.all, 'detail', id] as const,
   availableRoles: () => [...userKeys.all, 'availableRoles'] as const,
+  roles: (userId: string) => [...userKeys.all, 'roles', userId] as const,
 }
 
 export const tenantKeys = {
   all: ['tenants'] as const,
   lists: () => [...tenantKeys.all, 'list'] as const,
   list: (params: GetTenantsParams) => [...tenantKeys.lists(), params] as const,
+  detail: (id: string) => [...tenantKeys.all, 'detail', id] as const,
 }

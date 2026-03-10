@@ -16,10 +16,9 @@ import {
 
 import { ApiError } from '@/services/apiClient'
 import {
-  getContactSettings,
-  updateContactSettings,
-  type ContactSettingsDto,
-} from '@/services/tenantSettings'
+  useContactSettingsQuery,
+  useUpdateContactSettings,
+} from '@/portal-app/settings/queries'
 
 export interface ContactSettingsTabProps {
   canEdit: boolean
@@ -27,9 +26,8 @@ export interface ContactSettingsTabProps {
 
 export const ContactSettingsTab = ({ canEdit }: ContactSettingsTabProps) => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [data, setData] = useState<ContactSettingsDto | null>(null)
+  const { data, isLoading } = useContactSettingsQuery()
+  const updateMutation = useUpdateContactSettings()
 
   // Form state
   const [email, setEmail] = useState('')
@@ -37,43 +35,33 @@ export const ContactSettingsTab = ({ canEdit }: ContactSettingsTabProps) => {
   const [address, setAddress] = useState('')
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await getContactSettings()
-        setData(settings)
-        setEmail(settings.email || '')
-        setPhone(settings.phone || '')
-        setAddress(settings.address || '')
-      } catch (error) {
-        if (error instanceof ApiError) {
-          toast.error(error.message)
-        }
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      setEmail(data.email || '')
+      setPhone(data.phone || '')
+      setAddress(data.address || '')
     }
-    loadSettings()
-  }, [])
+  }, [data])
 
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const updated = await updateContactSettings({
+  const handleSave = () => {
+    updateMutation.mutate(
+      {
         email: email.trim() || null,
         phone: phone.trim() || null,
         address: address.trim() || null,
-      })
-      setData(updated)
-      toast.success(t('tenantSettings.saved'))
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success(t('tenantSettings.saved'))
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('messages.operationFailed'))
+          }
+        },
+      },
+    )
   }
 
   const hasChanges = data && (
@@ -82,7 +70,7 @@ export const ContactSettingsTab = ({ canEdit }: ContactSettingsTabProps) => {
     (address.trim() || '') !== (data.address || '')
   )
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardContent className="py-8">
@@ -139,9 +127,9 @@ export const ContactSettingsTab = ({ canEdit }: ContactSettingsTabProps) => {
 
         {canEdit && (
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            <Button onClick={handleSave} disabled={updateMutation.isPending || !hasChanges}>
               <Save className="h-4 w-4 mr-2" />
-              {saving ? t('buttons.saving') : t('buttons.save')}
+              {updateMutation.isPending ? t('buttons.saving') : t('buttons.save')}
             </Button>
           </div>
         )}

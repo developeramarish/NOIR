@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useDeferredValue, useTransition } from 'react'
+import { useState, useDeferredValue, useTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import type { DateRange } from 'react-day-picker'
@@ -51,11 +51,12 @@ import {
 
 import { cn } from '@/lib/utils'
 
+import { type ActivityTimelineEntry } from '@/services/audit'
 import {
-  searchActivityTimeline,
-  getPageContexts,
-  type ActivityTimelineEntry,
-} from '@/services/audit'
+  useActivityTimelineQuery,
+  usePageContextsQuery,
+  type ActivityTimelineParams,
+} from '@/portal-app/systems/queries'
 import { ActivityDetailsDialog } from '../../components/activity-timeline/ActivityDetailsDialog'
 
 // Operation type icons and colors
@@ -249,15 +250,6 @@ export const ActivityTimelinePage = () => {
   const userIdParam = searchParams.get('userId')
   const userEmailParam = searchParams.get('userEmail')
 
-  // State
-  const [entries, setEntries] = useState<ActivityTimelineEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [pageContexts, setPageContexts] = useState<string[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
-
   // Filters
   const [searchInput, setSearchInput] = useState('')
   const deferredSearch = useDeferredValue(searchInput)
@@ -268,48 +260,34 @@ export const ActivityTimelinePage = () => {
   const [onlyFailed, setOnlyFailed] = useState(false)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [selectedEntry, setSelectedEntry] = useState<ActivityTimelineEntry | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const pageSize = 20
 
   // Fetch page contexts for filter dropdown
-  useEffect(() => {
-    getPageContexts()
-      .then(setPageContexts)
-      .catch(console.error)
-  }, [])
+  const { data: pageContexts = [] } = usePageContextsQuery()
 
   // Fetch activity timeline
-  const fetchData = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const result = await searchActivityTimeline({
-        pageContext: pageContext || undefined,
-        operationType: operationType || undefined,
-        searchTerm: deferredSearch || undefined,
-        onlyFailed: onlyFailed || undefined,
-        userId: userIdParam || undefined,
-        fromDate: dateRange?.from?.toISOString(),
-        toDate: dateRange?.to?.toISOString(),
-        page: currentPage,
-        pageSize,
-      })
-      setEntries(result.items)
-      setTotalCount(result.totalCount)
-      setTotalPages(result.totalPages)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('activityTimeline.loadFailed', 'Failed to load activity timeline'))
-    } finally {
-      setLoading(false)
-    }
-  }, [pageContext, operationType, deferredSearch, onlyFailed, userIdParam, dateRange, currentPage])
+  const params: ActivityTimelineParams = {
+    searchTerm: deferredSearch || undefined,
+    operationType: operationType || undefined,
+    pageContext: pageContext || undefined,
+    onlyFailed: onlyFailed || undefined,
+    userId: userIdParam || undefined,
+    fromDate: dateRange?.from?.toISOString(),
+    toDate: dateRange?.to?.toISOString(),
+    page: currentPage,
+    pageSize,
+  }
+  const { data: timelineData, isLoading: loading, error: queryError, refetch } = useActivityTimelineQuery(params)
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const entries = timelineData?.items ?? []
+  const totalCount = timelineData?.totalCount ?? 0
+  const totalPages = Math.ceil(totalCount / pageSize)
+  const error = queryError ? (queryError instanceof Error ? queryError.message : t('activityTimeline.loadFailed', 'Failed to load activity timeline')) : null
 
   const handleRefresh = () => {
-    fetchData()
+    refetch()
   }
 
   const handlePageChange = (page: number) => startFilterTransition(() => {

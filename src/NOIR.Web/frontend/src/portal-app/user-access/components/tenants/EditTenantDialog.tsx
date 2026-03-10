@@ -18,9 +18,10 @@ import { TenantFormValidated, type UpdateTenantFormData } from './TenantFormVali
 import { TenantModulesTab } from './TenantModulesTab'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import type { ProvisionTenantRequest } from '@/types'
-import { getTenant, updateTenant } from '@/services/tenants'
+import { updateTenant } from '@/services/tenants'
+import { useTenantDetailQuery } from '@/portal-app/user-access/queries'
 import { ApiError } from '@/services/apiClient'
-import type { TenantListItem, Tenant } from '@/types'
+import type { TenantListItem } from '@/types'
 
 interface EditTenantDialogProps {
   tenant: TenantListItem | null
@@ -38,8 +39,7 @@ export const EditTenantDialog = ({ tenant, open, onOpenChange, onSuccess, active
   const { t } = useTranslation('common')
   const { hasPermission } = usePermissions()
   const canEditFeatures = hasPermission(Permissions.FeaturesUpdate)
-  const [fullTenant, setFullTenant] = useState<Tenant | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { data: fullTenant, isLoading: loading, error: tenantError } = useTenantDetailQuery(tenant?.id, open && !!tenant)
 
   // Controlled/uncontrolled tab: use parent's onTabChange if provided, else local state
   const [internalTab, setInternalTab] = useState(activeTab)
@@ -53,30 +53,16 @@ export const EditTenantDialog = ({ tenant, open, onOpenChange, onSuccess, active
     if (!onTabChange) setInternalTab(activeTab)
   }, [activeTab, onTabChange])
 
-  // Fetch full tenant data when dialog opens
-  // Don't clear state on close — avoids content flash during close animation
+  // Handle query error — show toast and close dialog on details tab
   useEffect(() => {
-    if (!open || !tenant) return
-    setFullTenant(null)
-    setLoading(true)
-    const fetchTenant = async () => {
-      try {
-        const data = await getTenant(tenant.id)
-        setFullTenant(data)
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : t('tenants.loadError', 'Failed to load tenant')
-        toast.error(message)
-        // Only close if on details tab; modules tab works without fullTenant
-        if (effectiveTab === 'details') {
-          onOpenChange(false)
-        }
-      } finally {
-        setLoading(false)
+    if (tenantError) {
+      const message = tenantError instanceof ApiError ? tenantError.message : t('tenants.loadError', 'Failed to load tenant')
+      toast.error(message)
+      if (effectiveTab === 'details') {
+        onOpenChange(false)
       }
     }
-    fetchTenant()
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- onOpenChange identity changes on parent re-render; effectiveTab causes re-fetch on tab switch
-  }, [open, tenant])
+  }, [tenantError, effectiveTab, onOpenChange, t])
 
   const handleSubmit = async (data: ProvisionTenantRequest | UpdateTenantFormData) => {
     if (!tenant) return

@@ -11,11 +11,13 @@
  * - Applies tenant language to all users when admin changes it
  * - Respects individual user language changes until next admin update
  */
-import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthContext } from './AuthContext'
 import { getRegionalSettings, type RegionalSettingsDto } from '@/services/tenantSettings'
 import { useLanguage } from '@/i18n/useLanguage'
 import { i18n, type SupportedLanguage, supportedLanguages } from '@/i18n'
+import { tenantSettingsKeys } from '@/portal-app/settings/queries/queryKeys'
 
 /**
  * LocalStorage key for tracking the last tenant language applied.
@@ -98,8 +100,6 @@ interface RegionalSettingsProviderProps {
 export const RegionalSettingsProvider = ({ children }: RegionalSettingsProviderProps) => {
   const { isAuthenticated, user } = useAuthContext()
   const { changeLanguage } = useLanguage()
-  const [regional, setRegional] = useState<RegionalSettingsDto | null>(null)
-  const [loading, setLoading] = useState(false)
   // Track if we've already applied the tenant language default to avoid loops
   const appliedTenantLanguageRef = useRef(false)
   // Use refs for callback values
@@ -111,52 +111,49 @@ export const RegionalSettingsProvider = ({ children }: RegionalSettingsProviderP
   // Platform Admin has tenantId = null — skip tenant-scoped API calls
   const tenantId = user?.tenantId
 
-  const loadRegional = useCallback(async () => {
-    if (!isAuthenticated || !tenantId) {
-      setRegional(null)
-      appliedTenantLanguageRef.current = false
-      return
-    }
+  const { data: regionalData, isLoading: loading, refetch } = useQuery({
+    queryKey: tenantSettingsKeys.regional(),
+    queryFn: () => getRegionalSettings(),
+    enabled: isAuthenticated && !!tenantId,
+    staleTime: 5 * 60_000,
+  })
 
-    setLoading(true)
-    try {
-      const settings = await getRegionalSettings()
-      setRegional(settings)
+  // Apply language side effects when data changes
+  useEffect(() => {
+    if (!regionalData) return
 
-      // Language override logic:
-      // When tenant admin changes Default Language, override ALL users' current settings.
-      // After that, if user changes via profile menu, respect it until next admin change.
-      // We track the last applied tenant language to detect admin changes.
-      const lastAppliedTenantLanguage = localStorage.getItem(TENANT_LANGUAGE_KEY)
-      const tenantLanguageChanged = lastAppliedTenantLanguage !== settings.language
+    // Language override logic:
+    // When tenant admin changes Default Language, override ALL users' current settings.
+    // After that, if user changes via profile menu, respect it until next admin change.
+    // We track the last applied tenant language to detect admin changes.
+    const lastAppliedTenantLanguage = localStorage.getItem(TENANT_LANGUAGE_KEY)
+    const tenantLanguageChanged = lastAppliedTenantLanguage !== regionalData.language
 
-      if (tenantLanguageChanged && !appliedTenantLanguageRef.current) {
-        // Tenant language differs from what we last applied → admin changed it
-        // Override user's current setting
-        if (settings.language in supportedLanguages) {
-          await changeLanguageRef.current(settings.language as SupportedLanguage)
-          localStorage.setItem(TENANT_LANGUAGE_KEY, settings.language)
-          appliedTenantLanguageRef.current = true
-        }
+    if (tenantLanguageChanged && !appliedTenantLanguageRef.current) {
+      // Tenant language differs from what we last applied → admin changed it
+      // Override user's current setting
+      if (regionalData.language in supportedLanguages) {
+        changeLanguageRef.current(regionalData.language as SupportedLanguage)
+        localStorage.setItem(TENANT_LANGUAGE_KEY, regionalData.language)
+        appliedTenantLanguageRef.current = true
       }
-    } catch (error) {
-      console.error('Failed to load regional settings:', error)
-      setRegional(null)
-    } finally {
-      setLoading(false)
+    }
+  }, [regionalData])
+
+  // Reset language tracking when auth/tenant changes
+  useEffect(() => {
+    if (!isAuthenticated || !tenantId) {
+      appliedTenantLanguageRef.current = false
     }
   }, [isAuthenticated, tenantId])
-
-  // Load regional settings when authentication state or tenant changes
-  useEffect(() => {
-    loadRegional()
-  }, [loadRegional])
 
   const reloadRegional = useCallback(async () => {
     // Reset the ref to allow language re-application on intentional reload (e.g., after admin save)
     appliedTenantLanguageRef.current = false
-    await loadRegional()
-  }, [loadRegional])
+    await refetch()
+  }, [refetch])
+
+  const regional = regionalData ?? null
 
   // Extract settings with defaults
   const timezone = regional?.timezone ?? DEFAULT_TIMEZONE

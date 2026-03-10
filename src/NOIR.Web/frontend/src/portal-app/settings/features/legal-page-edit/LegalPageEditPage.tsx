@@ -10,6 +10,11 @@ import { EntityDeletedDialog } from '@/components/EntityDeletedDialog'
 import { FileText, ArrowLeft, RotateCcw, Save, Info, Loader2 } from 'lucide-react'
 import { Editor } from '@tinymce/tinymce-react'
 import type { Editor as TinyMCEEditor } from 'tinymce'
+import {
+  useLegalPageQuery,
+  useUpdateLegalPage,
+  useRevertLegalPage,
+} from '@/portal-app/settings/queries'
 
 // Import TinyMCE 6 for self-hosted usage
 /* eslint-disable import/no-unresolved */
@@ -58,12 +63,7 @@ import {
 } from '@uikit'
 
 import { usePageContext } from '@/hooks/usePageContext'
-import {
-  getLegalPageById,
-  updateLegalPage,
-  revertLegalPageToDefault,
-  type LegalPageDto,
-} from '@/services/legalPages'
+import { type LegalPageDto } from '@/services/legalPages'
 import { ApiError } from '@/services/apiClient'
 
 /**
@@ -85,11 +85,13 @@ export const LegalPageEditPage = () => {
   const canEdit = hasPermission(Permissions.LegalPagesUpdate)
   const editorRef = useRef<TinyMCEEditor | null>(null)
 
+  // TanStack Query + Mutations
+  const { data: queryPage, isLoading: loading } = useLegalPageQuery(id)
+  const updateMutation = useUpdateLegalPage()
+  const revertMutation = useRevertLegalPage()
+
   // State
   const [page, setPage] = useState<LegalPageDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [reverting, setReverting] = useState(false)
   const [revertDialogOpen, setRevertDialogOpen] = useState(false)
 
   // Form state
@@ -100,38 +102,21 @@ export const LegalPageEditPage = () => {
   const [canonicalUrl, setCanonicalUrl] = useState('')
   const [allowIndexing, setAllowIndexing] = useState(true)
 
-  // Load page
-  const loadPage = async () => {
-    if (!id) return
-    setLoading(true)
-    try {
-      const data = await getLegalPageById(id)
-      setPage(data)
-      setTitle(data.title)
-      setHtmlContent(data.htmlContent)
-      setMetaTitle(data.metaTitle || '')
-      setMetaDescription(data.metaDescription || '')
-      setCanonicalUrl(data.canonicalUrl || '')
-      setAllowIndexing(data.allowIndexing)
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-      navigate(settingsBackUrl)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Load page on mount
+  // Sync form state when query data arrives
   useEffect(() => {
-    loadPage()
-  }, [id])
+    if (queryPage) {
+      setPage(queryPage)
+      setTitle(queryPage.title)
+      setHtmlContent(queryPage.htmlContent)
+      setMetaTitle(queryPage.metaTitle || '')
+      setMetaDescription(queryPage.metaDescription || '')
+      setCanonicalUrl(queryPage.canonicalUrl || '')
+      setAllowIndexing(queryPage.allowIndexing)
+    }
+  }, [queryPage])
 
   // Handle save
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!id || !canEdit) return
 
     if (!title.trim()) {
@@ -155,32 +140,37 @@ export const LegalPageEditPage = () => {
       return
     }
 
-    setSaving(true)
-    try {
-      const updated = await updateLegalPage(id, {
-        title: title.trim(),
-        htmlContent: htmlContent.trim(),
-        metaTitle: metaTitle.trim() || null,
-        metaDescription: metaDescription.trim() || null,
-        canonicalUrl: canonicalUrl.trim() || null,
-        allowIndexing,
-      })
-      setPage(updated)
-      toast.success(t('legalPages.savedSuccess'))
-      // If COW created a new page, navigate to the new ID (preserve from param)
-      if (updated.id !== id) {
-        const fromParam = fromContext ? `?from=${fromContext}` : ''
-        navigate(`/portal/legal-pages/${updated.id}${fromParam}`, { replace: true })
-      }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setSaving(false)
-    }
+    updateMutation.mutate(
+      {
+        id,
+        request: {
+          title: title.trim(),
+          htmlContent: htmlContent.trim(),
+          metaTitle: metaTitle.trim() || null,
+          metaDescription: metaDescription.trim() || null,
+          canonicalUrl: canonicalUrl.trim() || null,
+          allowIndexing,
+        },
+      },
+      {
+        onSuccess: (updated) => {
+          setPage(updated)
+          toast.success(t('legalPages.savedSuccess'))
+          // If COW created a new page, navigate to the new ID (preserve from param)
+          if (updated.id !== id) {
+            const fromParam = fromContext ? `?from=${fromContext}` : ''
+            navigate(`/portal/legal-pages/${updated.id}${fromParam}`, { replace: true })
+          }
+        },
+        onError: (error) => {
+          if (error instanceof ApiError) {
+            toast.error(error.message)
+          } else {
+            toast.error(t('messages.operationFailed'))
+          }
+        },
+      },
+    )
   }
 
   // URL validation helper
@@ -194,47 +184,49 @@ export const LegalPageEditPage = () => {
   }
 
   // Handle revert
-  const handleRevert = async () => {
+  const handleRevert = () => {
     if (!id) return
-    setReverting(true)
-    try {
-      const reverted = await revertLegalPageToDefault(id)
-      setPage(reverted)
-      setTitle(reverted.title)
-      setHtmlContent(reverted.htmlContent)
-      setMetaTitle(reverted.metaTitle || '')
-      setMetaDescription(reverted.metaDescription || '')
-      setCanonicalUrl(reverted.canonicalUrl || '')
-      setAllowIndexing(reverted.allowIndexing)
-      toast.success(t('legalPages.revertedSuccess'))
-      // Navigate to the platform page ID (preserve from param)
-      if (reverted.id !== id) {
-        const fromParam = fromContext ? `?from=${fromContext}` : ''
-        navigate(`/portal/legal-pages/${reverted.id}${fromParam}`, { replace: true })
-      }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message)
-      } else {
-        toast.error(t('messages.operationFailed'))
-      }
-    } finally {
-      setReverting(false)
-      setRevertDialogOpen(false)
-    }
+    revertMutation.mutate(id, {
+      onSuccess: (reverted) => {
+        setPage(reverted)
+        setTitle(reverted.title)
+        setHtmlContent(reverted.htmlContent)
+        setMetaTitle(reverted.metaTitle || '')
+        setMetaDescription(reverted.metaDescription || '')
+        setCanonicalUrl(reverted.canonicalUrl || '')
+        setAllowIndexing(reverted.allowIndexing)
+        toast.success(t('legalPages.revertedSuccess'))
+        setRevertDialogOpen(false)
+        // Navigate to the platform page ID (preserve from param)
+        if (reverted.id !== id) {
+          const fromParam = fromContext ? `?from=${fromContext}` : ''
+          navigate(`/portal/legal-pages/${reverted.id}${fromParam}`, { replace: true })
+        }
+      },
+      onError: (error) => {
+        if (error instanceof ApiError) {
+          toast.error(error.message)
+        } else {
+          toast.error(t('messages.operationFailed'))
+        }
+        setRevertDialogOpen(false)
+      },
+    })
   }
 
   const refreshPage = useCallback(() => {
     if (id) {
-      getLegalPageById(id).then((data) => {
-        setPage(data)
-        setTitle(data.title)
-        setHtmlContent(data.htmlContent)
-        setMetaTitle(data.metaTitle || '')
-        setMetaDescription(data.metaDescription || '')
-        setCanonicalUrl(data.canonicalUrl || '')
-        setAllowIndexing(data.allowIndexing)
-      }).catch(() => {})
+      import('@/services/legalPages').then(({ getLegalPageById }) => {
+        getLegalPageById(id).then((data) => {
+          setPage(data)
+          setTitle(data.title)
+          setHtmlContent(data.htmlContent)
+          setMetaTitle(data.metaTitle || '')
+          setMetaDescription(data.metaDescription || '')
+          setCanonicalUrl(data.canonicalUrl || '')
+          setAllowIndexing(data.allowIndexing)
+        }).catch(() => {})
+      })
     }
   }, [id])
 
@@ -339,7 +331,7 @@ export const LegalPageEditPage = () => {
           {/* Revert button - only shown for non-inherited (tenant-owned) pages */}
           {!page.isInherited && canEdit && (
             <>
-              <Button variant="outline" disabled={reverting} className="cursor-pointer" onClick={() => setRevertDialogOpen(true)}>
+              <Button variant="outline" disabled={revertMutation.isPending} className="cursor-pointer" onClick={() => setRevertDialogOpen(true)}>
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t('buttons.revert')}
               </Button>
@@ -360,17 +352,17 @@ export const LegalPageEditPage = () => {
                   </CredenzaHeader>
                   <CredenzaBody />
                   <CredenzaFooter>
-                    <Button variant="outline" onClick={() => setRevertDialogOpen(false)} disabled={reverting} className="cursor-pointer">
+                    <Button variant="outline" onClick={() => setRevertDialogOpen(false)} disabled={revertMutation.isPending} className="cursor-pointer">
                       {t('buttons.cancel')}
                     </Button>
                     <Button
                       variant="destructive"
                       onClick={handleRevert}
-                      disabled={reverting}
+                      disabled={revertMutation.isPending}
                       className="cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
                     >
-                      {reverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {reverting ? t('labels.reverting', 'Reverting...') : t('buttons.revert')}
+                      {revertMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {revertMutation.isPending ? t('labels.reverting', 'Reverting...') : t('buttons.revert')}
                     </Button>
                   </CredenzaFooter>
                 </CredenzaContent>
@@ -378,9 +370,9 @@ export const LegalPageEditPage = () => {
             </>
           )}
           {canEdit && (
-            <Button onClick={handleSave} disabled={saving || !hasChanges} className="cursor-pointer">
+            <Button onClick={handleSave} disabled={updateMutation.isPending || !hasChanges} className="cursor-pointer">
               <Save className="h-4 w-4 mr-2" />
-              {saving ? t('buttons.saving') : t('buttons.save')}
+              {updateMutation.isPending ? t('buttons.saving') : t('buttons.save')}
             </Button>
           )}
         </div>
