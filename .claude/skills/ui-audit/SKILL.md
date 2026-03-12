@@ -1,3 +1,8 @@
+---
+name: ui-audit
+description: Run automated UI/UX audit pipeline — 52 pages, 11 custom rules, axe-core accessibility, Storybook validation
+---
+
 # UI/UX Audit — Automated Pipeline
 
 Run the NOIR UI audit system: 52 pages, 11 custom rules, axe-core accessibility scanning, and Storybook story validation.
