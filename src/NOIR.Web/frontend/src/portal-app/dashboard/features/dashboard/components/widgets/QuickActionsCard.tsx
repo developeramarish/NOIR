@@ -47,7 +47,7 @@ export const QuickActionsCard = ({ counts }: QuickActionsCardProps) => {
   ]
 
   return (
-    <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="gap-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">{t('dashboard.quickActions')}</CardTitle>
       </CardHeader>

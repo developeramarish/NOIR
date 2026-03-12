@@ -155,20 +155,20 @@ const RevenueAreaChart = ({
       <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="reportsRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis
           dataKey="dateLabel"
-          tick={{ fontSize: 11 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+          stroke="var(--muted-foreground)"
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fontSize: 11 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+          stroke="var(--muted-foreground)"
           tickFormatter={(v: number) =>
             v >= 1_000_000
               ? `${(v / 1_000_000).toFixed(0)}M`
@@ -180,9 +180,9 @@ const RevenueAreaChart = ({
         <RechartsTooltip
           contentStyle={{
             borderRadius: '8px',
-            border: '1px solid hsl(var(--border))',
-            backgroundColor: 'hsl(var(--card))',
-            color: 'hsl(var(--card-foreground))',
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--card)',
+            color: 'var(--card-foreground)',
           }}
           formatter={(value, name) => [
             name === 'revenue'
@@ -197,7 +197,7 @@ const RevenueAreaChart = ({
         <Area
           type="monotone"
           dataKey="revenue"
-          stroke="hsl(var(--primary))"
+          stroke="var(--primary)"
           fill="url(#reportsRevenueGradient)"
           strokeWidth={2}
           dot={false}
@@ -209,11 +209,11 @@ const RevenueAreaChart = ({
 }
 
 const CATEGORY_CHART_COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
 ]
 
 const CategoryBreakdownChart = ({
@@ -245,11 +245,11 @@ const CategoryBreakdownChart = ({
         layout="vertical"
         margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
         <XAxis
           type="number"
-          tick={{ fontSize: 11 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+          stroke="var(--muted-foreground)"
           tickFormatter={(v: number) =>
             v >= 1_000_000
               ? `${(v / 1_000_000).toFixed(0)}M`
@@ -261,17 +261,17 @@ const CategoryBreakdownChart = ({
         <YAxis
           type="category"
           dataKey="name"
-          tick={{ fontSize: 11 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+          stroke="var(--muted-foreground)"
           width={120}
           tickLine={false}
         />
         <RechartsTooltip
           contentStyle={{
             borderRadius: '8px',
-            border: '1px solid hsl(var(--border))',
-            backgroundColor: 'hsl(var(--card))',
-            color: 'hsl(var(--card-foreground))',
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--card)',
+            color: 'var(--card-foreground)',
           }}
           formatter={(value) => [formatCurrency(Number(value ?? 0)), t('reports.revenue', 'Revenue')]}
         />
@@ -796,23 +796,23 @@ export const ReportsPage = () => {
                         data={customerData.acquisitionByMonth}
                         margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                         <XAxis
                           dataKey="month"
-                          tick={{ fontSize: 11 }}
-                          stroke="hsl(var(--muted-foreground))"
+                          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                          stroke="var(--muted-foreground)"
                           interval="preserveStartEnd"
                         />
                         <YAxis
-                          tick={{ fontSize: 11 }}
-                          stroke="hsl(var(--muted-foreground))"
+                          tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                          stroke="var(--muted-foreground)"
                         />
                         <RechartsTooltip
                           contentStyle={{
                             borderRadius: '8px',
-                            border: '1px solid hsl(var(--border))',
-                            backgroundColor: 'hsl(var(--card))',
-                            color: 'hsl(var(--card-foreground))',
+                            border: '1px solid var(--border)',
+                            backgroundColor: 'var(--card)',
+                            color: 'var(--card-foreground)',
                           }}
                           formatter={(value, name) => [
                             Number(value ?? 0).toLocaleString(),
@@ -821,7 +821,7 @@ export const ReportsPage = () => {
                               : t('reports.returningCustomers', 'Returning Customers'),
                           ]}
                         />
-                        <Bar dataKey="newCustomers" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="newCustomers" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (

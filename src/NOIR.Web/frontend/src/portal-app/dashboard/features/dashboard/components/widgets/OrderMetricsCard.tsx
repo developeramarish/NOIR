@@ -27,7 +27,7 @@ export const OrderMetricsCard = ({ orderCounts, totalOrders }: OrderMetricsCardP
   const statuses = Object.entries(orderCounts).filter(([, count]) => count > 0)
 
   return (
-    <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="gap-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-primary" />

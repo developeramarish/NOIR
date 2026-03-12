@@ -20,22 +20,22 @@ interface OrderStatusChartProps {
 }
 
 const STATUS_CHART_COLORS: Record<string, string> = {
-  pending: 'hsl(var(--chart-1))',
-  confirmed: 'hsl(var(--chart-2))',
-  processing: 'hsl(var(--chart-3))',
-  shipped: 'hsl(var(--chart-4))',
-  delivered: 'hsl(var(--chart-5))',
-  completed: 'hsl(var(--chart-1))',
-  cancelled: 'hsl(var(--chart-2))',
-  refunded: 'hsl(var(--chart-3))',
-  returned: 'hsl(var(--chart-4))',
+  pending: 'var(--chart-1)',
+  confirmed: 'var(--chart-2)',
+  processing: 'var(--chart-3)',
+  shipped: 'var(--chart-4)',
+  delivered: 'var(--chart-5)',
+  completed: 'var(--chart-1)',
+  cancelled: 'var(--chart-2)',
+  refunded: 'var(--chart-3)',
+  returned: 'var(--chart-4)',
 }
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '8px',
-  border: '1px solid hsl(var(--border))',
-  backgroundColor: 'hsl(var(--card))',
-  color: 'hsl(var(--card-foreground))',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--card)',
+  color: 'var(--card-foreground)',
 }
 
 export const OrderStatusChart = ({ orderCounts, isLoading }: OrderStatusChartProps) => {
@@ -71,15 +71,15 @@ export const OrderStatusChart = ({ orderCounts, isLoading }: OrderStatusChartPro
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="status"
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <RechartsTooltip
                 contentStyle={CHART_TOOLTIP_STYLE}
@@ -87,7 +87,7 @@ export const OrderStatusChart = ({ orderCounts, isLoading }: OrderStatusChartPro
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {chartData.map((entry) => (
-                  <Cell key={entry.key} fill={STATUS_CHART_COLORS[entry.key] ?? 'hsl(var(--chart-1))'} />
+                  <Cell key={entry.key} fill={STATUS_CHART_COLORS[entry.key] ?? 'var(--chart-1)'} />
                 ))}
               </Bar>
             </BarChart>

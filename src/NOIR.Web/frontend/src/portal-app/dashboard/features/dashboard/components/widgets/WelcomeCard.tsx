@@ -23,7 +23,7 @@ export const WelcomeCard = ({ user }: WelcomeCardProps) => {
 
   return (
     <Card className="shadow-sm hover:shadow-lg transition-all duration-300 md:col-span-2 xl:col-span-3">
-      <CardContent className="py-5">
+      <CardContent>
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-xl bg-primary/10">
             <UserCircle className="h-8 w-8 text-primary" />

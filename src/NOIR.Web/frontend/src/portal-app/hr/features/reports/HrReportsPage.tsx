@@ -27,18 +27,18 @@ import {
 import { useHrReportsQuery } from '@/portal-app/hr/queries'
 
 const CHART_COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
 ]
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '8px',
-  border: '1px solid hsl(var(--border))',
-  backgroundColor: 'hsl(var(--card))',
-  color: 'hsl(var(--card-foreground))',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--card)',
+  color: 'var(--card-foreground)',
 }
 
 export const HrReportsPage = () => {
@@ -142,11 +142,11 @@ export const HrReportsPage = () => {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(200, headcountData.length * 40)}>
                 <BarChart data={headcountData} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={120} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
+                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" width={120} />
                   <RechartsTooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                  <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -171,9 +171,9 @@ export const HrReportsPage = () => {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(200, tagData.length * 36)}>
                 <BarChart data={tagData} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={120} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
+                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" width={120} />
                   <RechartsTooltip contentStyle={CHART_TOOLTIP_STYLE} />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                     {tagData.map((entry, index) => (

@@ -21,9 +21,9 @@ interface RevenueChartProps {
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '8px',
-  border: '1px solid hsl(var(--border))',
-  backgroundColor: 'hsl(var(--card))',
-  color: 'hsl(var(--card-foreground))',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--card)',
+  color: 'var(--card-foreground)',
 }
 
 export const RevenueChart = ({ data, isLoading }: RevenueChartProps) => {
@@ -59,20 +59,20 @@ export const RevenueChart = ({ data, isLoading }: RevenueChartProps) => {
             <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="dashRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="dateLabel"
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v: number) =>
                   v >= 1_000_000
                     ? `${(v / 1_000_000).toFixed(0)}M`
@@ -94,7 +94,7 @@ export const RevenueChart = ({ data, isLoading }: RevenueChartProps) => {
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 fill="url(#dashRevenueGradient)"
                 strokeWidth={2}
                 dot={false}

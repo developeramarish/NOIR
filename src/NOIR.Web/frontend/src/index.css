@@ -108,6 +108,12 @@
   --sidebar-accent-foreground: oklch(0.205 0.015 260);
   --sidebar-border: oklch(0.922 0.004 263);
   --sidebar-ring: oklch(0.55 0.245 263);
+  /* Chart palette */
+  --chart-1: oklch(0.55 0.245 263);
+  --chart-2: oklch(0.72 0.19 150);
+  --chart-3: oklch(0.75 0.16 75);
+  --chart-4: oklch(0.72 0.17 255);
+  --chart-5: oklch(0.65 0.18 330);
 }
 
 /* Dark theme variables */
@@ -150,6 +156,12 @@
   --sidebar-accent-foreground: oklch(0.93 0.005 260);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.65 0.22 263);
+  /* Chart palette — brighter for dark backgrounds */
+  --chart-1: oklch(0.65 0.22 263);
+  --chart-2: oklch(0.79 0.19 150);
+  --chart-3: oklch(0.82 0.14 75);
+  --chart-4: oklch(0.79 0.15 255);
+  --chart-5: oklch(0.72 0.18 330);
 }
 
 /*

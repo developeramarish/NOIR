@@ -12,7 +12,7 @@ export const SystemHealthCard = ({ health }: SystemHealthCardProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="gap-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />

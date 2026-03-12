@@ -20,9 +20,9 @@ interface PublishingTrendChartProps {
 
 const CHART_TOOLTIP_STYLE = {
   borderRadius: '8px',
-  border: '1px solid hsl(var(--border))',
-  backgroundColor: 'hsl(var(--card))',
-  color: 'hsl(var(--card-foreground))',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--card)',
+  color: 'var(--card-foreground)',
 }
 
 export const PublishingTrendChart = ({ data, isLoading }: PublishingTrendChartProps) => {
@@ -58,20 +58,20 @@ export const PublishingTrendChart = ({ data, isLoading }: PublishingTrendChartPr
             <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="dashBlogGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="dateLabel"
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 allowDecimals={false}
               />
               <RechartsTooltip
@@ -82,7 +82,7 @@ export const PublishingTrendChart = ({ data, isLoading }: PublishingTrendChartPr
               <Area
                 type="monotone"
                 dataKey="postCount"
-                stroke="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
                 fill="url(#dashBlogGradient)"
                 strokeWidth={2}
                 dot={false}

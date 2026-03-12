@@ -62,7 +62,7 @@ export const ActivityFeed = ({ items }: ActivityFeedProps) => {
   const { formatRelativeTime, timezone } = useRegionalSettings()
 
   return (
-    <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="gap-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{t('dashboard.activityFeed')}</CardTitle>
@@ -85,7 +85,7 @@ export const ActivityFeed = ({ items }: ActivityFeedProps) => {
             className="border-0 rounded-none py-6"
           />
         ) : (
-          <div className="max-h-[400px] overflow-y-auto pl-1" tabIndex={0} role="region" aria-label={t('dashboard.activityFeed')}>
+          <div className="max-h-[400px] overflow-y-auto pl-1 pt-1" tabIndex={0} role="region" aria-label={t('dashboard.activityFeed')}>
             {items.map((item, i) => {
               const config = OPERATION_CONFIG[item.type] ?? DEFAULT_CONFIG
               const Icon = config.icon

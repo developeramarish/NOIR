@@ -23,7 +23,7 @@ export const MetricCard = ({
   iconBg = 'bg-primary/10',
 }: MetricCardProps) => (
   <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-    <CardContent className="pt-6">
+    <CardContent>
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
