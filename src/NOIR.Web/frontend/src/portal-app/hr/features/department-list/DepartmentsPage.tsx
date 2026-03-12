@@ -162,15 +162,15 @@ export const DepartmentsPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">{t('hr.departmentHierarchy', 'Department Hierarchy')}</CardTitle>
                 <CardDescription>
                   {flatDepartments.length > 0
-                    ? t('hr.departmentCount', { count: flatDepartments.length, defaultValue: `${flatDepartments.length} departments total` })
+                    ? t('labels.showingCountOfTotal', { count: flatDepartments.length, total: flatDepartments.length })
                     : t('hr.departmentHierarchyDescription', 'View and manage your organizational structure')}
                 </CardDescription>
               </div>

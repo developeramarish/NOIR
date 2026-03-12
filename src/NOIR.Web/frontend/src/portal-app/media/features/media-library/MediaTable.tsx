@@ -50,6 +50,7 @@ export const MediaTable = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px] sticky left-0 z-10 bg-background" />
             <TableHead className="w-[40px]">
               <Checkbox
                 checked={isAllSelected}
@@ -67,7 +68,6 @@ export const MediaTable = ({
             <TableHead className="font-semibold">{t('media.type', 'Type')}</TableHead>
             <TableHead className="text-right font-semibold">{t('media.size', 'Size')}</TableHead>
             <TableHead className="font-semibold">{t('labels.uploaded', 'Uploaded')}</TableHead>
-            <TableHead className="w-[50px]" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,6 +79,37 @@ export const MediaTable = ({
               }`}
               onClick={() => onOpenDetail(item)}
             >
+              <TableCell className="sticky left-0 z-10 bg-background" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cursor-pointer h-8 w-8 p-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                      aria-label={t('labels.actionsFor', { name: item.originalFileName, defaultValue: `Actions for ${item.originalFileName}` })}
+                    >
+                      <EllipsisVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-44">
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onRename(item)}
+                    >
+                      <Pencil className="h-4 w-4 mr-2" />
+                      {t('media.rename', 'Rename')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                      onClick={() => onDelete(item)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t('labels.delete', 'Delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={selectedIds.has(item.id)}
@@ -123,37 +154,6 @@ export const MediaTable = ({
                 <span className="text-sm text-muted-foreground">
                   {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                 </span>
-              </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="cursor-pointer h-8 w-8 p-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
-                      aria-label={t('labels.actionsFor', { name: item.originalFileName, defaultValue: `Actions for ${item.originalFileName}` })}
-                    >
-                      <EllipsisVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => onRename(item)}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      {t('media.rename', 'Rename')}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer text-destructive focus:text-destructive"
-                      onClick={() => onDelete(item)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      {t('labels.delete', 'Delete')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

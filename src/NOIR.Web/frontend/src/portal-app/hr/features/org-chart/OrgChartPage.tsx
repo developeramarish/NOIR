@@ -506,7 +506,7 @@ export const OrgChartPage = () => {
           ) : (
             <div
               ref={chartContainerRef}
-              className="w-full"
+              className="w-full overflow-hidden"
               style={{ height: 'calc(100vh - 340px)', minHeight: '400px' }}
             />
           )}

@@ -240,8 +240,8 @@ export const Loading: Story = {
  * Extracts the common Card + CardHeader + CardContent structure to avoid duplication.
  */
 const ListPageCardShell = ({ children }: { children: React.ReactNode }) => (
-  <Card className="shadow-sm hover:shadow-lg transition-all duration-300" style={{ maxWidth: 800 }}>
-    <CardHeader className="pb-4">
+  <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0" style={{ maxWidth: 800 }}>
+    <CardHeader className="pb-3">
       <div className="space-y-3">
         {children}
       </div>

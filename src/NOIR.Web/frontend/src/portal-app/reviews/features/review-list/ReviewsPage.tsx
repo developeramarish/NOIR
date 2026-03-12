@@ -17,6 +17,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   DataTable,
@@ -285,8 +286,8 @@ export const ReviewsPage = () => {
         responsive
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="flex flex-col gap-4">
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -302,7 +303,12 @@ export const ReviewsPage = () => {
               </TabsList>
             </Tabs>
 
-            <CardTitle className="text-lg">{t('reviews.allReviews', 'All Reviews')}</CardTitle>
+            <div>
+              <CardTitle className="text-lg">{t('reviews.allReviews', 'All Reviews')}</CardTitle>
+              <CardDescription>
+                {data ? t('labels.showingCountOfTotal', { count: data.items.length, total: data.totalCount }) : ''}
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">

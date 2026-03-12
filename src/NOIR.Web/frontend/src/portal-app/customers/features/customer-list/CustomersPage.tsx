@@ -31,6 +31,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   Credenza,
@@ -402,11 +403,14 @@ export const CustomersPage = () => {
         </Card>
       </div>
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <CardTitle className="text-lg">{t('customers.allCustomers', 'All Customers')}</CardTitle>
+          <CardDescription>
+            {data ? t('labels.showingCountOfTotal', { count: data.items.length, total: data.totalCount }) : ''}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <DataTableToolbar
             table={table}
             searchInput={searchInput}

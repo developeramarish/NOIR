@@ -112,13 +112,13 @@ export const ProductAttributesPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div>
               <CardTitle className="text-lg">{t('productAttributes.allAttributes', 'All Attributes')}</CardTitle>
               <CardDescription>
-                {t('productAttributes.totalCount', { count: attributes.length, defaultValue: `${attributes.length} attributes total` })}
+                {attributesResponse ? t('labels.showingCountOfTotal', { count: attributes.length, total: attributesResponse.totalCount }) : ''}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">

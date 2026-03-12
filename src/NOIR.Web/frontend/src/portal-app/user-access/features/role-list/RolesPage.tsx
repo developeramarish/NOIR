@@ -232,8 +232,8 @@ export const RolesPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div>
             <CardTitle className="text-lg">{t('roles.listTitle', 'All Roles')}</CardTitle>
             <CardDescription>
@@ -241,7 +241,7 @@ export const RolesPage = () => {
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <DataTableToolbar
             table={table}
             searchInput={searchInput}

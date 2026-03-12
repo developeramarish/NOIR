@@ -122,8 +122,8 @@ export const CustomerGroupsPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div>
               <CardTitle className="text-lg">{t('customerGroups.allGroups', 'All Groups')}</CardTitle>

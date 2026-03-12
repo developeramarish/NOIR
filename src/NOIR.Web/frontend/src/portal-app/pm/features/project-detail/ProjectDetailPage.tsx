@@ -11,7 +11,7 @@ import {
   Info,
   Archive,
   Loader2,
-  MoreHorizontal,
+  EllipsisVertical,
   UserPlus,
   Tag,
   Pencil,
@@ -232,7 +232,7 @@ export const ProjectDetailPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8 cursor-pointer" aria-label={t('pm.boardMenu', { defaultValue: 'Board menu' })}>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <EllipsisVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

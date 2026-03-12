@@ -135,14 +135,14 @@ export const ProductCategoriesPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">{t('categories.allCategories', 'All Categories')}</CardTitle>
                 <CardDescription>
-                  {t('categories.totalCount', { count: categories.length, defaultValue: `${categories.length} categories total` })}
+                  {categories.length > 0 ? t('labels.showingCountOfTotal', { count: categories.length, total: categories.length }) : ''}
                 </CardDescription>
               </div>
               <ViewModeToggle options={viewModeOptions} value={viewMode} onChange={setViewMode} />

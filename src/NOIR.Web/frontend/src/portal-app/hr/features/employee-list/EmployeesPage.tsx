@@ -329,8 +329,8 @@ export const EmployeesPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div>
               <CardTitle className="text-lg">{t('hr.allEmployees', 'All Employees')}</CardTitle>
@@ -413,6 +413,7 @@ export const EmployeesPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10 sticky left-0 z-10 bg-background"></TableHead>
                   <TableHead className="w-10">
                     <Checkbox
                       checked={isAllSelected}
@@ -421,7 +422,6 @@ export const EmployeesPage = () => {
                       aria-label={t('labels.selectAll', 'Select all')}
                     />
                   </TableHead>
-                  <TableHead className="w-10 sticky left-0 z-10 bg-background"></TableHead>
                   <TableHead>{t('labels.name', 'Name')}</TableHead>
                   <TableHead>{t('hr.employeeCode')}</TableHead>
                   <TableHead>{t('hr.email')}</TableHead>
@@ -436,8 +436,8 @@ export const EmployeesPage = () => {
                 {loading ? (
                   [...Array(5)].map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                       <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
@@ -470,14 +470,6 @@ export const EmployeesPage = () => {
                       className="group cursor-pointer transition-colors hover:bg-muted/50"
                       onClick={() => handleViewEmployee(employee)}
                     >
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={selectedIds.has(employee.id)}
-                          onCheckedChange={() => handleToggleSelect(employee.id)}
-                          className="cursor-pointer"
-                          aria-label={t('labels.select', { name: `${employee.firstName} ${employee.lastName}` })}
-                        />
-                      </TableCell>
                       <TableCell className="sticky left-0 z-10 bg-background">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -537,6 +529,14 @@ export const EmployeesPage = () => {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.has(employee.id)}
+                          onCheckedChange={() => handleToggleSelect(employee.id)}
+                          className="cursor-pointer"
+                          aria-label={t('labels.select', { name: `${employee.firstName} ${employee.lastName}` })}
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">

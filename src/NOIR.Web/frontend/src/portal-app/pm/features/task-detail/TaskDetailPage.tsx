@@ -19,7 +19,7 @@ import {
   CheckSquare,
   Pencil,
   Plus,
-  MoreHorizontal,
+  EllipsisVertical,
   FolderKanban,
   Tag,
 } from 'lucide-react'
@@ -288,7 +288,7 @@ export const TaskDetailPage = () => {
               className="h-8 w-8 cursor-pointer"
               aria-label={t('labels.moreActions', { defaultValue: 'More actions' })}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <EllipsisVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

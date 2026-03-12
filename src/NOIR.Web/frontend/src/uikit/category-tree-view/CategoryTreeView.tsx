@@ -31,7 +31,7 @@ import {
   Pencil,
   Plus,
   Trash2,
-  MoreHorizontal,
+  EllipsisVertical,
   GripVertical,
 } from 'lucide-react'
 import { Button } from '../button/Button'
@@ -454,7 +454,7 @@ export const CategoryTreeView = <T extends TreeCategory>({
               aria-label={t('labels.actionsFor', { name: category.name })}
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <EllipsisVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">

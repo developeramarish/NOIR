@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   CreditCard,
   Eye,
-  MoreHorizontal,
+  EllipsisVertical,
   Plus,
   Search,
 } from 'lucide-react'
@@ -145,8 +145,8 @@ export const PaymentsPage = () => {
         }
       />
 
-      <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardHeader className="pb-4">
+      <Card className="shadow-sm hover:shadow-lg transition-all duration-300 gap-0">
+        <CardHeader className="pb-3">
           <div className="space-y-3">
             <div>
               <CardTitle className="text-lg">{t('payments.title')}</CardTitle>
@@ -259,7 +259,7 @@ export const PaymentsPage = () => {
                               className="cursor-pointer h-9 w-9 p-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
                               aria-label={t('labels.actionsFor', { name: payment.transactionNumber, defaultValue: `Actions for ${payment.transactionNumber}` })}
                             >
-                              <MoreHorizontal className="h-4 w-4" />
+                              <EllipsisVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">

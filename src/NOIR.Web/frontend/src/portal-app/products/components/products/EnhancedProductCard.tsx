@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   Send,
   Archive,
-  MoreHorizontal,
+  EllipsisVertical,
   Tag,
 } from 'lucide-react'
 import { Badge, Button, Card, FilePreviewModal, TippyTooltip } from '@uikit'
@@ -266,7 +266,7 @@ export const EnhancedProductCard = ({
                   className="h-7 w-7 -mr-1.5 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
                   aria-label={t('labels.actionsFor', { name: product.name })}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <EllipsisVertical className="h-4 w-4" />
                 </Button>
               }
             />

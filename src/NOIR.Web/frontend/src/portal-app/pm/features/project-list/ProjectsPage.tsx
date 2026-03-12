@@ -2,6 +2,8 @@ import { useState, useDeferredValue, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
+  EllipsisVertical,
+  Eye,
   FolderKanban,
   Plus,
   Search,
@@ -28,6 +30,10 @@ import {
   Button,
   Card,
   CardContent,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyState,
   Input,
   Select,
@@ -305,7 +311,7 @@ export const ProjectsPage = () => {
 
       {/* Filters + view controls */}
       <div className="flex items-center gap-2.5 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-[280px]">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             value={search}
@@ -404,6 +410,7 @@ export const ProjectsPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
+                    <TableHead className="w-10 sticky left-0 z-10 bg-background" />
                     <TableHead className="font-semibold">{t('pm.projectName', { defaultValue: 'Project' })}</TableHead>
                     <TableHead className="font-semibold">{t('pm.status', { defaultValue: 'Status' })}</TableHead>
                     <TableHead className="font-semibold">{t('pm.progress', { defaultValue: 'Progress' })}</TableHead>
@@ -423,6 +430,26 @@ export const ProjectsPage = () => {
                         className="cursor-pointer hover:bg-muted/30 transition-colors"
                         onClick={() => handleProjectClick(project)}
                       >
+                        <TableCell className="sticky left-0 z-10 bg-background" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="cursor-pointer h-8 w-8 p-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                                aria-label={t('labels.actionsFor', { name: project.name, defaultValue: `Actions for ${project.name}` })}
+                              >
+                                <EllipsisVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => handleProjectClick(project)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                {t('labels.viewDetails', 'View Details')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {/* Color initial avatar */}
