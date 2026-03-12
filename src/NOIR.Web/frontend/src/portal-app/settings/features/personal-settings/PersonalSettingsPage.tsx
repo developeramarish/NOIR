@@ -57,7 +57,7 @@ export const PersonalSettingsPage = () => {
                   className={cn(
                     'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all cursor-pointer',
                     isActive
-                      ? 'bg-blue-600/10 text-blue-600 font-medium shadow-sm'
+                      ? 'bg-blue-600/10 text-blue-700 font-medium shadow-sm'
                       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   )}
                 >

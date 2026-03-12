@@ -44,7 +44,7 @@ export const PortalLayout = () => {
         </div>
 
         {/* Main Content - Full vertical space on desktop */}
-        <main id="main-content" className="relative flex-1 overflow-auto p-4 lg:p-6">
+        <main id="main-content" tabIndex={0} className="relative flex-1 overflow-auto p-4 lg:p-6">
           {/* Breadcrumb Navigation */}
           {breadcrumbs.length > 1 && (
             <div className="mb-4">

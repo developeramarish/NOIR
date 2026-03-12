@@ -32,12 +32,32 @@ cd src/NOIR.Web/frontend/e2e && npx playwright test --project=ui-audit --project
 ```
 
 This runs:
-- **ui-audit**: 51 admin pages (tenant admin auth)
+- **ui-audit**: 52 admin pages (tenant admin auth, includes `tenant-settings`)
 - **ui-audit-platform**: 4 platform admin pages (platform admin auth)
 - **11 custom rules**: cursor-pointer, aria-label, datatable-actions, dialog-footer, badge-variant, empty-state, native-title, gradient-text, destructive-button, console-errors, network-errors
 - **axe-core**: WCAG 2.2 accessibility scanning per page + per tab + per dialog
 
 Output: `.ui-audit/` directory (gitignored)
+
+### Data-load reliability (important)
+
+Before taking screenshots or running rules, the audit runner must wait until pages are visually stable:
+
+- Wait for navigation + `networkidle`
+- Wait for app/API idle (no in-flight fetch/xhr calls for a short quiet window)
+- Wait for page-specific selector (`waitFor` from `page-registry.ts`)
+- Wait for loading indicators/skeletons/spinners to disappear
+
+If screenshots show empty table/list while data should be present, treat it as an audit-runner bug and improve readiness waits in `tests/ui-audit/environment-setup.ts` and runner specs.
+
+### Auth profile correctness (important)
+
+Use the correct login profile per page:
+
+- `ui-audit` project uses tenant admin (`admin@noir.local`)
+- `ui-audit-platform` project uses platform admin (`platform@noir.local`)
+
+`tenant-settings` (`/portal/admin/tenant-settings`) must run in tenant-admin audit, not platform-admin audit. Keep page ownership/auth mapping in `tests/ui-audit/page-registry.ts` accurate to avoid wrong screenshots/tabs.
 
 ## Step 3: Read and Present Results
 

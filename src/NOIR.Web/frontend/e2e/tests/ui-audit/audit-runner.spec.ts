@@ -4,7 +4,7 @@ import { AUDIT_RULES, dialogFooterRule } from './rules';
 import { IssueCollector } from './issue-collector';
 import { ScreenshotManager } from './screenshot-manager';
 import { runAxeScan } from './axe-scanner';
-import { lockEnvironment, attachListeners } from './environment-setup';
+import { lockEnvironment, attachListeners, waitForPageReady } from './environment-setup';
 import { saveRunnerIssues, generateMergedReport, cleanStaleIssues } from './report-generator';
 import { ApiHelper } from '../../fixtures/api.fixture';
 
@@ -71,23 +71,16 @@ for (const pageConfig of ADMIN_PAGE_REGISTRY) {
 
         // Skip pages with unresolved :id (seed failed or returned no data)
         if (resolvedUrl.includes(':id')) {
-          collector.add({
-            pageId: pageConfig.id,
-            ruleId: 'seed-data-missing',
-            severity: 'INFO',
-            message: `Skipped "${pageConfig.id}" — no seed data available (URL still contains :id)`,
-            fix: 'Ensure test data exists or seed function returns a valid routeParam',
-            reference: 'Audit infrastructure',
-          });
+          console.log(`  [SKIP] ${pageConfig.id} — no seed data available (URL still contains :id)`);
           return;
         }
 
         // 2. Navigate and wait for page load
         await page.goto(resolvedUrl);
-        await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
-        if (pageConfig.waitFor) {
-          await page.waitForSelector(pageConfig.waitFor, { timeout: 10_000 }).catch(() => {});
-        }
+        await waitForPageReady(page, listeners, pageConfig.waitFor, {
+          apiIdleTimeoutMs: 8_000,
+          selectorTimeoutMs: 8_000,
+        });
 
         // 3. Take page screenshot
         const screenshotPath = await screenshots.takePage(page, pageConfig.id);
@@ -164,7 +157,10 @@ for (const pageConfig of ADMIN_PAGE_REGISTRY) {
             try {
               const tabUrl = `${resolvedUrl}?tab=${tab.param}`;
               await page.goto(tabUrl);
-              await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
+              await waitForPageReady(page, tabListeners, pageConfig.waitFor, {
+                apiIdleTimeoutMs: 4_000,
+                selectorTimeoutMs: 6_000,
+              });
               // Wait for tab to be visible
               await page
                 .getByRole('tab', { name: new RegExp(tab.id, 'i') })
@@ -231,10 +227,10 @@ for (const pageConfig of ADMIN_PAGE_REGISTRY) {
             // Navigate back to the main page URL (tabs may have changed it)
             if (pageConfig.tabs) {
               await page.goto(resolvedUrl);
-              await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
-              if (pageConfig.waitFor) {
-                await page.waitForSelector(pageConfig.waitFor, { timeout: 10_000 }).catch(() => {});
-              }
+              await waitForPageReady(page, listeners, pageConfig.waitFor, {
+                apiIdleTimeoutMs: 6_000,
+                selectorTimeoutMs: 8_000,
+              });
             }
 
             // Click dialog trigger

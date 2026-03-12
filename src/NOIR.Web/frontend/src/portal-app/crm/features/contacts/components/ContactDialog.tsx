@@ -198,7 +198,7 @@ export const ContactDialog = ({ open, onOpenChange, contact }: ContactDialogProp
                   value={form.watch('source')}
                   onValueChange={(value) => form.setValue('source', value as ContactSource)}
                 >
-                  <SelectTrigger className="cursor-pointer">
+                  <SelectTrigger className="cursor-pointer" aria-label={t('crm.contacts.source')}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

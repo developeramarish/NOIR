@@ -964,6 +964,7 @@ export const ManualCreateOrderPage = () => {
                   checked={sameAsShipping}
                   onCheckedChange={(checked) => setSameAsShipping(!!checked)}
                   className="cursor-pointer"
+                  aria-label={t('orders.manualCreate.sameAsShipping')}
                 />
                 <label
                   htmlFor="sameAsShipping"

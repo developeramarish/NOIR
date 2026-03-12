@@ -532,7 +532,7 @@ const WishlistItemCard = ({
           value={item.priority}
           onValueChange={(value) => onPriorityChange(item.id, value as WishlistItemPriority)}
         >
-          <SelectTrigger className="h-8 text-xs cursor-pointer">
+          <SelectTrigger className="h-8 text-xs cursor-pointer" aria-label={t('wishlists.selectPriority', 'Priority')}>
             <SelectValue placeholder={t('wishlists.selectPriority', 'Priority')} />
           </SelectTrigger>
           <SelectContent>

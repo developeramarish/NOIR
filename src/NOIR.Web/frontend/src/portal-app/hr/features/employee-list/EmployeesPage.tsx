@@ -540,7 +540,7 @@ export const EmployeesPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
+                          <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
                             {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
                           </div>
                           <span className="font-medium text-sm">

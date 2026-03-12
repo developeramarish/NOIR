@@ -219,6 +219,7 @@ export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
             onCheckedChange={setDarkModeDefault}
             disabled={!canEdit}
             className="cursor-pointer"
+            aria-label={t('tenantSettings.branding.darkModeDefault')}
           />
         </div>
 

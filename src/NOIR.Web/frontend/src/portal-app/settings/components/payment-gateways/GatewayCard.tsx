@@ -11,7 +11,7 @@ import {
   Loader2,
   ExternalLink,
 } from 'lucide-react'
-import { Badge, Button, Card, CardContent, CardHeader, Switch } from '@uikit'
+import { Badge, Button, Card, CardContent, CardHeader, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@uikit'
 
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
@@ -89,8 +89,7 @@ export const GatewayCard = ({
     <Card
       className={cn(
         'transition-all duration-200',
-        isActive && 'ring-2 ring-green-500/50 shadow-green-500/10 shadow-lg',
-        !isConfigured && 'opacity-75'
+        isActive && 'ring-2 ring-green-500/50 shadow-green-500/10 shadow-lg'
       )}
     >
       <CardHeader className="pb-3">
@@ -122,18 +121,23 @@ export const GatewayCard = ({
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-lg">{schema.displayName}</h3>
                 {schema.documentationUrl && (
-                  <a
-                    href={schema.documentationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    title={t('paymentGateways.viewDocs', 'View documentation')}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        href={schema.documentationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                        aria-label={t('paymentGateways.viewDocs', 'View documentation')}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('paymentGateways.viewDocs', 'View documentation')}</TooltipContent>
+                  </Tooltip>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">
+              <p className="text-sm text-foreground/80 line-clamp-1">
                 {schema.description}
               </p>
             </div>
@@ -155,14 +159,14 @@ export const GatewayCard = ({
           <div className="space-y-1">
             {getStatusBadge()}
             {gateway?.environment && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-foreground/70 mt-1">
                 {gateway.environment === 'Sandbox' ? '🧪 ' : '🚀 '}
                 {t(`paymentGateways.${gateway.environment.toLowerCase()}`, gateway.environment)}
               </p>
             )}
           </div>
           {isConfigured && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               {t('paymentGateways.lastCheck', 'Last check')}: {formatLastHealthCheck(gateway?.lastHealthCheck ?? null, t)}
             </p>
           )}
@@ -177,8 +181,9 @@ export const GatewayCard = ({
               onCheckedChange={handleToggle}
               disabled={!isConfigured || isToggling}
               className="cursor-pointer"
+              aria-label={t('paymentGateways.toggleGateway', { gateway: schema.displayName, defaultValue: `Toggle ${schema.displayName}` })}
             />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-foreground/80">
               {isActive
                 ? t('paymentGateways.enabled', 'Enabled')
                 : t('paymentGateways.disabled', 'Disabled')}

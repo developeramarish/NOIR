@@ -17,38 +17,53 @@ public class GetHrReportsQueryHandler
         GetHrReportsQuery query,
         CancellationToken cancellationToken)
     {
-        // Run all aggregate queries sequentially — DbContext is not thread-safe
-        var headcountByDept = await _dbContext.Employees
+        var headcountByDeptRaw = await _dbContext.Employees
             .Where(e => !e.IsDeleted && e.Status == EmployeeStatus.Active)
-            .GroupBy(e => new { e.DepartmentId, e.Department!.Name })
-            .Select(g => new DepartmentHeadcountDto(g.Key.DepartmentId, g.Key.Name, g.Count()))
+            .GroupBy(e => new { e.DepartmentId, DepartmentName = e.Department!.Name })
+            .Select(g => new { g.Key.DepartmentId, g.Key.DepartmentName, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .TagWith("GetHrReports_HeadcountByDepartment")
             .ToListAsync(cancellationToken);
 
-        var tagDistribution = await _dbContext.EmployeeTagAssignments
+        var headcountByDept = headcountByDeptRaw
+            .Select(x => new DepartmentHeadcountDto(x.DepartmentId, x.DepartmentName ?? "Unknown", x.Count))
+            .ToList();
+
+        var tagDistributionRaw = await _dbContext.EmployeeTagAssignments
             .Where(a => !a.IsDeleted && a.EmployeeTag != null && a.EmployeeTag.IsActive)
-            .GroupBy(a => new { a.EmployeeTagId, a.EmployeeTag!.Name, a.EmployeeTag.Category, a.EmployeeTag.Color })
-            .Select(g => new TagDistributionDto(g.Key.EmployeeTagId, g.Key.Name, g.Key.Category, g.Key.Color, g.Count()))
+            .GroupBy(a => new { a.EmployeeTagId, TagName = a.EmployeeTag!.Name, a.EmployeeTag.Category, a.EmployeeTag.Color })
+            .Select(g => new { g.Key.EmployeeTagId, g.Key.TagName, g.Key.Category, g.Key.Color, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .TagWith("GetHrReports_TagDistribution")
             .ToListAsync(cancellationToken);
 
-        var employmentTypeBreakdown = await _dbContext.Employees
+        var tagDistribution = tagDistributionRaw
+            .Select(x => new TagDistributionDto(x.EmployeeTagId, x.TagName, x.Category, x.Color ?? "#6366f1", x.Count))
+            .ToList();
+
+        var employmentTypeRaw = await _dbContext.Employees
             .Where(e => !e.IsDeleted && e.Status == EmployeeStatus.Active)
             .GroupBy(e => e.EmploymentType)
-            .Select(g => new EmploymentTypeBreakdownDto(g.Key, g.Count()))
+            .Select(g => new { Type = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .TagWith("GetHrReports_EmploymentTypeBreakdown")
             .ToListAsync(cancellationToken);
 
-        var statusBreakdown = await _dbContext.Employees
+        var employmentTypeBreakdown = employmentTypeRaw
+            .Select(x => new EmploymentTypeBreakdownDto(x.Type, x.Count))
+            .ToList();
+
+        var statusRaw = await _dbContext.Employees
             .Where(e => !e.IsDeleted)
             .GroupBy(e => e.Status)
-            .Select(g => new StatusBreakdownDto(g.Key, g.Count()))
+            .Select(g => new { Status = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .TagWith("GetHrReports_StatusBreakdown")
             .ToListAsync(cancellationToken);
+
+        var statusBreakdown = statusRaw
+            .Select(x => new StatusBreakdownDto(x.Status, x.Count))
+            .ToList();
 
         var totalActiveEmployees = headcountByDept.Sum(x => x.Count);
 

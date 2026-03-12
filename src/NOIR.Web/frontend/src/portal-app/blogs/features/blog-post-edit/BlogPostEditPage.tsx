@@ -528,6 +528,8 @@ export const BlogPostEditPage = () => {
                             color: #6b7280;
                           }
                         `,
+                        statusbar: false,
+                        resize: false,
                         branding: false,
                         promotion: false,
                         // Security: Convert unsafe embed/object elements to safer alternatives (CVE-2024-29881)

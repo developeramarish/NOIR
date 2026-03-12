@@ -20,7 +20,7 @@ import {
  * - PLATFORM_PAGE_REGISTRY: pages requiring platform admin (platform@noir.local)
  */
 
-// ─── Admin Pages (51 pages) ──────────────────────────────────────────────
+// ─── Admin Pages (52 pages) ──────────────────────────────────────────────
 
 export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
   // ── Dashboard ──────────────────────────────────────────────
@@ -47,6 +47,26 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
       { id: 'notifications', param: 'notifications' },
     ],
     sourceFile: 'portal-app/settings/features/personal-settings/PersonalSettingsPage.tsx',
+  },
+  {
+    id: 'tenant-settings',
+    domain: 'admin',
+    url: '/portal/admin/tenant-settings',
+    requiresData: false,
+    waitFor: '[role="tablist"]',
+    tabs: [
+      { id: 'branding', param: 'branding' },
+      { id: 'contact', param: 'contact' },
+      { id: 'regional', param: 'regional' },
+      { id: 'paymentGateways', param: 'paymentGateways' },
+      { id: 'shippingProviders', param: 'shippingProviders' },
+      { id: 'smtp', param: 'smtp' },
+      { id: 'emailTemplates', param: 'emailTemplates' },
+      { id: 'legalPages', param: 'legalPages' },
+      { id: 'modules', param: 'modules' },
+      { id: 'webhooks', param: 'webhooks' },
+    ],
+    sourceFile: 'portal-app/settings/features/tenant-settings/TenantSettingsPage.tsx',
   },
 
   // ── Notifications ──────────────────────────────────────────
@@ -91,9 +111,9 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     url: '/portal/blog/categories',
     requiresData: false,
     waitFor: 'table, .border-dashed',
-    sourceFile: 'portal-app/blogs/features/blog-categories/BlogCategoriesPage.tsx',
+    sourceFile: 'portal-app/blogs/features/blog-category-list/BlogCategoriesPage.tsx',
     dialogTriggers: [
-      { id: 'create-blog-category', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-blog-category', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -102,9 +122,9 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     url: '/portal/blog/tags',
     requiresData: false,
     waitFor: 'table, .border-dashed',
-    sourceFile: 'portal-app/blogs/features/blog-tags/BlogTagsPage.tsx',
+    sourceFile: 'portal-app/blogs/features/blog-tag-list/BlogTagsPage.tsx',
     dialogTriggers: [
-      { id: 'create-blog-tag', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-blog-tag', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
 
@@ -131,9 +151,9 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     url: '/portal/ecommerce/categories',
     requiresData: false,
     waitFor: 'main',
-    sourceFile: 'portal-app/products/features/product-categories/ProductCategoriesPage.tsx',
+    sourceFile: 'portal-app/products/features/product-category-list/ProductCategoriesPage.tsx',
     dialogTriggers: [
-      { id: 'create-category', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-category', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -144,7 +164,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/brands/features/brand-list/BrandsPage.tsx',
     dialogTriggers: [
-      { id: 'create-brand', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-brand', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -203,7 +223,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/customers/features/customer-list/CustomersPage.tsx',
     dialogTriggers: [
-      { id: 'create-customer', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-customer', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -214,7 +234,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/customer-groups/features/customer-group-list/CustomerGroupsPage.tsx',
     dialogTriggers: [
-      { id: 'create-customer-group', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-customer-group', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
 
@@ -226,9 +246,9 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     requiresData: false,
     waitFor: 'table, .border-dashed',
     tabs: [
-      { id: 'pending', param: 'pending' },
-      { id: 'approved', param: 'approved' },
-      { id: 'rejected', param: 'rejected' },
+      { id: 'pending', param: 'Pending' },
+      { id: 'approved', param: 'Approved' },
+      { id: 'rejected', param: 'Rejected' },
     ],
     sourceFile: 'portal-app/reviews/features/review-list/ReviewsPage.tsx',
   },
@@ -260,7 +280,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/crm/features/contact-list/CrmContactsPage.tsx',
     dialogTriggers: [
-      { id: 'create-contact', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-contact', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -271,7 +291,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/crm/features/company-list/CrmCompaniesPage.tsx',
     dialogTriggers: [
-      { id: 'create-company', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-company', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -292,7 +312,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/hr/features/employee-list/EmployeesPage.tsx',
     dialogTriggers: [
-      { id: 'create-employee', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-employee', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -303,7 +323,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/hr/features/department-list/DepartmentsPage.tsx',
     dialogTriggers: [
-      { id: 'create-department', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-department', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -314,7 +334,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/hr/features/tag-list/TagsPage.tsx',
     dialogTriggers: [
-      { id: 'create-tag', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-tag', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -361,7 +381,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/promotions/features/promotion-list/PromotionsPage.tsx',
     dialogTriggers: [
-      { id: 'create-promotion', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-promotion', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -398,7 +418,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table, .border-dashed',
     sourceFile: 'portal-app/user-access/features/role-list/RolesPage.tsx',
     dialogTriggers: [
-      { id: 'create-role', label: /create|add/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-role', label: /create|add|new/i, waitForSelector: '[role="dialog"]' },
     ],
   },
   {
@@ -409,7 +429,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
     waitFor: 'table',
     sourceFile: 'portal-app/user-access/features/user-list/UsersPage.tsx',
     dialogTriggers: [
-      { id: 'create-user', label: /create|add|invite/i, waitForSelector: '[role="dialog"]' },
+      { id: 'create-user', label: /create|add|new|invite/i, waitForSelector: '[role="dialog"]' },
     ],
   },
 
@@ -643,7 +663,7 @@ export const ADMIN_PAGE_REGISTRY: PageAuditConfig[] = [
   },
 ];
 
-// ─── Platform Admin Pages (5 pages) ─────────────────────────────────────
+// ─── Platform Admin Pages (4 pages) ─────────────────────────────────────
 
 export const PLATFORM_PAGE_REGISTRY: PageAuditConfig[] = [
   {
@@ -660,27 +680,6 @@ export const PLATFORM_PAGE_REGISTRY: PageAuditConfig[] = [
       { id: 'modules', param: 'modules' },
     ],
     sourceFile: 'portal-app/settings/features/platform-settings/PlatformSettingsPage.tsx',
-  },
-  {
-    id: 'tenant-settings',
-    domain: 'admin',
-    url: '/portal/admin/tenant-settings',
-    authProfile: 'platform',
-    requiresData: false,
-    waitFor: '[role="tablist"]',
-    tabs: [
-      { id: 'branding', param: 'branding' },
-      { id: 'contact', param: 'contact' },
-      { id: 'regional', param: 'regional' },
-      { id: 'paymentGateways', param: 'paymentGateways' },
-      { id: 'shippingProviders', param: 'shippingProviders' },
-      { id: 'smtp', param: 'smtp' },
-      { id: 'emailTemplates', param: 'emailTemplates' },
-      { id: 'legalPages', param: 'legalPages' },
-      { id: 'modules', param: 'modules' },
-      { id: 'webhooks', param: 'webhooks' },
-    ],
-    sourceFile: 'portal-app/settings/features/tenant-settings/TenantSettingsPage.tsx',
   },
   {
     id: 'tenants',

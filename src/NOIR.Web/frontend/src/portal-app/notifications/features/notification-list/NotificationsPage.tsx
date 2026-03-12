@@ -39,8 +39,8 @@ export const NotificationsPage = () => {
 
       {/* Live indicator */}
       {connectionState === 'connected' && (
-        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-          <span className="size-2 rounded-full bg-green-600 dark:bg-green-400 animate-pulse" />
+        <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <span className="size-2 rounded-full bg-green-700 dark:bg-green-400 animate-pulse" />
           {t('notifications.live')}
         </div>
       )}

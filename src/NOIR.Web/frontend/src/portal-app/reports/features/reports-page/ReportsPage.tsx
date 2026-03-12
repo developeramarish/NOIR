@@ -101,9 +101,9 @@ const MetricCard = ({
           )}
           {trendValue && (
             <div className="flex items-center gap-1 text-xs">
-              {trend === 'up' && <TrendingUp className="h-3 w-3 text-green-600" />}
-              {trend === 'down' && <TrendingDown className="h-3 w-3 text-red-600" />}
-              <span className={trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-muted-foreground'}>
+              {trend === 'up' && <TrendingUp className="h-3 w-3 text-green-700" />}
+              {trend === 'down' && <TrendingDown className="h-3 w-3 text-red-700" />}
+              <span className={trend === 'up' ? 'text-green-700' : trend === 'down' ? 'text-red-700' : 'text-muted-foreground'}>
                 {trendValue}
               </span>
             </div>
@@ -773,7 +773,7 @@ export const ReportsPage = () => {
                     title={t('reports.churnRate', 'Churn Rate')}
                     value={`${((customerData?.churnRate ?? 0) * 100).toFixed(1)}%`}
                     icon={Users}
-                    iconColor={(customerData?.churnRate ?? 0) > 0.1 ? 'text-red-600' : 'text-green-600'}
+                    iconColor={(customerData?.churnRate ?? 0) > 0.1 ? 'text-red-700' : 'text-green-700'}
                     iconBg={(customerData?.churnRate ?? 0) > 0.1 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}
                   />
                 </>

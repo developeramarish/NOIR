@@ -148,7 +148,7 @@ const ProjectCard = ({
             {project.name}
           </h3>
           {project.slug && (
-            <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5 tracking-wide">
+            <p className="text-[10px] text-muted-foreground font-mono mt-0.5 tracking-wide">
               {project.slug.toUpperCase()}
             </p>
           )}
@@ -346,7 +346,7 @@ export const ProjectsPage = () => {
         </Select>
 
         <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setPage(1) }}>
-          <SelectTrigger className="w-[140px] h-8 text-sm cursor-pointer">
+          <SelectTrigger className="w-[140px] h-8 text-sm cursor-pointer" aria-label={t('pm.sortBy', { defaultValue: 'Sort by' })}>
             <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
             <SelectValue />
           </SelectTrigger>

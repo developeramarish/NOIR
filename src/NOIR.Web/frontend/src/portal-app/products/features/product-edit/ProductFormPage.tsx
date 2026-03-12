@@ -1032,6 +1032,8 @@ export const ProductFormPage = () => {
                             img { max-width: 100%; height: auto; }
                             ul, ol { margin: 0.75em 0; padding-left: 1.5em; }
                           `,
+                          statusbar: false,
+                          resize: false,
                         }}
                       />
                     )}

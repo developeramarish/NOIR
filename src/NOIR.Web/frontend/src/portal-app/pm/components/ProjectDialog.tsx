@@ -351,6 +351,7 @@ export const ProjectDialog = ({ open, onOpenChange, project }: ProjectDialogProp
                             value={field.value || '#6366f1'}
                             onChange={(e) => field.onChange(e.target.value)}
                             className="h-8 w-8 rounded cursor-pointer border border-input bg-transparent p-0.5"
+                            aria-label={t('pm.colorPicker', { defaultValue: 'Project color picker' })}
                           />
                           <input
                             type="text"
@@ -359,6 +360,7 @@ export const ProjectDialog = ({ open, onOpenChange, project }: ProjectDialogProp
                             placeholder="#6366f1"
                             maxLength={7}
                             className="flex-1 text-sm bg-background border border-input rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring font-mono"
+                            aria-label={t('pm.colorHex', { defaultValue: 'Project color hex code' })}
                           />
                         </div>
                       </div>

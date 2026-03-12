@@ -4,7 +4,7 @@ import { AUDIT_RULES } from './rules';
 import { IssueCollector } from './issue-collector';
 import { ScreenshotManager } from './screenshot-manager';
 import { runAxeScan } from './axe-scanner';
-import { lockEnvironment, attachListeners } from './environment-setup';
+import { lockEnvironment, attachListeners, waitForPageReady } from './environment-setup';
 import { saveRunnerIssues, generateMergedReport, cleanStaleIssues } from './report-generator';
 
 const collector = new IssueCollector();
@@ -24,10 +24,10 @@ for (const pageConfig of PLATFORM_PAGE_REGISTRY) {
       try {
         // Navigate
         await page.goto(pageConfig.url);
-        await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
-        if (pageConfig.waitFor) {
-          await page.waitForSelector(pageConfig.waitFor, { timeout: 10_000 }).catch(() => {});
-        }
+        await waitForPageReady(page, listeners, pageConfig.waitFor, {
+          apiIdleTimeoutMs: 8_000,
+          selectorTimeoutMs: 8_000,
+        });
 
         // Screenshot
         const screenshotPath = await screenshots.takePage(page, pageConfig.id);
@@ -98,7 +98,10 @@ for (const pageConfig of PLATFORM_PAGE_REGISTRY) {
             const tabListeners = attachListeners(page);
             try {
               await page.goto(`${pageConfig.url}?tab=${tab.param}`);
-              await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
+              await waitForPageReady(page, tabListeners, pageConfig.waitFor, {
+                apiIdleTimeoutMs: 4_000,
+                selectorTimeoutMs: 6_000,
+              });
 
               const tabScreenshot = await screenshots.takeTab(page, pageConfig.id, tab.id);
               const tabPageId = `${pageConfig.id}/tab:${tab.id}`;

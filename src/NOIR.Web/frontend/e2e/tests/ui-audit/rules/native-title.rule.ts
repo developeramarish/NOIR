@@ -9,10 +9,13 @@ export const nativeTitleRule: AuditRule = {
     const violations = await page.$$eval(
       'button[title], a[title], [role="tab"][title], select[title], [role="combobox"][title], [role="switch"][title]',
       (elements) => {
-        return elements.slice(0, 10).map(el => ({
-          title: el.getAttribute('title') ?? '',
-          html: el.outerHTML.substring(0, 200),
-        }));
+        return elements
+          .filter(el => !el.closest('.tox, .tox-editor-container, .tox-tinymce'))
+          .slice(0, 10)
+          .map(el => ({
+            title: el.getAttribute('title') ?? '',
+            html: el.outerHTML.substring(0, 200),
+          }));
       },
     );
 

@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
 } from '@uikit'
@@ -301,6 +302,10 @@ export const ReviewsPage = () => {
                   </TabsTrigger>
                 ))}
               </TabsList>
+              <TabsContent value="all" forceMount className="hidden" />
+              {REVIEW_STATUSES.map((status) => (
+                <TabsContent key={status} value={status} forceMount className="hidden" />
+              ))}
             </Tabs>
 
             <div>

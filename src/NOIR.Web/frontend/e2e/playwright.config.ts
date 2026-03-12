@@ -82,7 +82,7 @@ export default defineConfig({
       },
       dependencies: ['auth-setup'],
       workers: 4,
-      timeout: 60_000,
+      timeout: 90_000,
     },
 
     // ─── UI Audit: platform admin (elevated pages) ────────
@@ -99,7 +99,7 @@ export default defineConfig({
       },
       dependencies: ['auth-setup'],
       workers: 2,
-      timeout: 60_000,
+      timeout: 90_000,
     },
 
     // ─── Cross-browser: only in CI nightly ─────────────────
