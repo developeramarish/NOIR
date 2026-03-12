@@ -129,19 +129,19 @@ describe('getStrengthColor', () => {
 })
 
 describe('getStrengthTextColor', () => {
-  it('returns text-red-600 for weak', () => {
-    expect(getStrengthTextColor('weak')).toBe('text-red-600')
+  it('returns text-red-700 for weak', () => {
+    expect(getStrengthTextColor('weak')).toBe('text-red-700')
   })
 
-  it('returns text-orange-600 for fair', () => {
-    expect(getStrengthTextColor('fair')).toBe('text-orange-600')
+  it('returns text-orange-700 for fair', () => {
+    expect(getStrengthTextColor('fair')).toBe('text-orange-700')
   })
 
-  it('returns text-yellow-600 for good', () => {
-    expect(getStrengthTextColor('good')).toBe('text-yellow-600')
+  it('returns text-yellow-700 for good', () => {
+    expect(getStrengthTextColor('good')).toBe('text-yellow-700')
   })
 
-  it('returns text-green-600 for strong', () => {
-    expect(getStrengthTextColor('strong')).toBe('text-green-600')
+  it('returns text-green-700 for strong', () => {
+    expect(getStrengthTextColor('strong')).toBe('text-green-700')
   })
 })
