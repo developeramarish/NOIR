@@ -16,7 +16,7 @@ import {
 /**
  * Sticky actions dropdown column.
  * Always placed as the FIRST column (leftmost, sticky).
- * Size: 44px — do not make it hideable or sortable.
+ * Size: 44px fixed — do not make it hideable or sortable.
  *
  * @example
  * createActionsColumn<OrderSummaryDto>((row) => (
@@ -31,6 +31,8 @@ export const createActionsColumn = <TData extends RowData>(
 ): ColumnDef<TData, unknown> => ({
   id: 'actions',
   size: 44,
+  minSize: 44,
+  maxSize: 44,
   enableSorting: false,
   enableHiding: false,
   meta: { sticky: 'left' as const },
@@ -57,11 +59,13 @@ export const createActionsColumn = <TData extends RowData>(
 /**
  * Select-all checkbox column.
  * Always placed as the second column (after actions).
- * Size: 40px — do not make it hideable.
+ * Size: 40px fixed — do not make it hideable.
  */
 export const createSelectColumn = <TData extends RowData>(): ColumnDef<TData, unknown> => ({
   id: 'select',
   size: 40,
+  minSize: 40,
+  maxSize: 40,
   enableSorting: false,
   enableHiding: false,
   header: ({ table }) => (

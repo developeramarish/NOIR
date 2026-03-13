@@ -9,7 +9,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-x-auto overflow-y-hidden" tabIndex={0} role="region" aria-label="Scrollable table">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom", className)}
+      className={cn("w-full caption-bottom table-fixed", className)}
       style={{ fontSize: 'var(--density-font-size)', ...style }}
       {...props}
     />

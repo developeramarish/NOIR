@@ -128,6 +128,12 @@ export const useServerTable = <TData extends RowData>({
     getRowId,
     enableRowSelection,
 
+    // Respect column size definitions (don't auto-calculate)
+    defaultColumn: {
+      minSize: 40,
+      maxSize: 800,
+    },
+
     state: {
       pagination: state.pagination,
       sorting: state.sorting ?? [],

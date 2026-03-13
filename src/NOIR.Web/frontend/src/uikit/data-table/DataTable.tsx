@@ -53,25 +53,62 @@ export const DataTable = <TData extends RowData>({
   const columns = table.getAllColumns()
   const visibleColumnCount = table.getVisibleLeafColumns().length
 
-  // CSS variable technique for column sizing — updates vars only, no React re-renders during resize
+  // CSS variable technique for column sizing
   const columnSizeVars = Object.fromEntries(
-    columns.map((col) => [`--col-${col.id}-size`, `${col.getSize()}px`]),
+    columns.map((col) => {
+      const minSize = col.columnDef.minSize
+      const maxSize = col.columnDef.maxSize
+      const isFixed = minSize !== undefined && maxSize !== undefined && minSize === maxSize
+
+      if (isFixed) {
+        // Fixed columns: explicit pixel width
+        return [`--col-${col.id}-size`, `${minSize}px`]
+      } else {
+        // Flexible columns: use defined size or auto
+        const definedSize = col.columnDef.size
+        const size = definedSize ?? col.getSize()
+        return [`--col-${col.id}-size`, size ? `${size}px` : 'auto']
+      }
+    }),
   ) as React.CSSProperties
 
   return (
     <div
       className={cn(
-        'transition-opacity duration-150',
+        'rounded-xl border border-border/50 overflow-hidden transition-opacity duration-150',
         isStale && 'opacity-60 pointer-events-none',
         className,
       )}
     >
       <UITable style={columnSizeVars}>
+        {/* Colgroup ensures fixed column widths are respected in table-layout: fixed */}
+        <colgroup>
+          {table.getAllLeafColumns().map((column) => {
+            const minSize = column.columnDef.minSize
+            const maxSize = column.columnDef.maxSize
+            const isFixed = minSize !== undefined && maxSize !== undefined && minSize === maxSize
+
+            return (
+              <col
+                key={column.id}
+                style={{
+                  width: isFixed ? `${minSize}px` : '100%',
+                  minWidth: isFixed ? `${minSize}px` : undefined,
+                  maxWidth: isFixed ? `${maxSize}px` : undefined,
+                }}
+              />
+            )
+          })}
+        </colgroup>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 const isSticky = header.column.columnDef.meta?.sticky === 'left'
+                const minSize = header.column.columnDef.minSize
+                const maxSize = header.column.columnDef.maxSize
+                const isFixed = minSize !== undefined && maxSize !== undefined && minSize === maxSize
+
                 return (
                   <TableHead
                     key={header.id}
@@ -79,8 +116,15 @@ export const DataTable = <TData extends RowData>({
                     className={cn(
                       header.column.columnDef.meta?.headerClassName,
                       isSticky && 'sticky left-0 z-10 bg-background',
+                      isFixed && 'w-[var(--col-fixed-size)]',
                     )}
-                    style={{ width: `var(--col-${header.column.id}-size)` }}
+                    style={{
+                      width: isFixed ? `${minSize}px` : `var(--col-${header.column.id}-size)`,
+                      minWidth: isFixed ? `${minSize}px` : `var(--col-${header.column.id}-min-size, auto)`,
+                      maxWidth: isFixed ? `${maxSize}px` : `var(--col-${header.column.id}-max-size, auto)`,
+                      // For fixed columns, also set a CSS variable for potential Tailwind use
+                      ...(isFixed && { '--col-fixed-size': `${minSize}px` } as React.CSSProperties),
+                    }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -140,6 +184,10 @@ export const DataTable = <TData extends RowData>({
               >
                 {row.getVisibleCells().map((cell) => {
                   const isSticky = cell.column.columnDef.meta?.sticky === 'left'
+                  const minSize = cell.column.columnDef.minSize
+                  const maxSize = cell.column.columnDef.maxSize
+                  const isFixed = minSize !== undefined && maxSize !== undefined && minSize === maxSize
+
                   return (
                     <TableCell
                       key={cell.id}
@@ -149,7 +197,11 @@ export const DataTable = <TData extends RowData>({
                         cell.column.columnDef.meta?.align === 'right' && 'text-right',
                         isSticky && 'sticky left-0 z-10 bg-background',
                       )}
-                      style={{ width: `var(--col-${cell.column.id}-size)` }}
+                      style={{
+                        width: isFixed ? `${minSize}px` : `var(--col-${cell.column.id}-size)`,
+                        minWidth: isFixed ? `${minSize}px` : `var(--col-${cell.column.id}-min-size, auto)`,
+                        maxWidth: isFixed ? `${maxSize}px` : `var(--col-${cell.column.id}-max-size, auto)`,
+                      }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
