@@ -53,6 +53,12 @@ export const DataTable = <TData extends RowData>({
   const columns = table.getAllColumns()
   const visibleColumnCount = table.getVisibleLeafColumns().length
 
+  // Calculate minimum table width to force horizontal scroll when needed
+  const minTableWidth = columns.reduce((acc, col) => {
+    const minSize = col.columnDef.minSize
+    return acc + (minSize ?? col.columnDef.size ?? 100)
+  }, 0)
+
   // CSS variable technique for column sizing
   const columnSizeVars = Object.fromEntries(
     columns.map((col) => {
@@ -80,7 +86,7 @@ export const DataTable = <TData extends RowData>({
         className,
       )}
     >
-      <UITable style={columnSizeVars}>
+      <UITable style={{ ...columnSizeVars, minWidth: `${minTableWidth}px` }}>
         {/* Colgroup ensures fixed column widths are respected in table-layout: fixed */}
         <colgroup>
           {table.getAllLeafColumns().map((column) => {
@@ -92,9 +98,8 @@ export const DataTable = <TData extends RowData>({
               <col
                 key={column.id}
                 style={{
-                  width: isFixed ? `${minSize}px` : '100%',
-                  minWidth: isFixed ? `${minSize}px` : undefined,
-                  maxWidth: isFixed ? `${maxSize}px` : undefined,
+                  width: isFixed ? `${minSize}px` : `${column.columnDef.size ?? 150}px`,
+                  minWidth: isFixed ? `${minSize}px` : `${column.columnDef.minSize ?? column.columnDef.size ?? 100}px`,
                 }}
               />
             )
@@ -115,6 +120,7 @@ export const DataTable = <TData extends RowData>({
                     colSpan={header.colSpan}
                     className={cn(
                       header.column.columnDef.meta?.headerClassName,
+                      header.column.columnDef.meta?.align === 'center' && 'text-center',
                       isSticky && 'sticky left-0 z-10 bg-background',
                       isFixed && 'w-[var(--col-fixed-size)]',
                     )}
@@ -128,7 +134,13 @@ export const DataTable = <TData extends RowData>({
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : header.column.columnDef.meta?.align === 'center' ? (
+                        <div className="flex h-full items-center justify-center py-[var(--density-cell-padding-y)] px-[var(--density-cell-padding-x)]">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </div>
+                      ) : (
+                        flexRender(header.column.columnDef.header, header.getContext())
+                      )}
                   </TableHead>
                 )
               })}
@@ -203,7 +215,13 @@ export const DataTable = <TData extends RowData>({
                         maxWidth: isFixed ? `${maxSize}px` : `var(--col-${cell.column.id}-max-size, auto)`,
                       }}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {cell.column.columnDef.meta?.align === 'center' ? (
+                        <div className="flex h-full items-center justify-center py-[var(--density-cell-padding-y)] px-[var(--density-cell-padding-x)]">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </div>
+                      ) : (
+                        flexRender(cell.column.columnDef.cell, cell.getContext())
+                      )}
                     </TableCell>
                   )
                 })}

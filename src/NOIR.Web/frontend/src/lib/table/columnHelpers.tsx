@@ -35,7 +35,7 @@ export const createActionsColumn = <TData extends RowData>(
   maxSize: 44,
   enableSorting: false,
   enableHiding: false,
-  meta: { sticky: 'left' as const },
+  meta: { sticky: 'left' as const, align: 'center' as const },
   cell: ({ row }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -68,6 +68,7 @@ export const createSelectColumn = <TData extends RowData>(): ColumnDef<TData, un
   maxSize: 40,
   enableSorting: false,
   enableHiding: false,
+  meta: { align: 'center' as const },
   header: ({ table }) => (
     <Checkbox
       checked={
