@@ -9,7 +9,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -239,11 +239,11 @@ export const PromotionsPage = () => {
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'promotions',
+    tableKey: 'promotions',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
@@ -295,7 +295,12 @@ export const PromotionsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('promotions.searchPlaceholder', 'Search promotions...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={statusFilter} onValueChange={handleStatusFilter}>
@@ -332,6 +337,7 @@ export const PromotionsPage = () => {
         <CardContent className="space-y-3">
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={openEditPromotion}

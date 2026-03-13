@@ -14,7 +14,7 @@ import {
   Users,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
@@ -22,7 +22,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
@@ -84,7 +84,6 @@ export const CustomersPage = () => {
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
   const [segmentFilter, setSegmentFilter] = useState<string>('all')
   const [tierFilter, setTierFilter] = useState<string>('all')
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [isBulkPending, startBulkTransition] = useTransition()
   const [isFilterPending, startFilterTransition] = useTransition()
 
@@ -126,18 +125,6 @@ export const CustomersPage = () => {
 
   const handleSegmentFilter = (value: string) => startFilterTransition(() => { setSegmentFilter(value); setPage(1) })
   const handleTierFilter = (value: string) => startFilterTransition(() => { setTierFilter(value); setPage(1) })
-
-  const selectedIds = useSelectedIds(rowSelection)
-  const selectedCount = selectedIds.length
-
-  const selectedInactiveCount = useMemo(
-    () => customers.filter(c => rowSelection[c.id] && !c.isActive).length,
-    [customers, rowSelection]
-  )
-  const selectedActiveCount = useMemo(
-    () => customers.filter(c => rowSelection[c.id] && c.isActive).length,
-    [customers, rowSelection]
-  )
 
   const columns = useMemo((): ColumnDef<CustomerSummaryDto, unknown>[] => [
     createActionsColumn<CustomerSummaryDto>((customer) => (
@@ -229,15 +216,14 @@ export const CustomersPage = () => {
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'customers',
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'customers',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -247,14 +233,26 @@ export const CustomersPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })
 
+  const currentRowSelection = table.getState().rowSelection
+  const selectedIds = useSelectedIds(currentRowSelection)
+  const selectedCount = selectedIds.length
+
+  const selectedInactiveCount = useMemo(
+    () => customers.filter(c => currentRowSelection[c.id] && !c.isActive).length,
+    [customers, currentRowSelection]
+  )
+  const selectedActiveCount = useMemo(
+    () => customers.filter(c => currentRowSelection[c.id] && c.isActive).length,
+    [customers, currentRowSelection]
+  )
+
   const onBulkActivate = () => {
     if (selectedCount === 0) return
-    const inactiveIds = customers.filter(c => rowSelection[c.id] && !c.isActive).map(c => c.id)
+    const inactiveIds = customers.filter(c => currentRowSelection[c.id] && !c.isActive).map(c => c.id)
     if (inactiveIds.length === 0) {
       toast.warning(t('customers.noInactiveSelected', 'No inactive customers selected'))
       return
@@ -276,7 +274,7 @@ export const CustomersPage = () => {
 
   const onBulkDeactivate = () => {
     if (selectedCount === 0) return
-    const activeIds = customers.filter(c => rowSelection[c.id] && c.isActive).map(c => c.id)
+    const activeIds = customers.filter(c => currentRowSelection[c.id] && c.isActive).map(c => c.id)
     if (activeIds.length === 0) {
       toast.warning(t('customers.noActiveSelected', 'No active customers selected'))
       return
@@ -418,7 +416,12 @@ export const CustomersPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('customers.searchPlaceholder', 'Search customers...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={segmentFilter} onValueChange={handleSegmentFilter}>
@@ -494,6 +497,7 @@ export const CustomersPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={selectedCount === 0 ? (customer) => navigate(`/portal/ecommerce/customers/${customer.id}`) : undefined}

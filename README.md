@@ -39,7 +39,7 @@ NOIR is a production-ready foundation for building multi-tenant SaaS application
 
 ```mermaid
 flowchart TB
-    FE["🖥️ React 19 Frontend<br/>56 pages · 98 UIKit components · 50 hooks"]
+    FE["🖥️ React 19 Frontend<br/>56 pages · 98 UIKit components · 41 hooks"]
     WEB["⚡ Web Layer — ASP.NET Core 10<br/>53 endpoint groups · JWT · Multi-tenancy · SignalR + SSE · MCP Server"]
     APP["📋 Application Layer — CQRS via Wolverine<br/>Commands · Queries · Validators · Domain Events · Audit"]
     DOM["🏛️ Domain Layer<br/>Entities · Value Objects · Repository Interfaces · Specifications"]
@@ -62,7 +62,7 @@ NOIR/
 │       └── frontend/          # React 19 SPA
 │           ├── src/portal-app/ # Feature modules (56 pages)
 │           ├── src/uikit/      # 98 UI components + Storybook stories
-│           └── src/hooks/      # 50 custom hooks
+│           └── src/hooks/      # 41 custom hooks
 ├── tests/                     # 13,546 tests
 └── docs/                      # Architecture, patterns, module designs
 ```
@@ -92,6 +92,7 @@ NOIR/
 | 📧 | **Email** | Database-driven templates with Mustache interpolation, multi-tenant inheritance |
 | 📱 | **PWA** | Installable on all platforms, offline support, smart caching strategies |
 | 🤖 | **MCP Server** | 55 AI-callable tools + 6 prompts + 7 resources via Model Context Protocol (Streamable HTTP) |
+| 📊 | **Enterprise DataTable** | Drag-reorder columns, density toggle, pinning, resizing, settings persistence |
 | 🔍 | **UI/UX Audit** | Automated WCAG 2.1 AA compliance + 11 custom consistency rules, Playwright-powered |
 
 ### 🛒 E-commerce
@@ -269,6 +270,7 @@ Default credentials: `admin@noir.local` / `123qwe`
 
 - [Overview](docs/frontend/README.md)
 - [Architecture](docs/frontend/architecture.md)
+- [Hooks Reference](docs/frontend/hooks-reference.md)
 - [API Type Generation](docs/frontend/api-types.md)
 - [Localization](docs/frontend/localization-guide.md)
 
@@ -276,7 +278,7 @@ Default credentials: `admin@noir.local` / `123qwe`
 </tr>
 </table>
 
-**Module Designs:** [HR](docs/designs/module-hr.md) · [CRM](docs/designs/module-crm.md) · [PM](docs/designs/module-pm.md) · [Calendar](docs/designs/module-calendar.md)
+**Module Designs:** [HR](docs/designs/module-hr.md) · [CRM](docs/designs/module-crm.md) · [PM](docs/designs/module-pm.md) · [Calendar](docs/designs/module-calendar.md) · [Enterprise DataTable](docs/designs/enterprise-datatable-build-spec.md)
 
 ---
 

@@ -919,7 +919,7 @@ useLayoutEffect(() => {
 
 ## DataTable (TanStack Table) for List Pages
 
-**All paginated table list pages** MUST use TanStack Table via `DataTable`, `DataTableToolbar`, `DataTablePagination`, `useServerTable`, and `useTableParams`. This ensures consistent column visibility, sorting, and UX.
+**All paginated table list pages** MUST use TanStack Table via `DataTable`, `DataTableToolbar`, `DataTablePagination`, `useEnterpriseTable`, and `useTableParams`. This ensures consistent column visibility, sorting, enterprise features (density, pinning, drag-reorder, resize), and UX.
 
 **Reference rules:**
 - `.claude/rules/datatable-standard.md` — Column order, actions, visibility, image columns
@@ -937,14 +937,22 @@ const columns = useMemo(() => [
 
 const { params, searchInput, setSearchInput, isSearchStale, setFilter, ... } = useTableParams<Filters>({ defaultPageSize })
 const { data } = useQuery(params)
-const table = useServerTable({ data: data?.items ?? [], columns, rowCount: data?.totalCount ?? 0, columnVisibilityStorageKey: 'page-key', ... })
+const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
+  data: data?.items ?? [], columns, tableKey: 'page-key', rowCount: data?.totalCount ?? 0,
+  state: { pagination: { pageIndex: params.pageIndex, pageSize: params.pageSize }, sorting: params.sorting },
+  onPaginationChange, onSortingChange, enableRowSelection: true, getRowId: (row) => row.id,
+})
 
-<DataTableToolbar table={table} searchInput={...} onSearchChange={...} onResetColumnVisibility={table.resetColumnVisibility} filterSlot={...} />
-<DataTable table={table} isLoading={...} emptyState={<EmptyState ... />} />
+<DataTableToolbar table={table} searchInput={...} onSearchChange={...}
+  columnOrder={settings.columnOrder} onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+  isCustomized={isCustomized} onResetSettings={resetToDefault}
+  density={settings.density} onDensityChange={setDensity} filterSlot={...} />
+<DataTable table={table} density={settings.density} isLoading={...} emptyState={<EmptyState ... />} />
 <DataTablePagination table={table} />
 ```
 
 **Key points:**
+- `useEnterpriseTable` is the unified hook — manages both server-side state (pagination, sorting) and enterprise UI state (visibility, order, sizing, pinning, density) with localStorage persistence
 - Filter values: use `params.filters.role` (not `params.role`) — TypeScript `TableParams` nests filters
 - Image columns: use `FilePreviewTrigger` per `.claude/rules/image-preview-in-lists.md`
 - Post-migration: run UI audit — target 0 CRITICAL, 0 HIGH

@@ -2394,7 +2394,7 @@ dotnet test --collect:"XPlat Code Coverage"
 | Localization | `docs/frontend/localization-guide.md` | i18n setup |
 | Color Schema | `docs/frontend/COLOR_SCHEMA_GUIDE.md` | Color guidelines |
 | Design Standards | `docs/frontend/design-standards.md` | UI design standards |
-| Hooks Reference | `docs/frontend/hooks-reference.md` | 50 custom hooks guide |
+| Hooks Reference | `docs/frontend/hooks-reference.md` | 41 custom hooks guide |
 
 ### Architecture Decisions
 
@@ -2460,4 +2460,4 @@ docker-compose up -d  # Start SQL Server + MailHog
 
 ---
 
-*Updated: 2026-03-12 | Total Tests: 13,546 | Backend: 12,715 | Frontend: 831 | UIKit: 100 dirs, 98 stories | Hooks: 50 | Pages: 56 | Feature Modules: 35 | Endpoints: 53 groups | MCP Tools: 55*
+*Updated: 2026-03-13 | Total Tests: 13,546 | Backend: 12,715 | Frontend: 831 | UIKit: 100 dirs, 98 stories | Hooks: 41 | Pages: 56 | Feature Modules: 35 | Endpoints: 53 groups | MCP Tools: 55*

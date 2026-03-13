@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Eye, MessageSquare, ShieldCheck, Star, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlTab } from '@/hooks/useUrlTab'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
@@ -74,9 +74,6 @@ export const ReviewsPage = () => {
 
   // Table params (search, pagination, sorting)
   const { params, searchInput, setSearchInput, isSearchStale, setSorting, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
-
-  // Row selection
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   // Dialog state
   const [detailReviewId, setDetailReviewId] = useState<string | undefined>()
@@ -212,15 +209,15 @@ export const ReviewsPage = () => {
   ], [t, formatDateTime])
 
   // Table instance
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'reviews',
     rowCount: data?.totalCount ?? 0,
     enableRowSelection: true,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -230,12 +227,11 @@ export const ReviewsPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     getRowId: (row) => row.id,
   })
 
   // Derived selection state (after table)
-  const selectedIds = useSelectedIds(rowSelection)
+  const selectedIds = useSelectedIds(table.getState().rowSelection)
   const selectedCount = selectedIds.length
 
   // Handlers that depend on table
@@ -320,7 +316,12 @@ export const ReviewsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('reviews.searchPlaceholder', 'Search reviews...')}
               isSearchStale={isSearchStale || isFilterPending || isTabPending}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <Select value={ratingFilter} onValueChange={handleRatingFilter}>
                   <SelectTrigger className="w-[140px] h-9 cursor-pointer" aria-label={t('reviews.filterByRating', 'Filter rating')}>
@@ -370,6 +371,7 @@ export const ReviewsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending || isTabPending}
             onRowClick={selectedCount === 0 ? (review) => setDetailReviewId(review.id) : undefined}

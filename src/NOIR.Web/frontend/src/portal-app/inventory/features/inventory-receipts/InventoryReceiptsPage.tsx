@@ -14,7 +14,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -239,11 +239,11 @@ export const InventoryReceiptsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canWriteInventory, canManageInventory])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: receipts,
     columns,
+    tableKey: 'inventory-receipts',
     rowCount: receiptsResponse?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'inventory-receipts',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -283,7 +283,12 @@ export const InventoryReceiptsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('inventory.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={params.filters.type ?? 'all'} onValueChange={handleTypeFilter}>
@@ -321,6 +326,7 @@ export const InventoryReceiptsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={(receipt) => setSelectedReceiptId(receipt.id)}

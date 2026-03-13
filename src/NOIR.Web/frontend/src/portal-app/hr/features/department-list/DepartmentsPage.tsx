@@ -15,7 +15,7 @@ import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import {
@@ -216,11 +216,11 @@ export const DepartmentsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, flatDepartments])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: paginatedDepartments,
     columns,
+    tableKey: 'departments',
     rowCount: filteredDepartments.length,
-    columnVisibilityStorageKey: 'departments',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -275,7 +275,12 @@ export const DepartmentsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('hr.searchDepartments', 'Search departments...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
             />
           </div>
         </CardHeader>
@@ -309,6 +314,7 @@ export const DepartmentsPage = () => {
             <>
               <DataTable
                 table={table}
+                density={settings.density}
                 isLoading={loading}
                 isStale={isSearchStale}
                 onRowClick={openEditDepartment}

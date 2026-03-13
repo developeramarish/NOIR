@@ -1,6 +1,6 @@
 # NOIR - Claude Code Instructions
 
-> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.6 (2026-03-12).
+> For universal AI agent instructions, see [AGENTS.md](AGENTS.md). Version 3.7 (2026-03-13).
 
 ## SuperClaude Framework
 
@@ -255,7 +255,7 @@ src/NOIR.Web/             # Endpoints, Middleware, Program.cs
 - **Status badges**: `variant="outline"` + `getStatusBadgeClasses('green'|'gray'|'red'|...)` from `@/utils/statusBadge`. Never `variant="default"/"secondary"` for status.
 - **Empty states**: Use `<EmptyState icon={X} title={t('...')} description={t('...')} />` from `@uikit`. Never plain `<div className="text-center py-8 text-muted-foreground">`.
 - **Create buttons**: No `shadow-lg hover:shadow-xl`. Use `className="group transition-all duration-300"`.
-- **Table list pages**: MUST use DataTable (TanStack Table) — no custom tables. Card `gap-0` + CardHeader `pb-3` + CardContent `space-y-3`. Always show `CardDescription` with "Showing X of Y items". See `.claude/rules/table-list-standard.md`, `.claude/rules/datatable-standard.md`, `.claude/rules/datatable-migration.md`.
+- **Table list pages**: MUST use `useEnterpriseTable` + `DataTable` (TanStack Table) — no custom tables. Card `gap-0` + CardHeader `pb-3` + CardContent `space-y-3`. Always show `CardDescription` with "Showing X of Y items". See `.claude/rules/table-list-standard.md`, `.claude/rules/datatable-standard.md`.
 - **Form spacing**: `space-y-4` in dialog bodies. Never `space-y-5`.
 - **No gradient buttons**: Never use `bg-gradient-to-r` on standard action buttons. Use default Button variants.
 
@@ -271,7 +271,7 @@ src/NOIR.Web/             # Endpoints, Middleware, Program.cs
 
 ### Patterns (Reference)
 
-For TanStack Query hooks, React 19 performance patterns (useDeferredValue, useTransition, optimistic mutations), and UI standardization patterns, see [docs/frontend/architecture.md](docs/frontend/architecture.md). Check existing code per Rule 1.
+For TanStack Query hooks, `useEnterpriseTable` (unified table hook), React 19 performance patterns (useDeferredValue, useTransition, optimistic mutations), and UI standardization patterns, see [docs/frontend/architecture.md](docs/frontend/architecture.md). Hook reference: [docs/frontend/hooks-reference.md](docs/frontend/hooks-reference.md). Check existing code per Rule 1.
 
 ---
 
@@ -335,6 +335,7 @@ cd src/NOIR.Web/frontend && pnpm build-storybook  # Build check
 | **Backend Patterns** | `docs/backend/patterns/` |
 | **MCP Server** | `docs/backend/patterns/mcp-server.md` |
 | **Frontend Guide** | `docs/frontend/` |
+| **Hooks Reference** | `docs/frontend/hooks-reference.md` (41 hooks) |
 | **Architecture Decisions** | `docs/decisions/` |
 | **Module Designs** | `docs/designs/` (HR, CRM, PM, Calendar) |
 | **Roadmap** | `docs/roadmap.md` |
@@ -348,4 +349,4 @@ Research reports → `docs/backend/research/`.
 
 ---
 
-> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.6 (2026-03-12).
+> Changelog: [CHANGELOG.md](CHANGELOG.md). Current version: 3.7 (2026-03-13).

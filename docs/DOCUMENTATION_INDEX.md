@@ -2,7 +2,7 @@
 
 > Your guide to navigating all NOIR documentation.
 
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-13
 
 ---
 
@@ -92,7 +92,7 @@
 | [localization-guide.md](frontend/localization-guide.md) | i18n management |
 | [COLOR_SCHEMA_GUIDE.md](frontend/COLOR_SCHEMA_GUIDE.md) | Color system |
 | [design-standards.md](frontend/design-standards.md) | Design standards and guidelines |
-| [hooks-reference.md](frontend/hooks-reference.md) | 50 custom React hooks reference |
+| [hooks-reference.md](frontend/hooks-reference.md) | 41 custom React hooks reference |
 
 ---
 
@@ -141,6 +141,12 @@
 | [module-pm.md](designs/module-pm.md) | Project Management module design | Implemented |
 | [module-calendar.md](designs/module-calendar.md) | Calendar module design | Ready |
 
+### Platform Designs
+
+| Document | Purpose | Status |
+|----------|--------|--------|
+| [enterprise-datatable-build-spec.md](designs/enterprise-datatable-build-spec.md) | Enterprise DataTable build specification | Phase 1-2 Complete |
+
 ---
 
 ## Roadmap
@@ -164,7 +170,7 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Docs** | 55 |
+| **Total Docs** | 56 |
 | **Backend Patterns** | 21 |
 | **Backend Architecture** | 2 |
 | **Backend Research** | 5 |
@@ -172,10 +178,11 @@
 | **Testing Docs** | 1 |
 | **ADRs** | 3 |
 | **Module Designs** | 4 |
+| **Platform Designs** | 1 |
 | **Backend Tests** | 12,715 |
 | **Frontend Tests** | 831 (154 unit + 677 Storybook) |
 | **Total Tests** | 13,546 |
 
 ---
 
-**Version:** 5.2 (Updated 2026-03-12 — Removed 2 obsolete frontend docs, updated all counts)
+**Version:** 5.3 (Updated 2026-03-13 — Added Enterprise DataTable design doc, corrected hook count 50→41)

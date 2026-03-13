@@ -18,7 +18,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -199,11 +199,11 @@ export const ContactsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canUpdate, canDelete, showActions])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: contacts,
     columns,
+    tableKey: 'crm-contacts',
     rowCount: totalCount,
-    columnVisibilityStorageKey: 'crm-contacts',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -249,7 +249,12 @@ export const ContactsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('crm.contacts.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <Select value={params.filters.source ?? 'all'} onValueChange={handleSourceFilter}>
                   <SelectTrigger className="w-[140px] h-9 cursor-pointer" aria-label={t('crm.contacts.filterBySource')}>
@@ -275,6 +280,7 @@ export const ContactsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={handleViewContact}

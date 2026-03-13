@@ -2,7 +2,7 @@
 
 > **Start Here:** [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 
-**Last Updated:** 2026-03-01
+**Last Updated:** 2026-03-13
 
 ## Core Documentation
 
@@ -30,9 +30,9 @@ docs/
 │   ├── API_INDEX.md                 # API documentation
 │   └── ARCHITECTURE.md              # Architecture overview
 │
-├── backend/                          # .NET backend (18 files)
+├── backend/                          # .NET backend (28 files)
 │   ├── README.md                    # Backend overview
-│   ├── patterns/ (11 files)         # Implementation patterns
+│   ├── patterns/ (21 files)         # Implementation patterns
 │   │   ├── repository-specification.md
 │   │   ├── di-auto-registration.md
 │   │   ├── entity-configuration.md
@@ -43,7 +43,17 @@ docs/
 │   │   ├── jwt-refresh-token.md
 │   │   ├── technical-checklist.md
 │   │   ├── inventory-receipt-pattern.md
-│   │   └── attribute-category-inheritance.md
+│   │   ├── attribute-category-inheritance.md
+│   │   ├── signalr-real-time.md
+│   │   ├── webhook-system.md
+│   │   ├── order-lifecycle.md
+│   │   ├── lead-pipeline-state-machine.md
+│   │   ├── code-generation.md
+│   │   ├── caching-strategy.md
+│   │   ├── middleware-interceptors.md
+│   │   ├── sse-background-jobs.md
+│   │   ├── excel-import-export.md
+│   │   └── mcp-server.md
 │   ├── architecture/ (1 file)
 │   │   └── tenant-id-interceptor.md
 │   └── research/ (5 files)          # Research documents
@@ -68,11 +78,12 @@ docs/
 │   ├── 002-frontend-ui-stack.md
 │   └── 003-vertical-slice-cqrs.md
 │
-├── designs/ (4 files)                # ERP module designs
+├── designs/ (5 files)                # Module & platform designs
 │   ├── module-hr.md                  # HR (Implemented)
 │   ├── module-crm.md                 # CRM (Implemented)
 │   ├── module-pm.md                  # PM (Implemented)
-│   └── module-calendar.md            # Calendar (Ready)
+│   ├── module-calendar.md            # Calendar (Ready)
+│   └── enterprise-datatable-build-spec.md  # Enterprise DataTable (Phase 1-2 Complete)
 │
 ├── roadmap.md                        # Product roadmap (Now/Next/Later)
 │
@@ -83,7 +94,7 @@ docs/
     └── README.md
 ```
 
-**Total: 45 documentation files**
+**Total: 55 documentation files**
 
 ## Quick Links
 

@@ -8,7 +8,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Badge,
@@ -160,11 +160,11 @@ export const PaymentsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: payments,
     columns,
+    tableKey: 'payments',
     rowCount: paymentsResponse?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'payments',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -213,7 +213,12 @@ export const PaymentsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('payments.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={params.filters.status ?? 'all'} onValueChange={handleStatusFilter}>
@@ -256,6 +261,7 @@ export const PaymentsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={handleViewPayment}

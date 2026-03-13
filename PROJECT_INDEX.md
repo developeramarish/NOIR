@@ -27,18 +27,18 @@ src/
     frontend/           # React 19 SPA
       src/portal-app/   # 24 feature modules
       src/uikit/        # 98 components + stories (@uikit alias)
-      src/hooks/        # 50 custom hooks
+      src/hooks/        # 41 custom hooks
       src/services/     # 40+ API services (auto-generated)
       public/locales/   # i18n: EN + VI
 tests/
   NOIR.Domain.UnitTests/       # 2,971 tests
   NOIR.Application.UnitTests/  # 8,557 tests
-  NOIR.IntegrationTests/       # 1,112 tests
-  NOIR.ArchitectureTests/      # 45 tests
+  NOIR.IntegrationTests/       # 1,141 tests
+  NOIR.ArchitectureTests/      # 46 tests
 docs/
   backend/patterns/    # 9+ backend patterns
   frontend/            # Design standards, architecture guide
-  designs/             # Module design specs (HR, CRM, PM, Calendar)
+  designs/             # Module design specs (HR, CRM, PM, Calendar, Enterprise DataTable)
   decisions/           # ADRs
 ```
 

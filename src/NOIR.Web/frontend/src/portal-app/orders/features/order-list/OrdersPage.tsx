@@ -10,13 +10,13 @@ import {
   XCircle,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
@@ -70,7 +70,6 @@ export const OrdersPage = () => {
   usePageContext('Orders')
 
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [showBulkCancelConfirm, setShowBulkCancelConfirm] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [isBulkPending, startBulkTransition] = useTransition()
@@ -106,18 +105,6 @@ export const OrdersPage = () => {
   const bulkCancelMutation = useBulkCancelOrders()
 
   const handleStatusFilter = (value: string) => startFilterTransition(() => { setStatusFilter(value); setPage(1) })
-
-  const selectedIds = useSelectedIds(rowSelection)
-  const selectedCount = selectedIds.length
-
-  const selectedPendingCount = useMemo(
-    () => orders.filter(o => rowSelection[o.id] && o.status === 'Pending').length,
-    [orders, rowSelection]
-  )
-  const selectedCancellableCount = useMemo(
-    () => orders.filter(o => rowSelection[o.id] && CANCELLABLE_STATUSES.includes(o.status)).length,
-    [orders, rowSelection]
-  )
 
   const columns = useMemo((): ColumnDef<OrderSummaryDto, unknown>[] => [
     createActionsColumn<OrderSummaryDto>((order) => (
@@ -182,15 +169,14 @@ export const OrdersPage = () => {
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'orders',
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'orders',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -200,14 +186,26 @@ export const OrdersPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: canManageOrders,
     getRowId: (row) => row.id,
   })
 
+  const currentRowSelection = table.getState().rowSelection
+  const selectedIds = useSelectedIds(currentRowSelection)
+  const selectedCount = selectedIds.length
+
+  const selectedPendingCount = useMemo(
+    () => orders.filter(o => currentRowSelection[o.id] && o.status === 'Pending').length,
+    [orders, currentRowSelection]
+  )
+  const selectedCancellableCount = useMemo(
+    () => orders.filter(o => currentRowSelection[o.id] && CANCELLABLE_STATUSES.includes(o.status)).length,
+    [orders, currentRowSelection]
+  )
+
   const onBulkConfirm = () => {
     if (selectedCount === 0) return
-    const pendingIds = orders.filter(o => rowSelection[o.id] && o.status === 'Pending').map(o => o.id)
+    const pendingIds = orders.filter(o => currentRowSelection[o.id] && o.status === 'Pending').map(o => o.id)
     if (pendingIds.length === 0) {
       toast.warning(t('orders.noPendingOrdersSelected', 'No pending orders selected'))
       return
@@ -237,7 +235,7 @@ export const OrdersPage = () => {
   }
 
   const handleBulkCancelConfirm = () => {
-    const cancellableIds = orders.filter(o => rowSelection[o.id] && CANCELLABLE_STATUSES.includes(o.status)).map(o => o.id)
+    const cancellableIds = orders.filter(o => currentRowSelection[o.id] && CANCELLABLE_STATUSES.includes(o.status)).map(o => o.id)
     startBulkTransition(async () => {
       try {
         const result = await bulkCancelMutation.mutateAsync({ ids: cancellableIds, reason: cancelReason || undefined })
@@ -298,7 +296,12 @@ export const OrdersPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('orders.searchPlaceholder', 'Search by email...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <Select value={statusFilter} onValueChange={handleStatusFilter}>
                   <SelectTrigger className="w-[140px] h-9 cursor-pointer" aria-label={t('orders.filterByStatus', 'Filter by status')}>
@@ -349,6 +352,7 @@ export const OrdersPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={selectedCount === 0 ? (order) => navigate(`/portal/ecommerce/orders/${order.id}`) : undefined}

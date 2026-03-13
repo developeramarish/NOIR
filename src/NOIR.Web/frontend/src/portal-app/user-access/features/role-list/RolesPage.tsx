@@ -2,14 +2,14 @@ import { useMemo, useState, useTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Shield, Plus, Key, Edit, Trash2 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -57,7 +57,6 @@ export const RolesPage = () => {
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-role' })
   const [roleToDelete, setRoleToDelete] = useState<RoleListItem | null>(null)
   const [roleForPermissions, setRoleForPermissions] = useState<RoleListItem | null>(null)
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [isFilterPendingTransition, startFilterTransition] = useTransition()
 
@@ -190,14 +189,14 @@ export const RolesPage = () => {
     return items.filter((r) => typeFilter === 'system' ? r.isSystemRole : !r.isSystemRole)
   }, [data?.items, typeFilter])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'roles',
     rowCount: data?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -207,7 +206,6 @@ export const RolesPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     getRowId: (row) => row.id,
   })
 
@@ -247,7 +245,12 @@ export const RolesPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('roles.searchPlaceholder', 'Search roles...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <Select value={typeFilter} onValueChange={handleTypeFilter}>
                   <SelectTrigger className="w-[140px] h-9 cursor-pointer" aria-label={t('roles.filterByType', 'Filter by type')}>
@@ -266,6 +269,7 @@ export const RolesPage = () => {
         <CardContent className="space-y-3">
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending || isFilterPendingTransition}
             onRowClick={canUpdate ? openEditRole : undefined}

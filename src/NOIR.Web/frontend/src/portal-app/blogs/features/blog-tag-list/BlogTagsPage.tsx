@@ -9,7 +9,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Badge,
@@ -109,9 +109,10 @@ export const BlogTagsPage = () => {
 
   const tableData = useMemo(() => data, [data])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'blog-tags',
     rowCount: data.length,
     state: {
       pagination: { pageIndex: 0, pageSize: 1000 },
@@ -155,13 +156,19 @@ export const BlogTagsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('blogTags.searchPlaceholder', 'Search tags...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
             />
           </div>
         </CardHeader>
         <CardContent>
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale}
             onRowClick={openEditTag}

@@ -268,10 +268,10 @@
 
 /*
  * Content Density System
- * Three modes: compact (power users), comfortable (default), spacious (accessibility)
- * Applied via data-density attribute on <html> element
+ * Three modes: compact (32px rows), normal (44px rows), comfortable (56px rows)
+ * Applied via data-density attribute on DataTable container
  */
-:root, [data-density="comfortable"] {
+:root, [data-density="normal"] {
   --density-row-height: 44px;
   --density-cell-padding-y: 8px;
   --density-cell-padding-x: 12px;
@@ -280,11 +280,19 @@
 }
 
 [data-density="compact"] {
-  --density-row-height: 36px;
+  --density-row-height: 32px;
   --density-cell-padding-y: 4px;
   --density-cell-padding-x: 8px;
   --density-font-size: 0.8125rem;
-  --density-header-height: 40px;
+  --density-header-height: 36px;
+}
+
+[data-density="comfortable"] {
+  --density-row-height: 56px;
+  --density-cell-padding-y: 14px;
+  --density-cell-padding-x: 16px;
+  --density-font-size: 0.875rem;
+  --density-header-height: 60px;
 }
 
 [data-density="spacious"] {

@@ -22,7 +22,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Badge,
@@ -99,7 +99,6 @@ export const EmployeesPage = () => {
   const navigate = useNavigate()
   usePageContext('Employees')
 
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [employeeToDeactivate, setEmployeeToDeactivate] = useState<EmployeeListDto | null>(null)
   const [bulkTagDialogOpen, setBulkTagDialogOpen] = useState(false)
   const [bulkDeptDialogOpen, setBulkDeptDialogOpen] = useState(false)
@@ -132,15 +131,10 @@ export const EmployeesPage = () => {
   const error = queryError?.message ?? null
 
   const employees = employeesResponse?.items ?? []
-  const selectedIds = useSelectedIds(rowSelection)
-
-  const handleCollectionUpdate = () => {
-    if (selectedIds.length === 0) refetch()
-  }
 
   const { isReconnecting } = useEntityUpdateSignal({
     entityType: 'Employee',
-    onCollectionUpdate: handleCollectionUpdate,
+    onCollectionUpdate: refetch,
   })
   const { editItem: employeeToEdit, openEdit: openEditEmployee, closeEdit: closeEditEmployee } = useUrlEditDialog<EmployeeListDto>(employees)
 
@@ -356,15 +350,14 @@ export const EmployeesPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: employees,
     columns,
+    tableKey: 'employees',
     rowCount: employeesResponse?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'employees',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -373,10 +366,11 @@ export const EmployeesPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })
+
+  const selectedIds = useSelectedIds(table.getState().rowSelection)
 
   return (
     <div className="space-y-6">
@@ -419,7 +413,12 @@ export const EmployeesPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('hr.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={params.filters.departmentId ?? 'all'} onValueChange={setDepartmentFilter}>
@@ -486,6 +485,7 @@ export const EmployeesPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={handleViewEmployee}

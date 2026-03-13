@@ -24,7 +24,7 @@ const colVis = useColumnVisibility('page-key', COLUMNS)
 </Table>
 ```
 
-### After (DataTable)
+### After (DataTable + useEnterpriseTable)
 
 ```tsx
 const ch = createColumnHelper<ItemType>()
@@ -36,10 +36,17 @@ const columns = useMemo((): ColumnDef<ItemType, unknown>[] => [
 
 const { params, searchInput, setSearchInput, ... } = useTableParams<Filters>({ defaultPageSize })
 const { data } = useQuery(params)
-const table = useServerTable({ data, columns, rowCount, columnVisibilityStorageKey: 'page-key', ... })
+const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
+  data: data?.items ?? [], columns, tableKey: 'page-key', rowCount: data?.totalCount ?? 0,
+  state: { pagination: { pageIndex: params.pageIndex, pageSize: params.pageSize }, sorting: params.sorting },
+  onPaginationChange, onSortingChange, enableRowSelection: true, getRowId: (row) => row.id,
+})
 
-<DataTableToolbar table={table} searchInput={...} onSearchChange={...} onResetColumnVisibility={table.resetColumnVisibility} />
-<DataTable table={table} ... />
+<DataTableToolbar table={table} searchInput={...} onSearchChange={...}
+  columnOrder={settings.columnOrder} onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+  isCustomized={isCustomized} onResetSettings={resetToDefault}
+  density={settings.density} onDensityChange={setDensity} />
+<DataTable table={table} density={settings.density} ... />
 <DataTablePagination table={table} />
 ```
 
@@ -90,7 +97,7 @@ All list pages have been migrated. See "Pages Already Migrated" below.
    - [ ] Add `createActionsColumn` first (before select column) — `datatable-actions` rule requires actions first.
    - [ ] Use `createSelectColumn()` only if row selection needed (bulk actions).
    - [ ] For image columns: use `FilePreviewTrigger` per `.claude/rules/image-preview-in-lists.md`.
-   - [ ] Replace query + table with `useServerTable` + `DataTable`.
+   - [ ] Replace query + table with `useEnterpriseTable` + `DataTable`.
    - [ ] Replace toolbar with `DataTableToolbar` (search, filters via `filterSlot`, `onResetColumnVisibility`).
    - [ ] Replace pagination with `DataTablePagination`.
    - [ ] Add `EmptyState` to `DataTable` `emptyState` prop.
@@ -124,7 +131,7 @@ After migrating a page, verify:
 | Status badges: `variant="outline"` + `getStatusBadgeClasses()` | `design-standards.md` |
 | Image columns: `FilePreviewTrigger` | `image-preview-in-lists.md` |
 | Destructive actions: confirmation dialog | CLAUDE.md Frontend Gotchas |
-| `columnVisibilityStorageKey` set | `datatable-standard.md` |
+| `tableKey` set in `useEnterpriseTable` | `datatable-standard.md` |
 
 ---
 

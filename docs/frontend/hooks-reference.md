@@ -1,8 +1,8 @@
 # Frontend Hooks Reference
 
-> Quick reference for all 50 custom React hooks in `src/NOIR.Web/frontend/src/hooks/`
+> Quick reference for all 41 custom React hooks in `src/NOIR.Web/frontend/src/hooks/`
 
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-13
 
 ---
 
@@ -16,6 +16,10 @@
 | `useMediaFiles` | Data Fetching | Media library files |
 | `useDashboard` | Data Fetching | Dashboard metrics |
 | `useWebhooks` | Data Fetching | Webhook subscriptions |
+| `useApiKeys` | Data Fetching | API key management |
+| `useEnterpriseTable` | Table | Unified server + enterprise table state with persistence |
+| `useTableParams` | Table | URL-synced pagination, sorting, search, filters |
+| `useVirtualTableRows` | Table | Virtual scrolling for large tables |
 | `useLogin` | Auth | Login mutation + redirect |
 | `usePermissions` | Auth | Permission checking (`hasPermission`, `hasAllPermissions`) |
 | `useFeatures` | Auth | Feature flag checking |
@@ -139,7 +143,71 @@ const { subscriptions, isLoading, createWebhook, deleteWebhook } = useWebhooks()
 
 ---
 
-## 2. Authentication & Authorization
+### `useApiKeys`
+**File:** `hooks/useApiKeys.ts`
+
+API key management (list, create, revoke).
+
+```typescript
+const { apiKeys, createApiKey, revokeApiKey } = useApiKeys()
+```
+
+---
+
+## 2. Table
+
+> **Rule:** All paginated table list pages MUST use `useEnterpriseTable` + `useTableParams`. See [datatable-standard.md](../../.claude/rules/datatable-standard.md).
+
+### `useEnterpriseTable`
+**File:** `hooks/useEnterpriseTable.ts`
+
+Unified DataTable hook — replaces `useServerTable`. Manages server-side state (pagination, sorting) via external props + enterprise UI state (visibility, order, sizing, pinning, density) via localStorage persistence.
+
+```typescript
+const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
+  data: data?.items ?? [],
+  columns,
+  tableKey: 'users',
+  rowCount: data?.totalCount ?? 0,
+  state: { pagination: { pageIndex, pageSize }, sorting },
+  onPaginationChange, onSortingChange,
+  enableRowSelection: true,
+  getRowId: (row) => row.id,
+})
+```
+
+**Returns:** `{ table, settings, isCustomized, resetToDefault, setDensity }`
+
+---
+
+### `useTableParams`
+**File:** `hooks/useTableParams.ts`
+
+URL-synced pagination, sorting, search, and filters with React 19 `useDeferredValue` + `useTransition`.
+
+```typescript
+const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setFilter, resetFilters } =
+  useTableParams<{ role?: string; status?: string }>({ defaultPageSize: 20, defaultFilters: {} })
+```
+
+> **CRITICAL:** Filter values live in `params.filters.role` (not `params.role`).
+
+**Returns:** `{ params, searchInput, setSearchInput, isSearchStale, isFilterPending, setFilter, resetFilters, setPage, setPageSize, setSorting }`
+
+---
+
+### `useVirtualTableRows`
+**File:** `hooks/useVirtualTableRows.ts`
+
+Virtual scrolling for large tables using `@tanstack/react-virtual`.
+
+```typescript
+const { virtualRows, totalHeight, containerRef } = useVirtualTableRows(table, { estimateSize: 52, overscan: 5 })
+```
+
+---
+
+## 3. Authentication & Authorization
 
 ### `useLogin`
 **File:** `hooks/useLogin.ts`
@@ -177,7 +245,7 @@ if (isEnabled('Ecommerce.Products')) { ... }
 
 ---
 
-## 3. URL State
+## 4. URL State
 
 > **Rule:** All tabbed pages MUST use `useUrlTab`. All create dialogs MUST use `useUrlDialog`. All edit dialogs MUST use `useUrlEditDialog`. See [url-tab-state.md](../../.claude/rules/url-tab-state.md).
 
@@ -229,7 +297,7 @@ openEdit(product) // sets ?edit=product.id
 
 ---
 
-## 4. Real-Time
+## 5. Real-Time
 
 ### `useSignalR`
 **File:** `hooks/useSignalR.ts`
@@ -315,7 +383,7 @@ const { postMessage } = useBroadcastChannel('auth', (event) => {
 
 ---
 
-## 5. UI State
+## 6. UI State
 
 ### `useSelection`
 **File:** `hooks/useSelection.ts`
@@ -399,7 +467,7 @@ const { lastSaved, isSaving } = useAutoSave(formValues, saveFunction, { debounce
 
 ---
 
-## 6. Navigation
+## 7. Navigation
 
 ### `useBreadcrumbs`
 **File:** `hooks/useBreadcrumbs.ts`
@@ -427,7 +495,7 @@ startTransition(() => navigate('/products'))
 
 ---
 
-## 7. Forms
+## 8. Forms
 
 ### `useValidatedForm`
 **File:** `hooks/useValidatedForm.ts` *(or `useSmartDefaults.ts`)*
@@ -473,7 +541,7 @@ const { upload, preview, isUploading, error } = useImageUpload({ maxSizeMb: 5 })
 
 ---
 
-## 8. Platform
+## 9. Platform
 
 ### `useOnboarding`
 **File:** `hooks/useOnboarding.ts`

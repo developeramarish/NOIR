@@ -1,15 +1,14 @@
 import type { Table, RowData } from '@tanstack/react-table'
-import { RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, X, Download, AlignJustify } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '../button/Button'
 import { Input } from '../input/Input'
+import { DataTableColumnsDropdown } from './DataTableColumnsDropdown'
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../dropdown-menu/DropdownMenu'
 
@@ -28,16 +27,54 @@ interface DataTableToolbarProps<TData extends RowData> {
   onResetFilters?: () => void
   /** Custom filter controls injected between search and column toggle */
   filterSlot?: React.ReactNode
-  /** Callback to reset column visibility to default (show all) */
-  onResetColumnVisibility?: () => void
   /** Extra controls injected at the right side (e.g., Create button, Export) */
   actionSlot?: React.ReactNode
   className?: string
+  // ─── Enterprise features (optional) ─────────────────────────────────────────
+  /**
+   * Column order array — enables drag-to-reorder in the Columns dropdown.
+   * Must be provided together with onColumnsReorder.
+   */
+  columnOrder?: string[]
+  /** Called when user reorders columns via drag. Update your column order state. */
+  onColumnsReorder?: (newOrder: string[]) => void
+  /**
+   * True when any table setting (order/visibility/sizing) differs from default.
+   * Shows "Reset to default" button in the Columns dropdown.
+   */
+  isCustomized?: boolean
+  /** Called when user clicks "Reset to default" (full settings reset). */
+  onResetSettings?: () => void
+  /**
+   * Current density setting. When provided, shows a density toggle button.
+   */
+  density?: 'compact' | 'normal' | 'comfortable'
+  /** Called when user changes the density. */
+  onDensityChange?: (density: 'compact' | 'normal' | 'comfortable') => void
+  /**
+   * Called to export table data as CSV.
+   * When provided, shows an Export button.
+   */
+  onExportCSV?: () => void
+  /**
+   * Called to export table data as Excel.
+   * When provided alongside onExportCSV, shows a dropdown with both options.
+   */
+  onExportExcel?: () => void
+  /** Groupable column IDs for the Group By selector in the Columns dropdown. */
+  groupableColumnIds?: string[]
+  /** Currently active group-by column IDs. */
+  grouping?: string[]
+  /** Called when user changes the Group By selection. */
+  onGroupingChange?: (columnIds: string[]) => void
 }
 
 /**
- * Reusable table toolbar with search input, filter slot, column visibility toggle,
- * and action slot. Use above <DataTable />.
+ * Reusable table toolbar with search input, filter slot, column management dropdown,
+ * optional density toggle, optional export, and action slot. Use above <DataTable />.
+ *
+ * The Columns dropdown supports basic visibility toggle (all pages) plus optional
+ * enterprise features: drag-to-reorder, sort controls, group-by, and reset-to-default.
  */
 export const DataTableToolbar = <TData extends RowData>({
   table,
@@ -48,13 +85,25 @@ export const DataTableToolbar = <TData extends RowData>({
   showColumnToggle = true,
   hasActiveFilters = false,
   onResetFilters,
-  onResetColumnVisibility,
   filterSlot,
   actionSlot,
   className,
+  columnOrder,
+  onColumnsReorder,
+  isCustomized = false,
+  onResetSettings,
+  density,
+  onDensityChange,
+  onExportCSV,
+  onExportExcel,
+  groupableColumnIds,
+  grouping,
+  onGroupingChange,
 }: DataTableToolbarProps<TData>) => {
   const { t } = useTranslation('common')
-  const hasHiddenColumns = showColumnToggle && table.getAllColumns().some((col) => col.getCanHide() && !col.getIsVisible())
+
+  const hasExport = onExportCSV || onExportExcel
+  const hasDensityToggle = density !== undefined && onDensityChange !== undefined
 
   return (
     <div className={cn('flex flex-col gap-3 sm:flex-row sm:items-center', className)}>
@@ -90,56 +139,104 @@ export const DataTableToolbar = <TData extends RowData>({
         )}
       </div>
 
-      {/* Right: column visibility + actions */}
+      {/* Right: density + export + column management + actions */}
       <div className="flex items-center gap-2">
-        {showColumnToggle && (
+        {/* Density toggle */}
+        {hasDensityToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className="h-9 cursor-pointer"
-                aria-label={t('labels.toggleColumns', 'Toggle columns')}
+                aria-label={t('labels.density', 'Row density')}
               >
-                <SlidersHorizontal className="mr-1.5 h-4 w-4" />
-                {t('labels.columns', 'Columns')}
+                <AlignJustify className="mr-1.5 h-4 w-4" />
+                {density === 'compact'
+                  ? t('labels.densityCompact', 'Compact')
+                  : density === 'comfortable'
+                    ? t('labels.densityComfortable', 'Comfortable')
+                    : t('labels.densityNormal', 'Normal')}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[180px]">
-              <DropdownMenuLabel>{t('labels.toggleColumns', 'Toggle columns')}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {table
-                .getAllColumns()
-                .filter((col) => col.getCanHide())
-                .map((col) => (
-                  <DropdownMenuCheckboxItem
-                    key={col.id}
-                    className="cursor-pointer capitalize"
-                    checked={col.getIsVisible()}
-                    onCheckedChange={(value) => col.toggleVisibility(!!value)}
-                    onSelect={(e) => e.preventDefault()}
-                  >
-                    {col.columnDef.meta?.label
-                      ?? (typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              {hasHiddenColumns && onResetColumnVisibility && (
-                <>
-                  <DropdownMenuSeparator />
-                  <button
-                    type="button"
-                    className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    onClick={() => {
-                      onResetColumnVisibility()
-                    }}
-                  >
-                    <RotateCcw className="mr-2 h-3.5 w-3.5" />
-                    {t('labels.resetToDefault', 'Reset to default')}
-                  </button>
-                </>
-              )}
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className={cn('cursor-pointer', density === 'compact' && 'font-medium text-primary')}
+                onClick={() => onDensityChange('compact')}
+              >
+                {t('labels.densityCompact', 'Compact')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={cn('cursor-pointer', density === 'normal' && 'font-medium text-primary')}
+                onClick={() => onDensityChange('normal')}
+              >
+                {t('labels.densityNormal', 'Normal')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={cn('cursor-pointer', density === 'comfortable' && 'font-medium text-primary')}
+                onClick={() => onDensityChange('comfortable')}
+              >
+                {t('labels.densityComfortable', 'Comfortable')}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+
+        {/* Export button */}
+        {hasExport && (
+          onExportCSV && !onExportExcel ? (
+            // CSV-only: simple button
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 cursor-pointer"
+              onClick={onExportCSV}
+              aria-label={t('labels.exportCSV', 'Export CSV')}
+            >
+              <Download className="mr-1.5 h-4 w-4" />
+              {t('labels.export', 'Export')}
+            </Button>
+          ) : (
+            // Both CSV + Excel: dropdown
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 cursor-pointer"
+                  aria-label={t('labels.export', 'Export')}
+                >
+                  <Download className="mr-1.5 h-4 w-4" />
+                  {t('labels.export', 'Export')}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onExportCSV && (
+                  <DropdownMenuItem className="cursor-pointer" onClick={onExportCSV}>
+                    {t('labels.exportCSV', 'Export as CSV')}
+                  </DropdownMenuItem>
+                )}
+                {onExportExcel && (
+                  <DropdownMenuItem className="cursor-pointer" onClick={onExportExcel}>
+                    {t('labels.exportExcel', 'Export as Excel')}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        )}
+
+        {showColumnToggle && (
+          <DataTableColumnsDropdown
+            table={table}
+            columnOrder={columnOrder}
+            onColumnsReorder={onColumnsReorder}
+            isCustomized={isCustomized}
+            onResetSettings={onResetSettings}
+            groupableColumnIds={groupableColumnIds}
+            grouping={grouping}
+            onGroupingChange={onGroupingChange}
+          />
         )}
 
         {actionSlot}

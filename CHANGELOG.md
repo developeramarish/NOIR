@@ -1,5 +1,28 @@
 # CLAUDE.md Changelog
 
+## [3.7] - 2026-03-13
+
+### Added
+- **Enterprise DataTable**: `useEnterpriseTable` unified hook replacing `useServerTable` — density toggle, drag-reorder, pinning, resizing, settings persistence to localStorage
+- **Enterprise DataTable build spec**: `docs/designs/enterprise-datatable-build-spec.md` — Phase 1-2 complete, Phases 3-5 future
+- **DataTableColumnsDropdown**: New Popover-based column management with @dnd-kit drag-reorder, sort controls, visibility toggle, group-by, reset to default
+- **Hooks reference**: Added `useEnterpriseTable`, `useTableParams`, `useVirtualTableRows`, `useApiKeys` to docs
+
+### Changed
+- Hook count: 50 → 41 (corrected — old count included test files; `useServerTable` deleted, `useEnterpriseTable` + `useVirtualTableRows` + `useApiKeys` added)
+- All 24 production table pages migrated to `useEnterpriseTable` (verified via Playwright)
+- Removed legacy `onResetColumnVisibility` prop from `DataTableToolbar` and `DataTableColumnsDropdown`
+- Updated `.claude/rules/datatable-standard.md`, `datatable-migration.md`, `table-list-standard.md` to reference `useEnterpriseTable`
+- Updated `docs/frontend/architecture.md` DataTable section with enterprise pattern
+- Updated all documentation numbers (README, CLAUDE.md, hooks-reference, KNOWLEDGE_BASE, DOCUMENTATION_INDEX)
+
+### Fixed
+- **Products page TDZ crash**: `selectedDraftCount`/`selectedActiveCount` computed before `selectedIdsSet` declaration — moved after declaration
+
+### Removed
+- `useServerTable` hook (replaced by `useEnterpriseTable`)
+- `onResetColumnVisibility` prop from DataTable components (superseded by `onResetSettings`)
+
 ## [3.6] - 2026-03-12
 
 ### Added

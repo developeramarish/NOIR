@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from 'storybook'
 import { useMemo, useState } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { DataTable } from './DataTable'
 import { DataTableColumnHeader } from './DataTableColumnHeader'
 import { DataTablePagination } from './DataTablePagination'
 import { DataTableToolbar } from './DataTableToolbar'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { exportTableToCSV, exportTableToExcel } from '@/lib/table/tableExport'
 import { Badge } from '../badge/Badge'
 import { DropdownMenuItem } from '../dropdown-menu/DropdownMenu'
 
@@ -86,7 +87,6 @@ const DataTableDemo = ({
   isEmpty?: boolean
 }) => {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(10)
   const [searchInput, setSearchInput] = useState('')
@@ -95,14 +95,14 @@ const DataTableDemo = ({
 
   const displayedRows = isEmpty ? [] : INVOICES
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: displayedRows,
     columns,
+    tableKey: 'storybook-default',
     rowCount: isEmpty ? 0 : INVOICES.length,
     state: {
       pagination: { pageIndex, pageSize },
       sorting,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -112,12 +112,11 @@ const DataTableDemo = ({
       setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })
 
-  const selectedIds = useSelectedIds(rowSelection)
+  const selectedIds = useSelectedIds(table.getState().rowSelection)
 
   return (
     <div className="space-y-4">
@@ -128,6 +127,12 @@ const DataTableDemo = ({
         searchPlaceholder="Search invoices…"
         hasActiveFilters={searchInput.length > 0}
         onResetFilters={() => setSearchInput('')}
+        columnOrder={settings.columnOrder}
+        onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+        isCustomized={isCustomized}
+        onResetSettings={resetToDefault}
+        density={settings.density}
+        onDensityChange={setDensity}
       />
 
       {selectedIds.length > 0 && (
@@ -138,6 +143,7 @@ const DataTableDemo = ({
 
       <DataTable
         table={table}
+        density={settings.density}
         isLoading={isLoading}
         onRowClick={(row) => alert(`Clicked: ${row.invoice}`)}
       />
@@ -173,4 +179,126 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   render: () => <DataTableDemo isEmpty />,
+}
+
+// ─── Enterprise demo wrapper ────────────────────────────────────────────────────
+
+const ch2 = createColumnHelper<InvoiceRow>()
+
+const getEnterpriseColumns = (): ColumnDef<InvoiceRow, unknown>[] => [
+  createActionsColumn<InvoiceRow>(() => (
+    <>
+      <DropdownMenuItem className="cursor-pointer">View</DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+    </>
+  )),
+  createSelectColumn<InvoiceRow>(),
+  ch2.accessor('invoice', {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Invoice" />,
+    cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
+    meta: { label: 'Invoice' },
+    size: 130,
+  }) as ColumnDef<InvoiceRow, unknown>,
+  ch2.accessor('status', {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    cell: ({ getValue }) => (
+      <Badge variant="outline" className={STATUS_COLOR[getValue()]}>
+        {getValue()}
+      </Badge>
+    ),
+    aggregationFn: 'count',
+    aggregatedCell: ({ getValue }) => (
+      <span className="text-xs">{getValue<number>()} items</span>
+    ),
+    meta: { label: 'Status' },
+    size: 110,
+  }) as ColumnDef<InvoiceRow, unknown>,
+  ch2.accessor('method', {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Method" />,
+    aggregationFn: 'count',
+    aggregatedCell: ({ getValue }) => (
+      <span className="text-xs">{getValue<number>()} items</span>
+    ),
+    meta: { label: 'Method' },
+    size: 160,
+  }) as ColumnDef<InvoiceRow, unknown>,
+  ch2.accessor('amount', {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
+    cell: ({ getValue }) => (
+      <span className="tabular-nums">{`$${getValue().toFixed(2)}`}</span>
+    ),
+    aggregationFn: 'sum',
+    aggregatedCell: ({ getValue }) => (
+      <span className="tabular-nums font-medium">{`$${getValue<number>().toFixed(2)}`}</span>
+    ),
+    meta: { label: 'Amount', align: 'right' },
+    size: 110,
+  }) as ColumnDef<InvoiceRow, unknown>,
+]
+
+const EnterpriseDataTableDemo = () => {
+  const [searchInput, setSearchInput] = useState('')
+  const columns = useMemo(getEnterpriseColumns, [])
+
+  const { table, settings, isCustomized, resetToDefault, setDensity, setGrouping } =
+    useEnterpriseTable({
+      data: INVOICES,
+      columns,
+      tableKey: 'storybook-invoices',
+      enablePinning: true,
+      enableResizing: true,
+      enableGrouping: true,
+      enableRowSelection: true,
+      manualPagination: false,
+      manualSorting: false,
+      manualFiltering: false,
+    })
+
+  return (
+    <div className="space-y-4">
+      <DataTableToolbar
+        table={table}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        searchPlaceholder="Search invoices…"
+        hasActiveFilters={searchInput.length > 0}
+        onResetFilters={() => setSearchInput('')}
+        columnOrder={settings.columnOrder}
+        onColumnsReorder={(newOrder) => {
+          table.setColumnOrder(newOrder)
+        }}
+        isCustomized={isCustomized}
+        onResetSettings={resetToDefault}
+        density={settings.density}
+        onDensityChange={setDensity}
+        onExportCSV={() => exportTableToCSV(table, { filename: 'invoices' })}
+        onExportExcel={() => exportTableToExcel(table, { filename: 'invoices' })}
+        groupableColumnIds={['status', 'method']}
+        grouping={settings.grouping}
+        onGroupingChange={setGrouping}
+      />
+
+      <DataTable
+        table={table}
+        density={settings.density}
+        emptyState={
+          <div className="py-8 text-center text-sm text-muted-foreground">No invoices found</div>
+        }
+      />
+
+      <DataTablePagination table={table} />
+    </div>
+  )
+}
+
+export const Enterprise: Story = {
+  render: () => <EnterpriseDataTableDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Enterprise-grade DataTable with column pinning, resizing, drag-to-reorder, density toggle, CSV/Excel export, and Group By — all settings persisted to localStorage.',
+      },
+    },
+  },
 }

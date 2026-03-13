@@ -9,7 +9,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -191,11 +191,11 @@ export const ProductCategoriesPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canUpdateCategories, canDeleteCategories, showActions])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: categories,
     columns,
+    tableKey: 'product-categories',
     rowCount: categories.length,
-    columnVisibilityStorageKey: 'product-categories',
     state: {
       pagination: { pageIndex: 0, pageSize: 1000 },
       sorting: [],
@@ -242,7 +242,12 @@ export const ProductCategoriesPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('categories.searchPlaceholder', 'Search categories...')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               showColumnToggle={viewMode === 'table'}
             />
           </div>
@@ -276,6 +281,7 @@ export const ProductCategoriesPage = () => {
             <div className="space-y-3">
               <DataTable
                 table={table}
+                density={settings.density}
                 isLoading={isLoading}
                 isStale={isSearchStale}
                 onRowClick={canUpdateCategories ? openEditCategory : undefined}

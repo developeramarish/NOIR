@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Building, Plus, Edit, Trash2, KeyRound, Blocks } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
@@ -47,7 +47,6 @@ export const TenantsPage = () => {
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-tenant' })
   const [tenantToDelete, setTenantToDelete] = useState<TenantListItem | null>(null)
   const [tenantToResetPassword, setTenantToResetPassword] = useState<TenantListItem | null>(null)
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const {
     params,
@@ -185,15 +184,14 @@ export const TenantsPage = () => {
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'tenants',
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'tenants',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -203,7 +201,6 @@ export const TenantsPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     getRowId: (row) => row.id,
   })
 
@@ -241,13 +238,19 @@ export const TenantsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('tenants.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
             />
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={(tenant) => handleEdit(tenant, 'details')}

@@ -9,7 +9,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -145,11 +145,11 @@ export const CustomerGroupsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canUpdateGroups, canDeleteGroups, showActions])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: groups,
     columns,
     rowCount: groupsResponse?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'customer-groups',
+    tableKey: 'customer-groups',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -195,7 +195,12 @@ export const CustomerGroupsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('customerGroups.searchPlaceholder', 'Search groups...')}
               isSearchStale={isSearchStale || isFilterPending}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
             />
           </div>
         </CardHeader>
@@ -208,6 +213,7 @@ export const CustomerGroupsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={openEditGroup}

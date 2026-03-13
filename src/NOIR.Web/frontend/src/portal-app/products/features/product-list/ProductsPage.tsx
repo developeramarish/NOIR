@@ -1,14 +1,14 @@
 import { useState, useMemo, useTransition, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { ViewTransitionLink } from '@/components/navigation/ViewTransitionLink'
 import { useTranslation } from 'react-i18next'
 import { getPaginationRange } from '@/lib/utils/pagination'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Search,
@@ -165,23 +165,14 @@ export const ProductsPage = () => {
   const [productToDelete, setProductToDelete] = useState<ProductListItem | null>(null)
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const viewModeOptions: ViewModeOption<'table' | 'grid'>[] = useMemo(() => [
     { value: 'table', label: t('labels.list', 'List'), icon: ListIcon, ariaLabel: t('labels.tableView', 'Table view') },
     { value: 'grid', label: t('labels.grid', 'Grid'), icon: LayoutGrid, ariaLabel: t('labels.gridView', 'Grid view') },
   ], [t])
 
-  const selectedIds = useSelectedIds(rowSelection)
-  const selectedIdsSet = useMemo(() => new Set(selectedIds), [selectedIds])
-  const clearSelection = useCallback(() => setRowSelection({}), [])
-
-  const handleCollectionUpdate = useCallback(() => {
-    if (selectedIds.length === 0) refetch()
-  }, [selectedIds.length, refetch])
-
   const { isReconnecting } = useEntityUpdateSignal({
     entityType: 'Product',
-    onCollectionUpdate: handleCollectionUpdate,
+    onCollectionUpdate: refetch,
   })
 
   // Transition for bulk operations
@@ -219,7 +210,7 @@ export const ProductsPage = () => {
         const message = err instanceof Error ? err.message : t('products.bulkPublishFailed', 'Failed to publish products')
         toast.error(message)
       }
-      setRowSelection({})
+      table.resetRowSelection()
     })
   }
 
@@ -249,7 +240,7 @@ export const ProductsPage = () => {
         const message = err instanceof Error ? err.message : t('products.bulkArchiveFailed', 'Failed to archive products')
         toast.error(message)
       }
-      setRowSelection({})
+      table.resetRowSelection()
     })
   }
 
@@ -274,19 +265,10 @@ export const ProductsPage = () => {
         const message = err instanceof Error ? err.message : t('products.bulkDeleteFailed', 'Failed to delete products')
         toast.error(message)
       }
-      setRowSelection({})
+      table.resetRowSelection()
       setShowBulkDeleteConfirm(false)
     })
   }
-
-  // Get counts for bulk action buttons
-  const selectedDraftCount = data?.items.filter(
-    p => selectedIdsSet.has(p.id) && p.status === 'Draft'
-  ).length || 0
-
-  const selectedActiveCount = data?.items.filter(
-    p => selectedIdsSet.has(p.id) && p.status === 'Active'
-  ).length || 0
 
   // Count items with low stock (in stock but below threshold)
   const lowStockCount = data?.items.filter(
@@ -474,15 +456,14 @@ export const ProductsPage = () => {
   ], [t, canUpdateProducts, canCreateProducts, canPublishProducts, canDeleteProducts])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
+    tableKey: 'products',
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'products',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [] as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -491,10 +472,22 @@ export const ProductsPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })
+
+  const currentRowSelection = table.getState().rowSelection
+  const selectedIds = useSelectedIds(currentRowSelection)
+  const selectedIdsSet = useMemo(() => new Set(selectedIds), [selectedIds])
+  const clearSelection = useCallback(() => table.resetRowSelection(), [table])
+
+  const selectedDraftCount = data?.items.filter(
+    p => selectedIdsSet.has(p.id) && p.status === 'Draft'
+  ).length || 0
+
+  const selectedActiveCount = data?.items.filter(
+    p => selectedIdsSet.has(p.id) && p.status === 'Active'
+  ).length || 0
 
   const paginationRange = data
     ? getPaginationRange(data.page, params.pageSize || DEFAULT_PRODUCT_PAGE_SIZE, data.totalCount)
@@ -568,7 +561,12 @@ export const ProductsPage = () => {
                 searchPlaceholder={t('products.searchPlaceholder', 'Search products...')}
                 isSearchStale={isSearchStale}
                 showColumnToggle={true}
-                onResetColumnVisibility={table.resetColumnVisibility}
+                columnOrder={settings.columnOrder}
+                onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+                isCustomized={isCustomized}
+                onResetSettings={resetToDefault}
+                density={settings.density}
+                onDensityChange={setDensity}
                 filterSlot={
                   <>
                     <Select value={params.filters.status || 'all'} onValueChange={handleStatusChange}>
@@ -809,6 +807,7 @@ export const ProductsPage = () => {
             <div className="space-y-3">
               <DataTable
                 table={table}
+                density={settings.density}
                 isLoading={loading}
                 isStale={isSearchStale || isFilterPending || isPlaceholderData}
                 onRowClick={selectedIds.length === 0 ? (product) => navigate(`/portal/ecommerce/products/${product.id}`) : undefined}

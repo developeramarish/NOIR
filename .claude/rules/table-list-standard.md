@@ -2,7 +2,7 @@
 
 ## MANDATORY: Use DataTable (TanStack)
 
-Every table list page MUST use `DataTable` + `useServerTable` — see `.claude/rules/datatable-standard.md`. No custom tables with `ColumnVisibilityDropdown` + `useColumnVisibility`.
+Every table list page MUST use `DataTable` + `useEnterpriseTable` — see `.claude/rules/datatable-standard.md`. No custom tables with `ColumnVisibilityDropdown` + `useColumnVisibility`.
 
 ## Card Layout
 

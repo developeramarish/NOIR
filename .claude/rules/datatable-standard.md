@@ -4,10 +4,10 @@
 
 All **table list pages** (paginated entity lists) MUST use TanStack Table via:
 - `DataTable` + `DataTableToolbar` + `DataTablePagination` from `@uikit`
-- `useServerTable` + `useTableParams` from `@/hooks`
+- `useEnterpriseTable` from `@/hooks/useEnterpriseTable` + `useTableParams` from `@/hooks`
 - `createColumnHelper` from `@tanstack/react-table`
 
-Do NOT use custom tables with `ColumnVisibilityDropdown` + `useColumnVisibility` — column visibility is driven by column definitions. See `.claude/rules/datatable-migration.md` for migration checklist.
+`useEnterpriseTable` is the unified hook — it handles both server-side state (pagination, sorting via external props) and enterprise UI state (visibility, order, sizing, pinning, density via localStorage). There is no separate `useServerTable`.
 
 ## Column Order
 
@@ -74,11 +74,11 @@ createSelectColumn<T>()  // Already configured: size: 40, minSize: 40, maxSize: 
 
 Use `meta: { sticky: 'left' }` on column definitions. `DataTable.tsx` auto-applies `sticky left-0 z-10 bg-background` to both `<th>` and `<td>`.
 
-## Column Visibility
+## Column Visibility & Enterprise Settings
 
-- Use `columnVisibilityStorageKey` in `useServerTable()` for localStorage persistence
-- Pass `onResetColumnVisibility={table.resetColumnVisibility}` to `DataTableToolbar`
-- Storage key format: `noir:col-vis:{page-name}` (e.g. `'customers'`, `'orders'`)
+- Use `tableKey` in `useEnterpriseTable()` for localStorage persistence of all enterprise settings (visibility, order, sizing, pinning, density)
+- Pass enterprise toolbar props: `columnOrder={settings.columnOrder}`, `onColumnsReorder`, `isCustomized`, `onResetSettings={resetToDefault}`, `density={settings.density}`, `onDensityChange={setDensity}`
+- Storage key format: `'customers'`, `'orders'` (hook prefixes automatically)
 - Pages with few columns: set `showColumnToggle={false}`
 - Every column MUST have `meta: { label: t('...') }` for the Columns dropdown
 

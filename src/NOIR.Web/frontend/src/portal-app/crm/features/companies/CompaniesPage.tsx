@@ -18,7 +18,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable } from '@/hooks/useServerTable'
+import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
@@ -166,11 +166,11 @@ export const CompaniesPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canUpdate, canDelete, showActions])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: companies,
     columns,
+    tableKey: 'crm-companies',
     rowCount: totalCount,
-    columnVisibilityStorageKey: 'crm-companies',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],
@@ -216,7 +216,12 @@ export const CompaniesPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('crm.companies.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
             />
           </div>
         </CardHeader>
@@ -227,6 +232,7 @@ export const CompaniesPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={handleViewCompany}

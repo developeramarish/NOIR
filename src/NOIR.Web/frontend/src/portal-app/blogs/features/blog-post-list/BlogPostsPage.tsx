@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { FileText, Plus, Pencil, Trash2, Send, EyeOff, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
@@ -70,7 +70,6 @@ export const BlogPostsPage = () => {
 
   const [postToDelete, setPostToDelete] = useState<PostListItem | null>(null)
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [isFilterPending, startFilterTransition] = useTransition()
@@ -100,26 +99,6 @@ export const BlogPostsPage = () => {
   const bulkDeleteMutation = useBulkDeletePosts()
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
-  const selectedIds = useSelectedIds(rowSelection)
-  const selectedCount = selectedIds.length
-
-  const selectedDraftCount = useMemo(
-    () => tableData.filter(p => rowSelection[p.id] && p.status === 'Draft').length,
-    [tableData, rowSelection],
-  )
-  const selectedPublishedCount = useMemo(
-    () => tableData.filter(p => rowSelection[p.id] && p.status === 'Published').length,
-    [tableData, rowSelection],
-  )
-
-  const handleCollectionUpdate = useCallback(() => {
-    if (selectedCount === 0) refresh()
-  }, [selectedCount, refresh])
-
-  const { isReconnecting } = useEntityUpdateSignal({
-    entityType: 'Post',
-    onCollectionUpdate: handleCollectionUpdate,
-  })
 
   const handleStatusChange = (value: string) => {
     startFilterTransition(() => {
@@ -146,7 +125,8 @@ export const BlogPostsPage = () => {
   }
 
   const onBulkPublish = () => {
-    const draftPostIds = tableData.filter(p => rowSelection[p.id] && p.status === 'Draft').map(p => p.id)
+    const currentRowSelection = table.getState().rowSelection
+    const draftPostIds = tableData.filter(p => currentRowSelection[p.id] && p.status === 'Draft').map(p => p.id)
     if (draftPostIds.length === 0) {
       toast.warning(t('blog.noDraftPostsSelected', 'No draft posts selected'))
       return
@@ -167,7 +147,8 @@ export const BlogPostsPage = () => {
   }
 
   const onBulkUnpublish = () => {
-    const publishedPostIds = tableData.filter(p => rowSelection[p.id] && p.status === 'Published').map(p => p.id)
+    const currentRowSelection = table.getState().rowSelection
+    const publishedPostIds = tableData.filter(p => currentRowSelection[p.id] && p.status === 'Published').map(p => p.id)
     if (publishedPostIds.length === 0) {
       toast.warning(t('blog.noPublishedPostsSelected', 'No published posts selected'))
       return
@@ -265,16 +246,15 @@ export const BlogPostsPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t])
 
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
     rowCount: data?.totalCount ?? 0,
     enableRowSelection: true,
-    columnVisibilityStorageKey: 'blog-posts',
+    tableKey: 'blog-posts',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: params.sorting as SortingState,
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -284,8 +264,29 @@ export const BlogPostsPage = () => {
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
     getRowId: (row) => row.id,
+  })
+
+  const currentRowSelection = table.getState().rowSelection
+  const selectedIds = useSelectedIds(currentRowSelection)
+  const selectedCount = selectedIds.length
+
+  const selectedDraftCount = useMemo(
+    () => tableData.filter(p => currentRowSelection[p.id] && p.status === 'Draft').length,
+    [tableData, currentRowSelection],
+  )
+  const selectedPublishedCount = useMemo(
+    () => tableData.filter(p => currentRowSelection[p.id] && p.status === 'Published').length,
+    [tableData, currentRowSelection],
+  )
+
+  const handleCollectionUpdate = useCallback(() => {
+    if (selectedCount === 0) refresh()
+  }, [selectedCount, refresh])
+
+  const { isReconnecting } = useEntityUpdateSignal({
+    entityType: 'Post',
+    onCollectionUpdate: handleCollectionUpdate,
   })
 
   const handleBulkDeleteConfirm = () => {
@@ -342,7 +343,12 @@ export const BlogPostsPage = () => {
               onSearchChange={setSearchInput}
               searchPlaceholder={t('blog.searchPlaceholder')}
               isSearchStale={isSearchStale}
-              onResetColumnVisibility={table.resetColumnVisibility}
+              columnOrder={settings.columnOrder}
+              onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+              isCustomized={isCustomized}
+              onResetSettings={resetToDefault}
+              density={settings.density}
+              onDensityChange={setDensity}
               filterSlot={
                 <>
                   <Select value={statusFilter} onValueChange={handleStatusChange}>
@@ -417,6 +423,7 @@ export const BlogPostsPage = () => {
 
           <DataTable
             table={table}
+            density={settings.density}
             isLoading={isLoading}
             isStale={isSearchStale || isFilterPending}
             onRowClick={selectedCount === 0 ? (post) => navigate(`/portal/blog/posts/${post.id}/edit`) : undefined}

@@ -1,6 +1,6 @@
 import { useState, useDeferredValue, useMemo, useTransition, useCallback } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { ImageIcon, Plus, Trash2, Loader2, LayoutGrid, List as ListIcon, Pencil } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -8,7 +8,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
-import { useServerTable, useSelectedIds } from '@/hooks/useServerTable'
+import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { useMediaFiles, useDeleteMediaFile, useRenameMediaFile, useBulkDeleteMediaFiles } from '@/hooks/useMediaFiles'
 import { getPaginationRange } from '@/lib/utils/pagination'
@@ -61,7 +61,6 @@ export const MediaLibraryPage = () => {
   const [sortOrder, setSortOrder] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const viewModeOptions: ViewModeOption<'grid' | 'list'>[] = useMemo(() => [
     { value: 'grid', label: t('labels.grid', 'Grid'), icon: LayoutGrid, ariaLabel: t('labels.gridView', 'Grid view') },
     { value: 'list', label: t('labels.list', 'List'), icon: ListIcon, ariaLabel: t('labels.tableView', 'Table view') },
@@ -92,19 +91,6 @@ export const MediaLibraryPage = () => {
   }), [deferredSearch, fileTypeFilter, folderFilter, sortBy, sortOrder, currentPage])
 
   const { data, isLoading, isPlaceholderData, refetch } = useMediaFiles(queryParams)
-
-  const selectedIds = useSelectedIds(rowSelection)
-  const selectedIdsSet = useMemo(() => new Set(selectedIds), [selectedIds])
-  const clearSelection = useCallback(() => setRowSelection({}), [])
-
-  const handleCollectionUpdate = useCallback(() => {
-    if (selectedIds.length === 0) refetch()
-  }, [selectedIds.length, refetch])
-
-  const { isReconnecting } = useEntityUpdateSignal({
-    entityType: 'MediaFile',
-    onCollectionUpdate: handleCollectionUpdate,
-  })
 
   // Mutations
   const deleteMutation = useDeleteMediaFile()
@@ -162,25 +148,10 @@ export const MediaLibraryPage = () => {
     })
   }
 
-  const handleBulkDelete = () => {
-    const ids = [...selectedIds]
-    startBulkTransition(async () => {
-      await bulkDeleteMutation.mutateAsync(ids)
-      setRowSelection({})
-      setShowBulkDeleteConfirm(false)
-    })
-  }
-
   // Rename handler
   const handleRename = (id: string, newFileName: string) => {
     renameMutation.mutate({ id, newFileName })
   }
-
-  // Bulk file names for delete dialog
-  const bulkFileNames = useMemo(() => {
-    if (!data?.items) return []
-    return data.items.filter(f => selectedIdsSet.has(f.id)).map(f => f.originalFileName)
-  }, [data?.items, selectedIdsSet])
 
   const columns = useMemo((): ColumnDef<MediaFileListItem, unknown>[] => [
     createActionsColumn<MediaFileListItem>((item) => (
@@ -260,15 +231,14 @@ export const MediaLibraryPage = () => {
   ], [t])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
-  const table = useServerTable({
+  const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,
     columns,
     rowCount: data?.totalCount ?? 0,
-    columnVisibilityStorageKey: 'media',
+    tableKey: 'media',
     state: {
       pagination: { pageIndex: currentPage - 1, pageSize: DEFAULT_PAGE_SIZE },
       sorting: [],
-      rowSelection,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -278,19 +248,45 @@ export const MediaLibraryPage = () => {
         startFilterTransition(() => setCurrentPage(next.pageIndex + 1))
       }
     },
-    onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })
 
+  const selectedIds = useSelectedIds(table.getState().rowSelection)
+  const selectedIdsSet = useMemo(() => new Set(selectedIds), [selectedIds])
+  const clearSelection = useCallback(() => table.resetRowSelection(), [table])
+
+  const handleBulkDelete = () => {
+    const ids = [...selectedIds]
+    startBulkTransition(async () => {
+      await bulkDeleteMutation.mutateAsync(ids)
+      table.resetRowSelection()
+      setShowBulkDeleteConfirm(false)
+    })
+  }
+
+  const bulkFileNames = useMemo(() => {
+    if (!data?.items) return []
+    return data.items.filter(f => selectedIdsSet.has(f.id)).map(f => f.originalFileName)
+  }, [data?.items, selectedIdsSet])
+
+  const handleCollectionUpdate = useCallback(() => {
+    if (selectedIds.length === 0) refetch()
+  }, [selectedIds.length, refetch])
+
+  const { isReconnecting } = useEntityUpdateSignal({
+    entityType: 'MediaFile',
+    onCollectionUpdate: handleCollectionUpdate,
+  })
+
   const handleToggleSelect = useCallback((id: string) => {
-    setRowSelection(prev => {
+    table.setRowSelection(prev => {
       const next = { ...prev }
       if (next[id]) delete next[id]
       else next[id] = true
       return next
     })
-  }, [])
+  }, [table])
 
   return (
     <div className="space-y-6">
@@ -331,7 +327,12 @@ export const MediaLibraryPage = () => {
                 searchPlaceholder={t('media.searchPlaceholder', 'Search media files...')}
                 isSearchStale={isSearchStale}
                 showColumnToggle={true}
-                onResetColumnVisibility={table.resetColumnVisibility}
+                columnOrder={settings.columnOrder}
+                onColumnsReorder={(newOrder) => table.setColumnOrder(newOrder)}
+                isCustomized={isCustomized}
+                onResetSettings={resetToDefault}
+                density={settings.density}
+                onDensityChange={setDensity}
                 filterSlot={
                   <MediaToolbar
                     searchValue={searchInput}
@@ -430,6 +431,7 @@ export const MediaLibraryPage = () => {
             <div className="space-y-3">
               <DataTable
                 table={table}
+                density={settings.density}
                 isLoading={isLoading}
                 isStale={isSearchStale || isFilterPending || isPlaceholderData}
                 onRowClick={(item) => setDetailFile(item)}
