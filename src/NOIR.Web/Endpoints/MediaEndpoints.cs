@@ -421,8 +421,8 @@ public static class MediaEndpoints
             [FromQuery] string? search,
             [FromQuery] string? fileType,
             [FromQuery] string? folder,
-            [FromQuery] string sortBy,
-            [FromQuery] string sortOrder,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
             IMessageBus bus) =>
@@ -431,8 +431,8 @@ public static class MediaEndpoints
                 search,
                 fileType,
                 folder,
-                sortBy ?? "createdAt",
-                sortOrder ?? "desc",
+                orderBy,
+                isDescending ?? true,
                 page ?? 1,
                 pageSize ?? 24);
             var result = await bus.InvokeAsync<Result<PagedResult<NOIR.Application.Features.Media.Dtos.MediaFileListDto>>>(query);

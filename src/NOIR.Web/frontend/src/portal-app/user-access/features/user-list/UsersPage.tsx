@@ -168,7 +168,6 @@ export const UsersPage = () => {
       id: 'user',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('users.columns.user', 'User')} />,
       meta: { label: t('users.columns.user', 'User') },
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -189,7 +188,6 @@ export const UsersPage = () => {
     ch.accessor('email', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('users.columns.email', 'Email')} />,
       meta: { label: t('users.columns.email', 'Email') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
     }) as ColumnDef<UserListItem, unknown>,
     ch.accessor('roles', {
@@ -215,7 +213,6 @@ export const UsersPage = () => {
       id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('users.columns.status', 'Status')} />,
       meta: { label: t('users.columns.status', 'Status'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => (
         getValue() ? (
           <Badge variant="outline" className={`gap-1 ${getStatusBadgeClasses('red')}`}>

@@ -23,6 +23,8 @@ public class GetRolesQueryHandler
             query.PageSize,
             query.TenantId,
             query.IncludeSystemRoles,
+            query.OrderBy,
+            query.IsDescending,
             cancellationToken);
 
         // Get user counts and permission counts for all roles

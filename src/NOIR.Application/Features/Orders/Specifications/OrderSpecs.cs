@@ -95,7 +95,9 @@ public sealed class OrdersListSpec : Specification<Order>
         OrderStatus? status = null,
         string? customerEmail = null,
         DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null)
+        DateTimeOffset? toDate = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.TagWith("OrdersList");
 
@@ -111,9 +113,40 @@ public sealed class OrdersListSpec : Specification<Order>
         if (toDate.HasValue)
             Query.Where(o => o.CreatedAt <= toDate.Value);
 
-        Query.OrderByDescending(o => o.CreatedAt)
-            .Skip(skip)
-            .Take(take);
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "ordernumber":
+                if (isDescending) Query.OrderByDescending(o => o.OrderNumber);
+                else Query.OrderBy(o => o.OrderNumber);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(o => o.Status);
+                else Query.OrderBy(o => o.Status);
+                break;
+            case "grandtotal":
+                if (isDescending) Query.OrderByDescending(o => o.GrandTotal);
+                else Query.OrderBy(o => o.GrandTotal);
+                break;
+            case "customer":
+            case "customeremail":
+                if (isDescending) Query.OrderByDescending(o => o.CustomerEmail);
+                else Query.OrderBy(o => o.CustomerEmail);
+                break;
+            case "itemcount":
+                if (isDescending) Query.OrderByDescending(o => o.Items.Count);
+                else Query.OrderBy(o => o.Items.Count);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(o => o.CreatedAt);
+                else Query.OrderBy(o => o.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(o => o.CreatedAt);
+                break;
+        }
+
+        Query.Skip(skip).Take(take);
     }
 }
 

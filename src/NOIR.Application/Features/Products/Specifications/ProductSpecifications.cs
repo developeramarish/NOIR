@@ -17,7 +17,9 @@ public sealed class ProductsSpec : Specification<Product>
         int lowStockThreshold = 10,
         int? skip = null,
         int? take = null,
-        Dictionary<string, List<string>>? attributeFilters = null)
+        Dictionary<string, List<string>>? attributeFilters = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         // Search filter
         Query.Where(p => string.IsNullOrEmpty(search) ||
@@ -106,8 +108,44 @@ public sealed class ProductsSpec : Specification<Product>
         Query.Include("AttributeAssignments.Attribute");
 
         // Ordering
-        Query.OrderByDescending(p => p.CreatedAt)
-             .ThenBy(p => p.Name);
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+            case "product":
+                if (isDescending) Query.OrderByDescending(p => p.Name);
+                else Query.OrderBy(p => p.Name);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(p => p.Status);
+                else Query.OrderBy(p => p.Status);
+                break;
+            case "price":
+                if (isDescending) Query.OrderByDescending(p => p.BasePrice);
+                else Query.OrderBy(p => p.BasePrice);
+                break;
+            case "category":
+                if (isDescending) Query.OrderByDescending(p => p.Category!.Name);
+                else Query.OrderBy(p => p.Category!.Name);
+                break;
+            case "brand":
+                if (isDescending) Query.OrderByDescending(p => p.BrandEntity!.Name);
+                else Query.OrderBy(p => p.BrandEntity!.Name);
+                break;
+            case "stock":
+            case "totalstock":
+                if (isDescending) Query.OrderByDescending(p => p.Variants.Sum(v => v.StockQuantity));
+                else Query.OrderBy(p => p.Variants.Sum(v => v.StockQuantity));
+                break;
+            case "createdat":
+            case "created":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedAt);
+                else Query.OrderBy(p => p.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(p => p.CreatedAt)
+                     .ThenBy(p => p.Name);
+                break;
+        }
 
         // Pagination
         if (skip.HasValue)

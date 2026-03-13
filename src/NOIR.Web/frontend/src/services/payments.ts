@@ -130,6 +130,8 @@ export interface GetPaymentsParams {
   search?: string
   fromDate?: string
   toDate?: string
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface PaymentPagedResult {
@@ -160,6 +162,8 @@ export const getPayments = async (params: GetPaymentsParams = {}): Promise<Payme
   if (params.search) queryParams.append('search', params.search)
   if (params.fromDate) queryParams.append('fromDate', params.fromDate)
   if (params.toDate) queryParams.append('toDate', params.toDate)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
   const query = queryParams.toString()
   return apiClient<PaymentPagedResult>(`/payments${query ? `?${query}` : ''}`)
 }

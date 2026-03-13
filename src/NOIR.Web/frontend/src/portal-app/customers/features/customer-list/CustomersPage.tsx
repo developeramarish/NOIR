@@ -157,6 +157,7 @@ export const CustomersPage = () => {
     ch.accessor('firstName', {
       id: 'name',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
+      meta: { label: t('labels.name', 'Name') },
       cell: ({ row }) => (
         <span className="font-medium text-sm">
           {row.original.firstName} {row.original.lastName}
@@ -165,17 +166,17 @@ export const CustomersPage = () => {
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('email', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.email', 'Email')} />,
-      enableSorting: false,
+      meta: { label: t('labels.email', 'Email') },
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue()}</span>,
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('phone', {
-      header: t('labels.phone', 'Phone'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.phone', 'Phone')} />,
+      meta: { label: t('labels.phone', 'Phone') },
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('segment', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customers.segmentLabel', 'Segment')} />,
-      enableSorting: false,
+      meta: { label: t('customers.segmentLabel', 'Segment') },
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getSegmentBadgeClass(getValue())}>
           {t(`customers.segment.${getValue().toLowerCase()}`, getValue())}
@@ -184,7 +185,7 @@ export const CustomersPage = () => {
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('tier', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customers.tierLabel', 'Tier')} />,
-      enableSorting: false,
+      meta: { label: t('customers.tierLabel', 'Tier') },
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getTierBadgeClass(getValue())}>
           {t(`customers.tier.${getValue().toLowerCase()}`, getValue())}
@@ -193,20 +194,17 @@ export const CustomersPage = () => {
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('totalOrders', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customers.ordersLabel', 'Orders')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('customers.ordersLabel', 'Orders') },
       size: 90,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('totalSpent', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customers.totalSpent', 'Total Spent')} />,
-      enableSorting: false,
       meta: { align: 'right', label: t('customers.totalSpent', 'Total Spent') },
       cell: ({ getValue }) => <span className="font-medium text-sm">{formatCurrency(getValue(), 'VND')}</span>,
     }) as ColumnDef<CustomerSummaryDto, unknown>,
     ch.accessor('loyaltyPoints', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customers.loyaltyPoints', 'Points')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('customers.loyaltyPoints', 'Points') },
       size: 80,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue().toLocaleString()}</Badge>,

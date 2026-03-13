@@ -116,6 +116,7 @@ export const BrandsPage = () => {
     ch.accessor('logoUrl', {
       id: 'logo',
       header: t('labels.logo', 'Logo'),
+      meta: { label: t('labels.logo', 'Logo') },
       enableSorting: false,
       size: 64,
       cell: ({ row }) => row.original.logoUrl ? (
@@ -132,6 +133,7 @@ export const BrandsPage = () => {
     }) as ColumnDef<BrandListItem, unknown>,
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
+      meta: { label: t('labels.name', 'Name') },
       cell: ({ row }) => (
         <div>
           <span className="font-medium">{row.original.name}</span>
@@ -142,8 +144,8 @@ export const BrandsPage = () => {
       ),
     }) as ColumnDef<BrandListItem, unknown>,
     ch.accessor('slug', {
-      header: t('labels.slug', 'Slug'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.slug', 'Slug')} />,
+      meta: { label: t('labels.slug', 'Slug') },
       cell: ({ getValue }) => (
         <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>
       ),
@@ -151,7 +153,7 @@ export const BrandsPage = () => {
     ch.accessor('isActive', {
       id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status', 'Status') },
       size: 120,
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(getValue() ? 'green' : 'gray')}>
@@ -161,7 +163,6 @@ export const BrandsPage = () => {
     }) as ColumnDef<BrandListItem, unknown>,
     ch.accessor('productCount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('brands.products', 'Products')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('brands.products', 'Products') },
       size: 90,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
@@ -169,6 +170,7 @@ export const BrandsPage = () => {
     ch.accessor('websiteUrl', {
       id: 'website',
       header: t('labels.website', 'Website'),
+      meta: { label: t('labels.website', 'Website') },
       enableSorting: false,
       cell: ({ getValue }) => {
         const url = getValue()

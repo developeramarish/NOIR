@@ -149,13 +149,14 @@ export const TenantsPage = () => {
     )),
     ch.accessor('identifier', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('tenants.table.identifier')} />,
-      enableSorting: false,
+      meta: { label: t('tenants.table.identifier') },
       cell: ({ getValue }) => (
         <span className="font-mono text-sm">{getValue()}</span>
       ),
     }) as ColumnDef<TenantListItem, unknown>,
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('tenants.table.name')} />,
+      meta: { label: t('tenants.table.name') },
       cell: ({ row }) => (
         <div>
           <span className="font-medium">{row.original.name || row.original.identifier}</span>
@@ -166,13 +167,12 @@ export const TenantsPage = () => {
     ch.accessor('isActive', {
       id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status') },
       cell: ({ getValue }) => <TenantStatusBadge isActive={getValue()} />,
       size: 120,
     }) as ColumnDef<TenantListItem, unknown>,
     ch.accessor('createdAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.createdAt')} />,
-      enableSorting: false,
       meta: { label: t('labels.createdAt') },
       cell: ({ getValue }) => (
         <span className="text-sm text-muted-foreground">{formatDate(getValue())}</span>

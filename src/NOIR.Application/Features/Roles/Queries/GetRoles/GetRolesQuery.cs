@@ -8,4 +8,6 @@ public sealed record GetRolesQuery(
     int Page = 1,
     int PageSize = 20,
     Guid? TenantId = null,
-    bool IncludeSystemRoles = true);
+    bool IncludeSystemRoles = true,
+    string? OrderBy = null,
+    bool IsDescending = true);

@@ -22,7 +22,9 @@ public class GetBrandsQueryHandler
             query.IsActive,
             query.IsFeatured,
             query.Page,
-            query.PageSize);
+            query.PageSize,
+            query.OrderBy,
+            query.IsDescending);
 
         var brands = await _brandRepository.ListAsync(spec, cancellationToken);
 

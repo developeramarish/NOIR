@@ -31,7 +31,9 @@ public class GetProductsQueryHandler
             ProductConstants.LowStockThreshold,
             skip,
             query.PageSize,
-            query.AttributeFilters);
+            query.AttributeFilters,
+            query.OrderBy,
+            query.IsDescending);
 
         var products = await _productRepository.ListAsync(spec, cancellationToken);
 

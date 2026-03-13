@@ -79,13 +79,13 @@ export const MediaLibraryPage = () => {
   // Upload dialog (URL-synced)
   const { isOpen: isUploadOpen, open: openUpload, onOpenChange: onUploadOpenChange } = useUrlDialog({ paramValue: 'upload-media' })
 
-  // Query
+  // Query — translate UI sort state to API params (orderBy / isDescending)
   const queryParams = useMemo(() => ({
     search: deferredSearch || undefined,
     fileType: fileTypeFilter,
     folder: folderFilter,
-    sortBy,
-    sortOrder,
+    orderBy: sortBy || undefined,
+    isDescending: sortOrder === 'desc',
     page: currentPage,
     pageSize: DEFAULT_PAGE_SIZE,
   }), [deferredSearch, fileTypeFilter, folderFilter, sortBy, sortOrder, currentPage])
@@ -174,6 +174,7 @@ export const MediaLibraryPage = () => {
     ch.accessor('defaultUrl', {
       id: 'preview',
       header: t('labels.preview', 'Preview'),
+      meta: { label: t('labels.preview', 'Preview') },
       enableSorting: false,
       cell: ({ row }) => (
         <FilePreviewTrigger
@@ -187,6 +188,7 @@ export const MediaLibraryPage = () => {
     ch.accessor('originalFileName', {
       id: 'name',
       header: t('labels.name', 'Name'),
+      meta: { label: t('labels.name', 'Name') },
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex flex-col min-w-0">
@@ -200,6 +202,7 @@ export const MediaLibraryPage = () => {
     ch.accessor('folder', {
       id: 'folder',
       header: t('media.folder', 'Folder'),
+      meta: { label: t('media.folder', 'Folder') },
       enableSorting: false,
       cell: ({ getValue }) => (
         <span className="text-sm">{getValue() ? extractFolderName(getValue()) : '\u2014'}</span>
@@ -208,6 +211,7 @@ export const MediaLibraryPage = () => {
     ch.accessor('format', {
       id: 'type',
       header: t('media.type', 'Type'),
+      meta: { label: t('media.type', 'Type') },
       enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm uppercase">{getValue()}</span>,
     }) as ColumnDef<MediaFileListItem, unknown>,
@@ -215,12 +219,13 @@ export const MediaLibraryPage = () => {
       id: 'size',
       header: t('media.size', 'Size'),
       enableSorting: false,
-      meta: { align: 'right' as const },
+      meta: { align: 'right' as const, label: t('media.size', 'Size') },
       cell: ({ getValue }) => <span className="text-sm">{formatFileSize(getValue())}</span>,
     }) as ColumnDef<MediaFileListItem, unknown>,
     ch.accessor('createdAt', {
       id: 'uploaded',
       header: t('labels.uploaded', 'Uploaded'),
+      meta: { label: t('labels.uploaded', 'Uploaded') },
       enableSorting: false,
       cell: ({ getValue }) => (
         <span className="text-sm text-muted-foreground">

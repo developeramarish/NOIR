@@ -38,6 +38,8 @@ public static class ReviewEndpoints
             [FromQuery] Guid? productId,
             [FromQuery] int? rating,
             [FromQuery] string? search,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetReviewsQuery(
@@ -46,7 +48,9 @@ public static class ReviewEndpoints
                 status,
                 productId,
                 rating,
-                search);
+                search,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<ReviewDto>>>(query);
             return result.ToHttpResult();
         })

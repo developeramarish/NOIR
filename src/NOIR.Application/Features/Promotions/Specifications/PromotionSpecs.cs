@@ -72,7 +72,9 @@ public sealed class PromotionsFilterSpec : Specification<Domain.Entities.Promoti
         PromotionStatus? status = null,
         PromotionType? promotionType = null,
         DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null)
+        DateTimeOffset? toDate = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.TagWith("PromotionsFilter");
 
@@ -91,9 +93,49 @@ public sealed class PromotionsFilterSpec : Specification<Domain.Entities.Promoti
         if (toDate.HasValue)
             Query.Where(p => p.EndDate <= toDate.Value);
 
-        Query.OrderByDescending(p => p.CreatedAt)
-            .Skip(skip)
-            .Take(take);
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(p => p.Name);
+                else Query.OrderBy(p => p.Name);
+                break;
+            case "code":
+                if (isDescending) Query.OrderByDescending(p => p.Code);
+                else Query.OrderBy(p => p.Code);
+                break;
+            case "promotiontype":
+                if (isDescending) Query.OrderByDescending(p => p.PromotionType);
+                else Query.OrderBy(p => p.PromotionType);
+                break;
+            case "discountvalue":
+            case "discount":
+                if (isDescending) Query.OrderByDescending(p => p.DiscountValue);
+                else Query.OrderBy(p => p.DiscountValue);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(p => p.Status);
+                else Query.OrderBy(p => p.Status);
+                break;
+            case "startdate":
+                if (isDescending) Query.OrderByDescending(p => p.StartDate);
+                else Query.OrderBy(p => p.StartDate);
+                break;
+            case "enddate":
+                if (isDescending) Query.OrderByDescending(p => p.EndDate);
+                else Query.OrderBy(p => p.EndDate);
+                break;
+            case "currentusagecount":
+            case "usage":
+                if (isDescending) Query.OrderByDescending(p => p.CurrentUsageCount);
+                else Query.OrderBy(p => p.CurrentUsageCount);
+                break;
+            default:
+                Query.OrderByDescending(p => p.CreatedAt);
+                break;
+        }
+
+        Query.Skip(skip).Take(take);
     }
 }
 

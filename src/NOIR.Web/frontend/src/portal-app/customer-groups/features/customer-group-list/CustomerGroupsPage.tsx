@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UsersRound, Plus, Eye, Trash2, Loader2 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -55,7 +55,7 @@ export const CustomerGroupsPage = () => {
   const canDeleteGroups = hasPermission(Permissions.CustomerGroupsDelete)
   const showActions = canUpdateGroups || canDeleteGroups
 
-  const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
+  const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setSorting, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
   const { data: groupsResponse, isLoading, error: queryError, refetch: refresh } = useCustomerGroupsQuery(params)
   const deleteMutation = useDeleteCustomerGroupMutation()
 
@@ -106,7 +106,6 @@ export const CustomerGroupsPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ row }) => (
         <div>
           <span className="font-medium">{row.original.name}</span>
@@ -121,14 +120,12 @@ export const CustomerGroupsPage = () => {
     ch.accessor('slug', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.slug', 'Slug')} />,
       meta: { label: t('labels.slug', 'Slug') },
-      enableSorting: false,
       cell: ({ getValue }) => <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>,
     }) as ColumnDef<CustomerGroupListItem, unknown>,
     ch.accessor('isActive', {
       id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
       meta: { label: t('labels.status', 'Status') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(row.original.isActive ? 'green' : 'gray')}>
           {row.original.isActive ? t('labels.active', 'Active') : t('labels.inactive', 'Inactive')}
@@ -139,7 +136,6 @@ export const CustomerGroupsPage = () => {
       id: 'members',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('customerGroups.members', 'Members')} />,
       meta: { label: t('customerGroups.members', 'Members'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<CustomerGroupListItem, unknown>,
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,13 +148,14 @@ export const CustomerGroupsPage = () => {
     tableKey: 'customer-groups',
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater({ pageIndex: params.page - 1, pageSize: params.pageSize }) : updater
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

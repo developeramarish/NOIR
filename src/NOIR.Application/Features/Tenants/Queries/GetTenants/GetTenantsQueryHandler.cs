@@ -43,9 +43,18 @@ public class GetTenantsQueryHandler
         // Get total count before pagination
         var totalCount = filteredTenants.Count();
 
+        // Sorting
+        IOrderedQueryable<Tenant> sortedTenants = query.OrderBy?.ToLowerInvariant() switch
+        {
+            "name" => query.IsDescending ? filteredTenants.OrderByDescending(t => t.Name) : filteredTenants.OrderBy(t => t.Name),
+            "identifier" => query.IsDescending ? filteredTenants.OrderByDescending(t => t.Identifier) : filteredTenants.OrderBy(t => t.Identifier),
+            "status" or "isactive" => query.IsDescending ? filteredTenants.OrderByDescending(t => t.IsActive) : filteredTenants.OrderBy(t => t.IsActive),
+            "createdat" => query.IsDescending ? filteredTenants.OrderByDescending(t => t.CreatedAt) : filteredTenants.OrderBy(t => t.CreatedAt),
+            _ => filteredTenants.OrderBy(t => t.Name),
+        };
+
         // Apply pagination
-        var pagedTenants = filteredTenants
-            .OrderBy(t => t.Name)
+        var pagedTenants = sortedTenants
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .ToList();

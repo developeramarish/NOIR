@@ -61,6 +61,8 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
         string? search,
         int page,
         int pageSize,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default)
     {
         var query = _roleManager.Roles.Where(r => !r.IsDeleted).AsQueryable();
@@ -74,10 +76,24 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
 
         var totalCount = await query.CountAsync(ct);
 
-        // Order, paginate, then project
-        var roles = await query
-            .OrderBy(r => r.SortOrder)
-            .ThenBy(r => r.Name)
+        // Apply dynamic sorting
+        IOrderedQueryable<ApplicationRole> orderedQuery = orderBy?.ToLowerInvariant() switch
+        {
+            "name" => isDescending ? query.OrderByDescending(r => r.Name) : query.OrderBy(r => r.Name),
+            "description" => isDescending
+                ? query.OrderByDescending(r => r.Description ?? string.Empty)
+                : query.OrderBy(r => r.Description ?? string.Empty),
+            "type" or "issystemrole" => isDescending
+                ? query.OrderByDescending(r => r.IsSystemRole)
+                : query.OrderBy(r => r.IsSystemRole),
+            "createdat" => isDescending
+                ? query.OrderByDescending(r => r.CreatedAt)
+                : query.OrderBy(r => r.CreatedAt),
+            _ => query.OrderBy(r => r.SortOrder).ThenBy(r => r.Name),
+        };
+
+        // Paginate, then project
+        var roles = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(r => new RoleIdentityDto(
@@ -103,6 +119,8 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
         int pageSize,
         Guid? tenantId,
         bool includeSystemRoles,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default)
     {
         var query = _roleManager.Roles.Where(r => !r.IsDeleted).AsQueryable();
@@ -142,10 +160,24 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
 
         var totalCount = await query.CountAsync(ct);
 
-        // Order, paginate, then project
-        var roles = await query
-            .OrderBy(r => r.SortOrder)
-            .ThenBy(r => r.Name)
+        // Apply dynamic sorting
+        IOrderedQueryable<ApplicationRole> orderedQuery = orderBy?.ToLowerInvariant() switch
+        {
+            "name" => isDescending ? query.OrderByDescending(r => r.Name) : query.OrderBy(r => r.Name),
+            "description" => isDescending
+                ? query.OrderByDescending(r => r.Description ?? string.Empty)
+                : query.OrderBy(r => r.Description ?? string.Empty),
+            "type" or "issystemrole" => isDescending
+                ? query.OrderByDescending(r => r.IsSystemRole)
+                : query.OrderBy(r => r.IsSystemRole),
+            "createdat" => isDescending
+                ? query.OrderByDescending(r => r.CreatedAt)
+                : query.OrderBy(r => r.CreatedAt),
+            _ => query.OrderBy(r => r.SortOrder).ThenBy(r => r.Name),
+        };
+
+        // Paginate, then project
+        var roles = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(r => new RoleIdentityDto(

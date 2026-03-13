@@ -25,7 +25,8 @@ public class GetReviewsQueryHandler
 
         // Get reviews
         var listSpec = new ReviewsModerationListSpec(
-            query.Status, query.ProductId, query.Rating, query.Search, skip, query.PageSize);
+            query.Status, query.ProductId, query.Rating, query.Search, skip, query.PageSize,
+            query.OrderBy, query.IsDescending);
         var reviews = await _reviewRepository.ListAsync(listSpec, cancellationToken);
 
         var items = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();

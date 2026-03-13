@@ -133,7 +133,6 @@ export const ProductCategoriesPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ row }) => (
         <div>
           <div className="flex items-center gap-2">
@@ -151,14 +150,12 @@ export const ProductCategoriesPage = () => {
     ch.accessor('slug', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.slug', 'Slug')} />,
       meta: { label: t('labels.slug', 'Slug') },
-      enableSorting: false,
       cell: ({ getValue }) => <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>,
     }) as ColumnDef<ProductCategoryListItem, unknown>,
     ch.accessor('parentName', {
       id: 'parent',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('categories.parent', 'Parent')} />,
       meta: { label: t('categories.parent', 'Parent') },
-      enableSorting: false,
       cell: ({ getValue }) =>
         getValue() ? (
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -173,14 +170,12 @@ export const ProductCategoriesPage = () => {
       id: 'products',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('categories.products', 'Products')} />,
       meta: { label: t('categories.products', 'Products'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<ProductCategoryListItem, unknown>,
     ch.accessor('childCount', {
       id: 'children',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('categories.children', 'Children')} />,
       meta: { label: t('categories.children', 'Children'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) =>
         (getValue() ?? 0) > 0 ? (
           <Badge variant="outline">{getValue()}</Badge>
@@ -196,6 +191,7 @@ export const ProductCategoriesPage = () => {
     columns,
     tableKey: 'product-categories',
     rowCount: categories.length,
+    manualSorting: false,
     state: {
       pagination: { pageIndex: 0, pageSize: 1000 },
       sorting: [],

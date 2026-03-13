@@ -125,6 +125,7 @@ export const RolesPage = () => {
     )),
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('roles.columns.name', 'Name')} />,
+      meta: { label: t('roles.columns.name', 'Name') },
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div
@@ -144,7 +145,7 @@ export const RolesPage = () => {
     }) as ColumnDef<RoleListItem, unknown>,
     ch.accessor('description', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('roles.columns.description', 'Description')} />,
-      enableSorting: false,
+      meta: { label: t('roles.columns.description', 'Description') },
       cell: ({ getValue }) => (
         <span className="text-muted-foreground line-clamp-2">{getValue() || '-'}</span>
       ),
@@ -152,7 +153,7 @@ export const RolesPage = () => {
     ch.accessor('permissionCount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('roles.columns.permissions', 'Permissions')} />,
       enableSorting: false,
-      meta: { align: 'center' },
+      meta: { align: 'center', label: t('roles.columns.permissions', 'Permissions') },
       size: 120,
       cell: ({ getValue }) => (
         <div className="flex items-center justify-center gap-1">
@@ -164,15 +165,14 @@ export const RolesPage = () => {
     ch.accessor('userCount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('roles.columns.users', 'Users')} />,
       enableSorting: false,
-      meta: { align: 'center' },
+      meta: { align: 'center', label: t('roles.columns.users', 'Users') },
       size: 90,
       cell: ({ getValue }) => <span>{getValue()}</span>,
     }) as ColumnDef<RoleListItem, unknown>,
     ch.accessor('isSystemRole', {
       id: 'type',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('roles.columns.type', 'Type')} />,
-      enableSorting: false,
-      meta: { align: 'center' },
+      meta: { align: 'center', label: t('roles.columns.type', 'Type') },
       size: 100,
       cell: ({ getValue }) => getValue() ? (
         <Badge variant="secondary">{t('roles.system', 'System')}</Badge>

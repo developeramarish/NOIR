@@ -10,4 +10,6 @@ public sealed record GetPromotionsQuery(
     PromotionStatus? Status = null,
     PromotionType? PromotionType = null,
     DateTimeOffset? FromDate = null,
-    DateTimeOffset? ToDate = null);
+    DateTimeOffset? ToDate = null,
+    string? OrderBy = null,
+    bool IsDescending = true);

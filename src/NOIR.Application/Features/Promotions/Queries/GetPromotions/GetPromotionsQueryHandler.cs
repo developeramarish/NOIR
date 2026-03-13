@@ -35,7 +35,9 @@ public class GetPromotionsQueryHandler
             query.Status,
             query.PromotionType,
             query.FromDate,
-            query.ToDate);
+            query.ToDate,
+            query.OrderBy,
+            query.IsDescending);
         var promotions = await _repository.ListAsync(listSpec, cancellationToken);
 
         var items = promotions.Select(PromotionMapper.ToDto).ToList();

@@ -70,7 +70,9 @@ public sealed class ProjectsByFilterSpec : Specification<Project>
         ProjectStatus? status = null,
         Guid? ownerId = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -85,8 +87,36 @@ public sealed class ProjectsByFilterSpec : Specification<Project>
 
         Query.Include(p => p.Owner!)
              .Include(p => p.Members)
-             .Include(p => p.Tasks)
-             .OrderByDescending(p => p.CreatedAt);
+             .Include(p => p.Tasks);
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(p => p.Name);
+                else Query.OrderBy(p => p.Name);
+                break;
+            case "projectcode":
+                if (isDescending) Query.OrderByDescending(p => p.ProjectCode);
+                else Query.OrderBy(p => p.ProjectCode);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(p => p.Status);
+                else Query.OrderBy(p => p.Status);
+                break;
+            case "duedate":
+                if (isDescending) Query.OrderByDescending(p => p.DueDate ?? DateTimeOffset.MinValue);
+                else Query.OrderBy(p => p.DueDate ?? DateTimeOffset.MinValue);
+                break;
+            case "members":
+            case "membercount":
+                if (isDescending) Query.OrderByDescending(p => p.Members.Count);
+                else Query.OrderBy(p => p.Members.Count);
+                break;
+            default:
+                Query.OrderByDescending(p => p.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue) Query.Skip(skip.Value);
         if (take.HasValue) Query.Take(take.Value);

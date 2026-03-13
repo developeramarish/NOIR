@@ -38,6 +38,8 @@ export const getContacts = async (params: GetContactsParams = {}): Promise<Conta
   if (params.companyId) queryParams.append('companyId', params.companyId)
   if (params.ownerId) queryParams.append('ownerId', params.ownerId)
   if (params.source) queryParams.append('source', params.source)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<ContactPagedResult>(`/crm/contacts${query ? `?${query}` : ''}`)
@@ -74,6 +76,8 @@ export const getCompanies = async (params: GetCompaniesParams = {}): Promise<Com
   if (params.page != null) queryParams.append('page', params.page.toString())
   if (params.pageSize != null) queryParams.append('pageSize', params.pageSize.toString())
   if (params.search) queryParams.append('search', params.search)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<CompanyPagedResult>(`/crm/companies${query ? `?${query}` : ''}`)

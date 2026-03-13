@@ -47,6 +47,8 @@ public interface IUserIdentityService
         int pageSize,
         string? role = null,
         bool? isLocked = null,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default);
 
     #endregion

@@ -26,11 +26,15 @@ export const getRoles = async (params: {
   search?: string
   page?: number
   pageSize?: number
+  orderBy?: string
+  isDescending?: boolean
 }): Promise<PaginatedResponse<RoleListItem>> => {
   const queryParams = new URLSearchParams()
   if (params.search) queryParams.append('search', params.search)
   if (params.page) queryParams.append('page', params.page.toString())
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<PaginatedResponse<RoleListItem>>(`/roles${query ? `?${query}` : ''}`)

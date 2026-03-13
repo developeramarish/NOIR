@@ -19,7 +19,7 @@ public class GetEmployeesQueryHandler
 
         var spec = new Specifications.EmployeesFilterSpec(
             query.Search, query.DepartmentId, query.Status, query.EmploymentType,
-            skip, query.PageSize);
+            skip, query.PageSize, query.OrderBy, query.IsDescending);
 
         var employees = await _employeeRepository.ListAsync(spec, cancellationToken);
 

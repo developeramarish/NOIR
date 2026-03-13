@@ -10,5 +10,5 @@ public sealed record GetCustomersQuery(
     CustomerSegment? Segment = null,
     CustomerTier? Tier = null,
     bool? IsActive = null,
-    string? SortBy = null,
-    bool SortDescending = true);
+    string? OrderBy = null,
+    bool IsDescending = true);

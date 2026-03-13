@@ -14,7 +14,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
@@ -114,6 +114,7 @@ export const EmployeesPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<{ departmentId?: string; status?: EmployeeStatus; employmentType?: EmploymentType }>({ defaultPageSize: 20 })
@@ -283,7 +284,6 @@ export const EmployeesPage = () => {
       id: 'name',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
@@ -298,26 +298,22 @@ export const EmployeesPage = () => {
     ch.accessor('employeeCode', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.employeeCode')} />,
       meta: { label: t('hr.employeeCode') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-mono text-sm text-muted-foreground">{getValue()}</span>,
     }) as ColumnDef<EmployeeListDto, unknown>,
     ch.accessor('email', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.email')} />,
       meta: { label: t('hr.email') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue()}</span>,
     }) as ColumnDef<EmployeeListDto, unknown>,
     ch.accessor('departmentName', {
       id: 'department',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.department')} />,
       meta: { label: t('hr.department') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm">{getValue()}</span>,
     }) as ColumnDef<EmployeeListDto, unknown>,
     ch.accessor('position', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.position')} />,
       meta: { label: t('hr.position') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<EmployeeListDto, unknown>,
     ch.accessor('tags', {
@@ -330,7 +326,6 @@ export const EmployeesPage = () => {
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.status')} />,
       meta: { label: t('hr.status') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getEmployeeStatusColor(row.original.status)}>
           {t(`hr.statuses.${row.original.status.toLowerCase()}`)}
@@ -340,7 +335,6 @@ export const EmployeesPage = () => {
     ch.accessor('employmentType', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.employmentType')} />,
       meta: { label: t('hr.employmentType') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getEmploymentTypeColor(row.original.employmentType)}>
           {t(`hr.employmentTypes.${row.original.employmentType.charAt(0).toLowerCase() + row.original.employmentType.slice(1).replace(/([A-Z])/g, (m) => m.toLowerCase())}`)}
@@ -357,7 +351,7 @@ export const EmployeesPage = () => {
     rowCount: employeesResponse?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -366,6 +360,7 @@ export const EmployeesPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })

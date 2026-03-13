@@ -17,7 +17,7 @@ public class GetContactsQueryHandler
 
         var spec = new Specifications.ContactsFilterSpec(
             query.Search, query.CompanyId, query.OwnerId, query.Source,
-            skip, query.PageSize);
+            skip, query.PageSize, query.OrderBy, query.IsDescending);
 
         var contacts = await _contactRepository.ListAsync(spec, cancellationToken);
 

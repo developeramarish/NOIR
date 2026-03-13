@@ -22,6 +22,8 @@ export const getInventoryReceipts = async (
   if (params.search) queryParams.append('search', params.search)
   if (params.type) queryParams.append('type', params.type)
   if (params.status) queryParams.append('status', params.status)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<InventoryReceiptPagedResult>(`/inventory/receipts${query ? `?${query}` : ''}`)

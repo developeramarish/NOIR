@@ -41,7 +41,9 @@ public sealed class EmployeesFilterSpec : Specification<Employee>
         EmployeeStatus? status = null,
         EmploymentType? employmentType = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -69,9 +71,50 @@ public sealed class EmployeesFilterSpec : Specification<Employee>
         }
 
         Query.Include(e => e.Department!)
-             .Include(e => e.Manager!)
-             .OrderByDescending(e => e.CreatedAt)
-             .ThenBy(e => e.LastName);
+             .Include(e => e.Manager!);
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "employeecode":
+                if (isDescending) Query.OrderByDescending(e => e.EmployeeCode);
+                else Query.OrderBy(e => e.EmployeeCode);
+                break;
+            case "name":
+                if (isDescending)
+                    Query.OrderByDescending(e => e.LastName).ThenByDescending(e => e.FirstName);
+                else
+                    Query.OrderBy(e => e.LastName).ThenBy(e => e.FirstName);
+                break;
+            case "position":
+                if (isDescending) Query.OrderByDescending(e => e.Position ?? string.Empty);
+                else Query.OrderBy(e => e.Position ?? string.Empty);
+                break;
+            case "department":
+                if (isDescending) Query.OrderByDescending(e => e.Department != null ? e.Department.Name : string.Empty);
+                else Query.OrderBy(e => e.Department != null ? e.Department.Name : string.Empty);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(e => e.Status);
+                else Query.OrderBy(e => e.Status);
+                break;
+            case "employmenttype":
+                if (isDescending) Query.OrderByDescending(e => e.EmploymentType);
+                else Query.OrderBy(e => e.EmploymentType);
+                break;
+            case "hiredate":
+                if (isDescending) Query.OrderByDescending(e => e.JoinDate);
+                else Query.OrderBy(e => e.JoinDate);
+                break;
+            case "email":
+                if (isDescending) Query.OrderByDescending(e => e.Email);
+                else Query.OrderBy(e => e.Email);
+                break;
+            case "createdat":
+            default:
+                Query.OrderByDescending(e => e.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue) Query.Skip(skip.Value);
         if (take.HasValue) Query.Take(take.Value);

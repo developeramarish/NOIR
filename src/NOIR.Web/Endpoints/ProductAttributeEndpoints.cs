@@ -32,9 +32,11 @@ public static class ProductAttributeEndpoints
             [FromQuery] string? type,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
+            [FromQuery] string? orderBy = null,
+            [FromQuery] bool? isDescending = null,
             IMessageBus bus = null!) =>
         {
-            var query = new GetProductAttributesQuery(search, isActive, isFilterable, isVariantAttribute, type, pageNumber, pageSize);
+            var query = new GetProductAttributesQuery(search, isActive, isFilterable, isVariantAttribute, type, pageNumber, pageSize, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<ProductAttributeListDto>>>(query);
             return result.ToHttpResult();
         })

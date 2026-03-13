@@ -195,6 +195,8 @@ export interface GetProjectsParams {
   pageSize?: number
   search?: string
   status?: ProjectStatus
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface CreateProjectRequest {

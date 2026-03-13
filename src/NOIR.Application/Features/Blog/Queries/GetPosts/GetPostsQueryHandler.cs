@@ -27,7 +27,9 @@ public class GetPostsQueryHandler
                 query.CategoryId,
                 query.TagId,
                 skip,
-                query.PageSize);
+                query.PageSize,
+                query.OrderBy,
+                query.IsDescending);
         }
         else
         {
@@ -37,7 +39,9 @@ public class GetPostsQueryHandler
                 query.CategoryId,
                 query.AuthorId,
                 skip,
-                query.PageSize);
+                query.PageSize,
+                query.OrderBy,
+                query.IsDescending);
         }
 
         var posts = await _postRepository.ListAsync(spec, cancellationToken);

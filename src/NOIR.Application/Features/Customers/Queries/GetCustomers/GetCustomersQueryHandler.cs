@@ -34,8 +34,8 @@ public class GetCustomersQueryHandler
             query.Segment,
             query.Tier,
             query.IsActive,
-            query.SortBy,
-            query.SortDescending);
+            query.OrderBy,
+            query.IsDescending);
         var customers = await _customerRepository.ListAsync(listSpec, cancellationToken);
 
         var items = customers.Select(CustomerMapper.ToSummaryDto).ToList();

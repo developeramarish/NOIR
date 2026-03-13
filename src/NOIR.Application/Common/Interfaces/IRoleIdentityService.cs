@@ -39,6 +39,8 @@ public interface IRoleIdentityService
         string? search,
         int page,
         int pageSize,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default);
 
     /// <summary>
@@ -52,6 +54,8 @@ public interface IRoleIdentityService
         int pageSize,
         Guid? tenantId,
         bool includeSystemRoles,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default);
 
     #endregion

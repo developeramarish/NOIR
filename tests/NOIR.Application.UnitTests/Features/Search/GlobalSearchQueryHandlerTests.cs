@@ -69,7 +69,7 @@ public class GlobalSearchQueryHandlerTests
     {
         _userIdentityServiceMock
             .Setup(x => x.GetUsersPaginatedAsync(
-                null, It.IsAny<string>(), 1, It.IsAny<int>(), null, null, It.IsAny<CancellationToken>()))
+                null, It.IsAny<string>(), 1, It.IsAny<int>(), null, null, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<UserIdentityDto>() as IReadOnlyList<UserIdentityDto>, 0));
     }
 
@@ -77,7 +77,7 @@ public class GlobalSearchQueryHandlerTests
     {
         _userIdentityServiceMock
             .Setup(x => x.GetUsersPaginatedAsync(
-                null, It.IsAny<string>(), 1, It.IsAny<int>(), null, null, It.IsAny<CancellationToken>()))
+                null, It.IsAny<string>(), 1, It.IsAny<int>(), null, null, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((users.ToList() as IReadOnlyList<UserIdentityDto>, users.Length));
     }
 

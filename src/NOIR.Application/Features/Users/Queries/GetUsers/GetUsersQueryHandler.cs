@@ -30,6 +30,8 @@ public class GetUsersQueryHandler
             query.PageSize,
             query.Role,
             query.IsLocked,
+            query.OrderBy,
+            query.IsDescending,
             cancellationToken);
 
         // Batch fetch roles for all users in a single operation (fixes N+1)

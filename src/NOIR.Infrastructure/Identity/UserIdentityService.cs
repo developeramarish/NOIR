@@ -125,6 +125,8 @@ public class UserIdentityService : IUserIdentityService, IScopedService
         int pageSize,
         string? role = null,
         bool? isLocked = null,
+        string? orderBy = null,
+        bool isDescending = true,
         CancellationToken ct = default)
     {
         var query = _userManager.Users
@@ -159,9 +161,26 @@ public class UserIdentityService : IUserIdentityService, IScopedService
 
         var totalCount = await query.CountAsync(ct);
 
-        // Order, paginate, then project
-        var users = await query
-            .OrderBy(u => u.Email)
+        // Apply dynamic sorting
+        IOrderedQueryable<ApplicationUser> orderedQuery = orderBy?.ToLowerInvariant() switch
+        {
+            "email" => isDescending ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
+            "user" or "name" or "displayname" => isDescending
+                ? query.OrderByDescending(u => u.DisplayName ?? (u.FirstName ?? "") + " " + (u.LastName ?? ""))
+                : query.OrderBy(u => u.DisplayName ?? (u.FirstName ?? "") + " " + (u.LastName ?? "")),
+            "status" => isDescending
+                ? query.OrderByDescending(u => u.IsActive)
+                : query.OrderBy(u => u.IsActive),
+            "createdat" => isDescending
+                ? query.OrderByDescending(u => u.CreatedAt)
+                : query.OrderBy(u => u.CreatedAt),
+            _ => isDescending
+                ? query.OrderByDescending(u => u.CreatedAt)
+                : query.OrderBy(u => u.CreatedAt),
+        };
+
+        // Paginate, then project
+        var users = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(u => new UserIdentityDto(

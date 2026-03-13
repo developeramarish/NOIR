@@ -48,7 +48,13 @@ public sealed class CustomerGroupNameExistsSpec : Specification<CustomerGroup>
 /// </summary>
 public sealed class CustomerGroupsPagedSpec : Specification<CustomerGroup>
 {
-    public CustomerGroupsPagedSpec(string? search, bool? isActive, int page, int pageSize)
+    public CustomerGroupsPagedSpec(
+        string? search,
+        bool? isActive,
+        int page,
+        int pageSize,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -60,8 +66,37 @@ public sealed class CustomerGroupsPagedSpec : Specification<CustomerGroup>
             Query.Where(g => g.IsActive == isActive.Value);
         }
 
-        Query.OrderBy(g => g.Name)
-             .Skip((page - 1) * pageSize)
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(g => g.Name);
+                else Query.OrderBy(g => g.Name);
+                break;
+            case "slug":
+                if (isDescending) Query.OrderByDescending(g => g.Slug);
+                else Query.OrderBy(g => g.Slug);
+                break;
+            case "status":
+            case "isactive":
+                if (isDescending) Query.OrderByDescending(g => g.IsActive);
+                else Query.OrderBy(g => g.IsActive);
+                break;
+            case "members":
+            case "membercount":
+                if (isDescending) Query.OrderByDescending(g => g.MemberCount);
+                else Query.OrderBy(g => g.MemberCount);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(g => (object)g.CreatedAt);
+                else Query.OrderBy(g => (object)g.CreatedAt);
+                break;
+            default:
+                Query.OrderBy(g => g.Name);
+                break;
+        }
+
+        Query.Skip((page - 1) * pageSize)
              .Take(pageSize)
              .TagWith("GetCustomerGroupsPaged");
     }

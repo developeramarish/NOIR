@@ -63,7 +63,9 @@ public sealed class PaymentTransactionsSpec : Specification<PaymentTransaction>
         PaymentMethod? paymentMethod = null,
         string? provider = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.Where(t => string.IsNullOrEmpty(search) ||
                          t.TransactionNumber.Contains(search) ||
@@ -72,8 +74,44 @@ public sealed class PaymentTransactionsSpec : Specification<PaymentTransaction>
              .Where(t => paymentMethod == null || t.PaymentMethod == paymentMethod)
              .Where(t => string.IsNullOrEmpty(provider) || t.Provider == provider)
              .Include(t => t.Gateway!)
-             .OrderByDescending(t => (object)t.CreatedAt)
              .TagWith("GetPaymentTransactions");
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "transactionnumber":
+                if (isDescending) Query.OrderByDescending(t => t.TransactionNumber);
+                else Query.OrderBy(t => t.TransactionNumber);
+                break;
+            case "amount":
+                if (isDescending) Query.OrderByDescending(t => t.Amount);
+                else Query.OrderBy(t => t.Amount);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(t => t.Status);
+                else Query.OrderBy(t => t.Status);
+                break;
+            case "provider":
+                if (isDescending) Query.OrderByDescending(t => t.Provider);
+                else Query.OrderBy(t => t.Provider);
+                break;
+            case "method":
+            case "paymentmethod":
+                if (isDescending) Query.OrderByDescending(t => t.PaymentMethod);
+                else Query.OrderBy(t => t.PaymentMethod);
+                break;
+            case "paidat":
+                if (isDescending) Query.OrderByDescending(t => t.PaidAt ?? DateTimeOffset.MinValue);
+                else Query.OrderBy(t => t.PaidAt ?? DateTimeOffset.MinValue);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(t => t.CreatedAt);
+                else Query.OrderBy(t => t.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(t => (object)t.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue)
             Query.Skip(skip.Value);

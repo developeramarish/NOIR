@@ -123,7 +123,6 @@ export const OrdersPage = () => {
     ch.accessor('customerName', {
       id: 'customer',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.customer', 'Customer')} />,
-      enableSorting: false,
       meta: { label: t('labels.customer', 'Customer') },
       cell: ({ row }) => (
         <div className="flex flex-col">
@@ -134,7 +133,7 @@ export const OrdersPage = () => {
     }) as ColumnDef<OrderSummaryDto, unknown>,
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status', 'Status') },
       size: 130,
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getOrderStatusColor(getValue())}>
@@ -144,14 +143,12 @@ export const OrdersPage = () => {
     }) as ColumnDef<OrderSummaryDto, unknown>,
     ch.accessor('itemCount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('orders.items', 'Items')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('orders.items', 'Items') },
       size: 80,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<OrderSummaryDto, unknown>,
     ch.accessor('grandTotal', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('orders.total', 'Total')} />,
-      enableSorting: false,
       meta: { align: 'right', label: t('orders.total', 'Total') },
       cell: ({ row }) => (
         <span className="font-medium">{formatCurrency(row.original.grandTotal, row.original.currency)}</span>
@@ -159,7 +156,6 @@ export const OrdersPage = () => {
     }) as ColumnDef<OrderSummaryDto, unknown>,
     ch.accessor('createdAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
-      enableSorting: false,
       meta: { label: t('labels.date', 'Date') },
       size: 160,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,

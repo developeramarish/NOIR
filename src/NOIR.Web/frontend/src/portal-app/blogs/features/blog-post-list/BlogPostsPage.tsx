@@ -189,6 +189,7 @@ export const BlogPostsPage = () => {
     createSelectColumn<PostListItem>(),
     ch.accessor('title', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('blog.titleColumn', 'Title')} />,
+      meta: { label: t('blog.titleColumn', 'Title') },
       cell: ({ row }) => {
         const post = row.original
         return (
@@ -216,7 +217,7 @@ export const BlogPostsPage = () => {
     }) as ColumnDef<PostListItem, unknown>,
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status') },
       size: 110,
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(statusColors[getValue()])}>
@@ -226,19 +227,17 @@ export const BlogPostsPage = () => {
     }) as ColumnDef<PostListItem, unknown>,
     ch.accessor('categoryName', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.category')} />,
-      enableSorting: false,
+      meta: { label: t('labels.category') },
       cell: ({ getValue }) => getValue() || '-',
     }) as ColumnDef<PostListItem, unknown>,
     ch.accessor('viewCount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('blog.views', 'Views')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('blog.views', 'Views') },
       size: 80,
       cell: ({ getValue }) => getValue().toLocaleString(),
     }) as ColumnDef<PostListItem, unknown>,
     ch.accessor('createdAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created')} />,
-      enableSorting: false,
       meta: { label: t('labels.created') },
       size: 130,
       cell: ({ getValue }) => formatDistanceToNow(new Date(getValue()), { addSuffix: true }),

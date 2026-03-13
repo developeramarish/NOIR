@@ -135,7 +135,9 @@ public sealed class ProductAttributesPagedSpec : Specification<ProductAttribute>
         string? type,
         int page,
         int pageSize,
-        bool includeValues = false)
+        bool includeValues = false,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -167,9 +169,51 @@ public sealed class ProductAttributesPagedSpec : Specification<ProductAttribute>
             Query.Include(a => a.Values);
         }
 
-        Query.OrderBy(a => a.SortOrder)
-             .ThenBy(a => a.Name)
-             .Skip((page - 1) * pageSize)
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(a => a.Name);
+                else Query.OrderBy(a => a.Name);
+                break;
+            case "code":
+                if (isDescending) Query.OrderByDescending(a => a.Code);
+                else Query.OrderBy(a => a.Code);
+                break;
+            case "type":
+                if (isDescending) Query.OrderByDescending(a => a.Type);
+                else Query.OrderBy(a => a.Type);
+                break;
+            case "isactive":
+            case "status":
+                if (isDescending) Query.OrderByDescending(a => a.IsActive);
+                else Query.OrderBy(a => a.IsActive);
+                break;
+            case "isfilterable":
+            case "filterable":
+                if (isDescending) Query.OrderByDescending(a => a.IsFilterable);
+                else Query.OrderBy(a => a.IsFilterable);
+                break;
+            case "isvariantattribute":
+            case "variant":
+                if (isDescending) Query.OrderByDescending(a => a.IsVariantAttribute);
+                else Query.OrderBy(a => a.IsVariantAttribute);
+                break;
+            case "sortorder":
+                if (isDescending) Query.OrderByDescending(a => a.SortOrder);
+                else Query.OrderBy(a => a.SortOrder);
+                break;
+            case "values":
+            case "valuecount":
+                if (isDescending) Query.OrderByDescending(a => a.Values.Count);
+                else Query.OrderBy(a => a.Values.Count);
+                break;
+            default:
+                Query.OrderBy(a => a.SortOrder).ThenBy(a => a.Name);
+                break;
+        }
+
+        Query.Skip((page - 1) * pageSize)
              .Take(pageSize)
              .TagWith("GetProductAttributesPaged");
     }

@@ -158,7 +158,6 @@ export const DepartmentsPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -176,7 +175,6 @@ export const DepartmentsPage = () => {
       id: 'manager',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.manager')} />,
       meta: { label: t('hr.manager') },
-      enableSorting: false,
       cell: ({ getValue }) => (
         <span className="text-sm text-muted-foreground">{getValue() || '—'}</span>
       ),
@@ -197,14 +195,12 @@ export const DepartmentsPage = () => {
       id: 'employeeCount',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.employees', 'Employees')} />,
       meta: { label: t('hr.employees', 'Employees'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<DepartmentFlatItem, unknown>,
     ch.accessor('childCount', {
       id: 'subDepartments',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('hr.subDepartments', 'Sub-depts')} />,
       meta: { label: t('hr.subDepartments', 'Sub-depts'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => (
         getValue() > 0 ? (
           <Badge variant="outline">{getValue()}</Badge>
@@ -221,6 +217,7 @@ export const DepartmentsPage = () => {
     columns,
     tableKey: 'departments',
     rowCount: filteredDepartments.length,
+    manualSorting: false,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
       sorting: [],

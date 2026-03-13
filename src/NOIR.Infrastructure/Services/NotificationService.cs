@@ -273,7 +273,7 @@ public class NotificationService : INotificationService, IScopedService
         {
             // Get all users in current tenant - for large user bases, consider background job batching
             var (users, _) = await _userIdentityService.GetUsersPaginatedAsync(
-                _currentUser.TenantId, search: null, page: 1, pageSize: 10000, role: null, isLocked: null, ct);
+                _currentUser.TenantId, search: null, page: 1, pageSize: 10000, role: null, isLocked: null, ct: ct);
             var count = 0;
 
             foreach (var user in users)

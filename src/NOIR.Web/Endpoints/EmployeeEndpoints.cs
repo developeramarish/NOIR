@@ -38,11 +38,13 @@ public static class EmployeeEndpoints
             [FromQuery] EmploymentType? employmentType,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetEmployeesQuery(
                 search, departmentId, status, employmentType,
-                page ?? 1, pageSize ?? 20);
+                page ?? 1, pageSize ?? 20, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<EmployeeListDto>>>(query);
             return result.ToHttpResult();
         })

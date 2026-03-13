@@ -35,6 +35,8 @@ export interface GetPostsParams {
   publishedOnly?: boolean
   page?: number
   pageSize?: number
+  orderBy?: string
+  isDescending?: boolean
 }
 
 /**
@@ -50,6 +52,8 @@ export const getPosts = async (params: GetPostsParams = {}): Promise<BlogPagedRe
   if (params.publishedOnly) queryParams.append('publishedOnly', 'true')
   if (params.page) queryParams.append('page', params.page.toString())
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<BlogPagedResult<PostListItem>>(`/blog/posts${query ? `?${query}` : ''}`)

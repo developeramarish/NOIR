@@ -24,7 +24,9 @@ public class GetPaymentTransactionsQueryHandler
             query.PaymentMethod,
             query.Provider,
             skip,
-            query.PageSize);
+            query.PageSize,
+            query.OrderBy,
+            query.IsDescending);
 
         var payments = await _paymentRepository.ListAsync(spec, cancellationToken);
 

@@ -14,4 +14,6 @@ public sealed record GetProductsQuery(
     bool? LowStockOnly = null,
     int Page = 1,
     int PageSize = 20,
-    Dictionary<string, List<string>>? AttributeFilters = null);
+    Dictionary<string, List<string>>? AttributeFilters = null,
+    string? OrderBy = null,
+    bool IsDescending = true);

@@ -55,6 +55,7 @@ import {
   SelectValue,
   Skeleton,
   DataTable,
+  DataTableColumnHeader,
   DataTablePagination,
   DataTableToolbar,
   Pagination,
@@ -119,6 +120,7 @@ export const ProductsPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<ProductFilters>({ defaultPageSize: DEFAULT_PRODUCT_PAGE_SIZE })
@@ -373,8 +375,8 @@ export const ProductsPage = () => {
     createSelectColumn<ProductListItem>(),
     ch.accessor('name', {
       id: 'product',
-      header: t('products.product', 'Product'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('products.product', 'Product')} />,
+      meta: { label: t('products.product', 'Product') },
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div style={{ viewTransitionName: `product-image-${row.original.id}` }} onClick={(e) => e.stopPropagation()}>
@@ -395,8 +397,8 @@ export const ProductsPage = () => {
       ),
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor('status', {
-      header: t('labels.status', 'Status'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
+      meta: { label: t('labels.status', 'Status') },
       cell: ({ getValue }) => {
         const status = PRODUCT_STATUS_CONFIG[getValue()]
         const StatusIcon = status.icon
@@ -410,21 +412,20 @@ export const ProductsPage = () => {
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor('categoryName', {
       id: 'category',
-      header: t('labels.category', 'Category'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.category', 'Category')} />,
+      meta: { label: t('labels.category', 'Category') },
       cell: ({ getValue }) => <span className="text-sm">{getValue() || '—'}</span>,
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor((r) => r.brandName || r.brand, {
       id: 'brand',
-      header: t('labels.brand', 'Brand'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.brand', 'Brand')} />,
+      meta: { label: t('labels.brand', 'Brand') },
       cell: ({ getValue }) => <span className="text-sm">{getValue() || '—'}</span>,
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor('basePrice', {
       id: 'price',
-      header: t('products.price', 'Price'),
-      enableSorting: false,
-      meta: { align: 'right' as const },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('products.price', 'Price')} />,
+      meta: { align: 'right' as const, label: t('products.price', 'Price') },
       cell: ({ row }) => (
         <span className="font-semibold text-foreground">
           {formatCurrency(row.original.basePrice, row.original.currency)}
@@ -433,9 +434,8 @@ export const ProductsPage = () => {
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor('totalStock', {
       id: 'stock',
-      header: t('labels.stock', 'Stock'),
-      enableSorting: false,
-      meta: { align: 'right' as const },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.stock', 'Stock')} />,
+      meta: { align: 'right' as const, label: t('labels.stock', 'Stock') },
       cell: ({ getValue, row }) => (
         <Badge variant={row.original.inStock ? 'default' : 'destructive'}>
           {getValue()}
@@ -444,8 +444,8 @@ export const ProductsPage = () => {
     }) as ColumnDef<ProductListItem, unknown>,
     ch.accessor('createdAt', {
       id: 'created',
-      header: t('labels.created', 'Created'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created', 'Created')} />,
+      meta: { label: t('labels.created', 'Created') },
       cell: ({ getValue }) => (
         <span className="text-sm text-muted-foreground">
           {formatDistanceToNow(new Date(getValue()), { addSuffix: true })}
@@ -463,7 +463,7 @@ export const ProductsPage = () => {
     rowCount: data?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [] as SortingState,
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -472,6 +472,7 @@ export const ProductsPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     enableRowSelection: true,
     getRowId: (row) => row.id,
   })

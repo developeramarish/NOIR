@@ -27,9 +27,11 @@ public static class BrandEndpoints
             [FromQuery] bool? isFeatured,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
+            [FromQuery] string? orderBy = null,
+            [FromQuery] bool? isDescending = null,
             IMessageBus bus = null!) =>
         {
-            var query = new GetBrandsQuery(search, isActive, isFeatured, pageNumber, pageSize);
+            var query = new GetBrandsQuery(search, isActive, isFeatured, pageNumber, pageSize, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<BrandListDto>>>(query);
             return result.ToHttpResult();
         })

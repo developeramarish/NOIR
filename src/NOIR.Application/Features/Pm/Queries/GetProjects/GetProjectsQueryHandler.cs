@@ -17,7 +17,7 @@ public class GetProjectsQueryHandler
 
         var spec = new Specifications.ProjectsByFilterSpec(
             query.Search, query.Status, query.OwnerId,
-            skip, query.PageSize);
+            skip, query.PageSize, query.OrderBy, query.IsDescending);
 
         var projects = await _projectRepository.ListAsync(spec, cancellationToken);
 

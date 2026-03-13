@@ -113,40 +113,34 @@ export const BlogCategoriesPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
     }) as ColumnDef<PostCategoryListItem, unknown>,
     ch.accessor('slug', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.slug', 'Slug')} />,
       meta: { label: t('labels.slug', 'Slug') },
-      enableSorting: false,
       cell: ({ getValue }) => <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>,
     }) as ColumnDef<PostCategoryListItem, unknown>,
     ch.accessor('parentName', {
       id: 'parent',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('blogCategories.parent', 'Parent')} />,
       meta: { label: t('blogCategories.parent', 'Parent') },
-      enableSorting: false,
       cell: ({ getValue }) => getValue() || '-',
     }) as ColumnDef<PostCategoryListItem, unknown>,
     ch.accessor('postCount', {
       id: 'posts',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('blogCategories.posts', 'Posts')} />,
       meta: { label: t('blogCategories.posts', 'Posts') },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<PostCategoryListItem, unknown>,
     ch.accessor('childCount', {
       id: 'children',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('blogCategories.children', 'Children')} />,
       meta: { label: t('blogCategories.children', 'Children') },
-      enableSorting: false,
       cell: ({ getValue }) => (getValue() ?? 0) > 0 ? <Badge variant="outline">{getValue()}</Badge> : null,
     }) as ColumnDef<PostCategoryListItem, unknown>,
     ch.accessor('sortOrder', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.sortOrder', 'Sort Order')} />,
       meta: { label: t('labels.sortOrder', 'Sort Order') },
-      enableSorting: false,
     }) as ColumnDef<PostCategoryListItem, unknown>,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t])
@@ -156,6 +150,7 @@ export const BlogCategoriesPage = () => {
     columns,
     rowCount: data.length,
     tableKey: 'blog-categories',
+    manualSorting: false,
     state: {
       pagination: { pageIndex: 0, pageSize: 1000 },
       sorting: [],

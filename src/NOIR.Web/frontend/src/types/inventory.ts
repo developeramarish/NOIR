@@ -133,4 +133,6 @@ export interface GetInventoryReceiptsParams {
   search?: string
   type?: InventoryReceiptType
   status?: InventoryReceiptStatus
+  orderBy?: string
+  isDescending?: boolean
 }

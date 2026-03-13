@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -83,6 +83,7 @@ export const InventoryReceiptsPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<{ type?: InventoryReceiptType; status?: InventoryReceiptStatus }>({ defaultPageSize: 20 })
@@ -173,13 +174,11 @@ export const InventoryReceiptsPage = () => {
     ch.accessor('receiptNumber', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('inventory.receiptNumber', 'Receipt #')} />,
       meta: { label: t('inventory.receiptNumber', 'Receipt #') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-mono font-medium text-sm">{getValue()}</span>,
     }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
     ch.accessor('type', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.type', 'Type')} />,
       meta: { label: t('labels.type', 'Type') },
-      enableSorting: false,
       cell: ({ row }) => {
         const typeConfig = RECEIPT_TYPE_CONFIG[row.original.type]
         const TypeIcon = typeConfig.icon
@@ -194,7 +193,6 @@ export const InventoryReceiptsPage = () => {
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
       meta: { label: t('labels.status', 'Status') },
-      enableSorting: false,
       cell: ({ row }) => {
         const statusConfig = RECEIPT_STATUS_CONFIG[row.original.status]
         const StatusIcon = statusConfig.icon
@@ -210,26 +208,22 @@ export const InventoryReceiptsPage = () => {
       id: 'items',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('inventory.items', 'Items')} />,
       meta: { label: t('inventory.items', 'Items'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
     ch.accessor('totalQuantity', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('inventory.totalQuantity', 'Total Qty')} />,
       meta: { label: t('inventory.totalQuantity', 'Total Qty'), align: 'right' },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
     }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
     ch.accessor('totalCost', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('inventory.totalCost', 'Total Cost')} />,
       meta: { label: t('inventory.totalCost', 'Total Cost'), align: 'right' },
-      enableSorting: false,
       cell: ({ row }) => <span className="font-medium">{formatCurrency(row.original.totalCost)}</span>,
     }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
     ch.accessor('createdAt', {
       id: 'date',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
       meta: { label: t('labels.date', 'Date') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {formatDateTime(row.original.createdAt)}
@@ -246,7 +240,7 @@ export const InventoryReceiptsPage = () => {
     rowCount: receiptsResponse?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -255,6 +249,7 @@ export const InventoryReceiptsPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

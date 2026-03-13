@@ -6,4 +6,6 @@ public sealed record GetEmployeesQuery(
     EmployeeStatus? Status = null,
     EmploymentType? EmploymentType = null,
     int Page = 1,
-    int PageSize = 20);
+    int PageSize = 20,
+    string? OrderBy = null,
+    bool IsDescending = true);

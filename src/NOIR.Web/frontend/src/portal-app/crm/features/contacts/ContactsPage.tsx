@@ -10,7 +10,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
@@ -76,6 +76,7 @@ export const ContactsPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<{ source?: ContactSource }>({ defaultPageSize: 20 })
@@ -155,7 +156,6 @@ export const ContactsPage = () => {
       id: 'name',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name')} />,
       meta: { label: t('labels.name') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium text-sm">{row.original.firstName} {row.original.lastName}</span>
       ),
@@ -163,26 +163,22 @@ export const ContactsPage = () => {
     ch.accessor('email', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.contacts.email')} />,
       meta: { label: t('crm.contacts.email') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue()}</span>,
     }) as ColumnDef<ContactListDto, unknown>,
     ch.accessor('phone', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.contacts.phone')} />,
       meta: { label: t('crm.contacts.phone') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<ContactListDto, unknown>,
     ch.accessor('companyName', {
       id: 'company',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.contacts.company')} />,
       meta: { label: t('crm.contacts.company') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<ContactListDto, unknown>,
     ch.accessor('source', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.contacts.source')} />,
       meta: { label: t('crm.contacts.source') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getSourceBadgeColor(row.original.source)}>
           {t(`crm.sources.${row.original.source}`)}
@@ -206,13 +202,14 @@ export const ContactsPage = () => {
     rowCount: totalCount,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater({ pageIndex: params.page - 1, pageSize: params.pageSize }) : updater
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

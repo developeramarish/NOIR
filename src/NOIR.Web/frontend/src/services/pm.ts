@@ -32,6 +32,8 @@ export const getProjects = async (params: GetProjectsParams = {}): Promise<Proje
   if (params.pageSize != null) queryParams.append('pageSize', params.pageSize.toString())
   if (params.search) queryParams.append('search', params.search)
   if (params.status) queryParams.append('status', params.status)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<ProjectPagedResult>(`/pm/projects${query ? `?${query}` : ''}`)

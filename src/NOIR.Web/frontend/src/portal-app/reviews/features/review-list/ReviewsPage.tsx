@@ -163,11 +163,13 @@ export const ReviewsPage = () => {
     createSelectColumn<ReviewDto>(),
     ch.accessor('productName', {
       header: t('reviews.product', 'Product'),
+      meta: { label: t('reviews.product', 'Product') },
       enableSorting: false,
       cell: ({ getValue }) => <span className="font-medium text-sm truncate max-w-[180px] block">{getValue() || '-'}</span>,
     }) as ColumnDef<ReviewDto, unknown>,
     ch.accessor('userName', {
       header: t('reviews.customer', 'Customer'),
+      meta: { label: t('reviews.customer', 'Customer') },
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5">
@@ -179,19 +181,19 @@ export const ReviewsPage = () => {
       ),
     }) as ColumnDef<ReviewDto, unknown>,
     ch.accessor('rating', {
-      header: t('reviews.rating', 'Rating'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('reviews.rating', 'Rating')} />,
+      meta: { label: t('reviews.rating', 'Rating') },
       size: 110,
       cell: ({ getValue }) => <StarRating rating={getValue()} />,
     }) as ColumnDef<ReviewDto, unknown>,
     ch.accessor('title', {
-      header: t('reviews.reviewTitle', 'Title'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('reviews.reviewTitle', 'Title')} />,
+      meta: { label: t('reviews.reviewTitle', 'Title') },
       cell: ({ getValue }) => <span className="text-sm truncate max-w-[200px] block">{getValue() || '-'}</span>,
     }) as ColumnDef<ReviewDto, unknown>,
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status', 'Status') },
       size: 110,
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getReviewStatusColor(getValue())}>
@@ -201,7 +203,7 @@ export const ReviewsPage = () => {
     }) as ColumnDef<ReviewDto, unknown>,
     ch.accessor('createdAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
-      enableSorting: false,
+      meta: { label: t('labels.date', 'Date') },
       size: 150,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,
     }) as ColumnDef<ReviewDto, unknown>,

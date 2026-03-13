@@ -9,4 +9,6 @@ public sealed record GetOrdersQuery(
     OrderStatus? Status = null,
     string? CustomerEmail = null,
     DateTimeOffset? FromDate = null,
-    DateTimeOffset? ToDate = null);
+    DateTimeOffset? ToDate = null,
+    string? OrderBy = null,
+    bool IsDescending = true);

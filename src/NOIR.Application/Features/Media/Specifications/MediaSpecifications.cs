@@ -9,8 +9,8 @@ public sealed class MediaFilesFilteredSpec : Specification<MediaFile>
         string? search = null,
         string? fileType = null,
         string? folder = null,
-        string sortBy = "createdAt",
-        string sortOrder = "desc",
+        string? orderBy = null,
+        bool isDescending = true,
         int skip = 0,
         int take = 24)
     {
@@ -34,9 +34,7 @@ public sealed class MediaFilesFilteredSpec : Specification<MediaFile>
         }
 
         // Sorting
-        var isDescending = string.Equals(sortOrder, "desc", StringComparison.OrdinalIgnoreCase);
-
-        switch (sortBy.ToLowerInvariant())
+        switch (orderBy?.ToLowerInvariant())
         {
             case "name":
                 if (isDescending)

@@ -19,6 +19,8 @@ export interface GetReviewsParams {
   productId?: string
   rating?: number
   search?: string
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface GetProductReviewsParams {
@@ -35,6 +37,8 @@ export const getReviews = async (params: GetReviewsParams = {}): Promise<ReviewP
   if (params.productId) queryParams.append('productId', params.productId)
   if (params.rating != null) queryParams.append('rating', params.rating.toString())
   if (params.search) queryParams.append('search', params.search)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<ReviewPagedResult>(`/reviews${query ? `?${query}` : ''}`)

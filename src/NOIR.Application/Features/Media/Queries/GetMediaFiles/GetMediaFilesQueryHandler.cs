@@ -25,8 +25,8 @@ public class GetMediaFilesQueryHandler
             query.Search,
             query.FileType,
             query.Folder,
-            query.SortBy,
-            query.SortOrder,
+            query.OrderBy,
+            query.IsDescending,
             skip,
             query.PageSize);
 

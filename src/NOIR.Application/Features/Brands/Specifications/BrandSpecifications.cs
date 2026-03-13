@@ -94,7 +94,8 @@ public sealed class FeaturedBrandsSpec : Specification<Brand>
 /// </summary>
 public sealed class BrandsPagedSpec : Specification<Brand>
 {
-    public BrandsPagedSpec(string? search, bool? isActive, bool? isFeatured, int page, int pageSize)
+    public BrandsPagedSpec(string? search, bool? isActive, bool? isFeatured, int page, int pageSize,
+        string? orderBy = null, bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -111,9 +112,37 @@ public sealed class BrandsPagedSpec : Specification<Brand>
             Query.Where(b => b.IsFeatured == isFeatured.Value);
         }
 
-        Query.OrderBy(b => b.SortOrder)
-             .ThenBy(b => b.Name)
-             .Skip((page - 1) * pageSize)
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(b => b.Name);
+                else Query.OrderBy(b => b.Name);
+                break;
+            case "slug":
+                if (isDescending) Query.OrderByDescending(b => b.Slug);
+                else Query.OrderBy(b => b.Slug);
+                break;
+            case "status":
+            case "isactive":
+                if (isDescending) Query.OrderByDescending(b => b.IsActive);
+                else Query.OrderBy(b => b.IsActive);
+                break;
+            case "productcount":
+                if (isDescending) Query.OrderByDescending(b => b.ProductCount);
+                else Query.OrderBy(b => b.ProductCount);
+                break;
+            case "sortorder":
+                if (isDescending) Query.OrderByDescending(b => b.SortOrder);
+                else Query.OrderBy(b => b.SortOrder);
+                break;
+            default:
+                Query.OrderBy(b => b.SortOrder)
+                     .ThenBy(b => b.Name);
+                break;
+        }
+
+        Query.Skip((page - 1) * pageSize)
              .Take(pageSize)
              .TagWith("GetBrandsPaged");
     }

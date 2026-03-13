@@ -7,4 +7,6 @@ public sealed record GetInventoryReceiptsQuery(
     int Page = 1,
     int PageSize = 20,
     InventoryReceiptType? Type = null,
-    InventoryReceiptStatus? Status = null);
+    InventoryReceiptStatus? Status = null,
+    string? OrderBy = null,
+    bool IsDescending = true);

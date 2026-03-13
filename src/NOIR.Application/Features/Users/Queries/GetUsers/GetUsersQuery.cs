@@ -8,4 +8,6 @@ public sealed record GetUsersQuery(
     string? Role = null,
     bool? IsLocked = null,
     int Page = 1,
-    int PageSize = 20);
+    int PageSize = 20,
+    string? OrderBy = null,
+    bool IsDescending = true);

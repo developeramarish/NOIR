@@ -164,6 +164,7 @@ export const PromotionsPage = () => {
     )),
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
+      meta: { label: t('labels.name', 'Name') },
       cell: ({ row }) => (
         <div>
           <span className="font-medium">{row.original.name}</span>
@@ -174,15 +175,14 @@ export const PromotionsPage = () => {
       ),
     }) as ColumnDef<PromotionDto, unknown>,
     ch.accessor('code', {
-      header: t('promotions.code', 'Code'),
-      enableSorting: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.code', 'Code')} />,
+      meta: { label: t('promotions.code', 'Code') },
       cell: ({ getValue }) => (
         <code className="text-sm bg-muted px-1.5 py-0.5 rounded font-mono">{getValue()}</code>
       ),
     }) as ColumnDef<PromotionDto, unknown>,
     ch.accessor('promotionType', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.type.label', 'Type')} />,
-      enableSorting: false,
       meta: { label: t('promotions.type.label', 'Type') },
       cell: ({ getValue }) => (
         <Badge variant="outline">{t(`promotions.type.${getValue().toLowerCase()}`, getValue())}</Badge>
@@ -191,7 +191,6 @@ export const PromotionsPage = () => {
     ch.accessor('discountValue', {
       id: 'discount',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.discount', 'Discount')} />,
-      enableSorting: false,
       meta: { label: t('promotions.discount', 'Discount') },
       cell: ({ row }) => (
         <span className="font-medium text-sm">{formatDiscountValue(row.original, t as unknown as (...args: unknown[]) => string)}</span>
@@ -199,7 +198,7 @@ export const PromotionsPage = () => {
     }) as ColumnDef<PromotionDto, unknown>,
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
-      enableSorting: false,
+      meta: { label: t('labels.status', 'Status') },
       size: 120,
       cell: ({ getValue }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(statusBadgeColors[getValue()])}>
@@ -209,14 +208,12 @@ export const PromotionsPage = () => {
     }) as ColumnDef<PromotionDto, unknown>,
     ch.accessor('startDate', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.startDate', 'Start Date')} />,
-      enableSorting: false,
       meta: { label: t('promotions.startDate', 'Start Date') },
       size: 150,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,
     }) as ColumnDef<PromotionDto, unknown>,
     ch.accessor('endDate', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.endDate', 'End Date')} />,
-      enableSorting: false,
       meta: { label: t('promotions.endDate', 'End Date') },
       size: 150,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,
@@ -224,7 +221,6 @@ export const PromotionsPage = () => {
     ch.accessor('currentUsageCount', {
       id: 'usage',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promotions.usage', 'Usage')} />,
-      enableSorting: false,
       meta: { align: 'center', label: t('promotions.usage', 'Usage') },
       size: 90,
       cell: ({ row }) => (

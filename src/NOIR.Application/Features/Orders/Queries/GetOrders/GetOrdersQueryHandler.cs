@@ -33,7 +33,9 @@ public class GetOrdersQueryHandler
             query.Status,
             query.CustomerEmail,
             query.FromDate,
-            query.ToDate);
+            query.ToDate,
+            query.OrderBy,
+            query.IsDescending);
         var orders = await _orderRepository.ListAsync(listSpec, cancellationToken);
 
         var items = orders.Select(OrderMapper.ToSummaryDto).ToList();

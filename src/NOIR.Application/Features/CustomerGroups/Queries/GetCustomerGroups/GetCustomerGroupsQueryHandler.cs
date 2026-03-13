@@ -21,7 +21,9 @@ public class GetCustomerGroupsQueryHandler
             query.Search,
             query.IsActive,
             query.Page,
-            query.PageSize);
+            query.PageSize,
+            query.OrderBy,
+            query.IsDescending);
 
         var groups = await _repository.ListAsync(spec, cancellationToken);
 

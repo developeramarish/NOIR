@@ -36,7 +36,9 @@ public sealed class InventoryReceiptsListSpec : Specification<InventoryReceipt>
         int skip = 0,
         int take = 20,
         InventoryReceiptType? type = null,
-        InventoryReceiptStatus? status = null)
+        InventoryReceiptStatus? status = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.TagWith("InventoryReceiptsList");
 
@@ -46,8 +48,45 @@ public sealed class InventoryReceiptsListSpec : Specification<InventoryReceipt>
         if (status.HasValue)
             Query.Where(r => r.Status == status.Value);
 
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "receiptnumber":
+                if (isDescending) Query.OrderByDescending(r => r.ReceiptNumber);
+                else Query.OrderBy(r => r.ReceiptNumber);
+                break;
+            case "type":
+                if (isDescending) Query.OrderByDescending(r => r.Type);
+                else Query.OrderBy(r => r.Type);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(r => r.Status);
+                else Query.OrderBy(r => r.Status);
+                break;
+            case "items":
+            case "itemcount":
+                if (isDescending) Query.OrderByDescending(r => r.Items.Count);
+                else Query.OrderBy(r => r.Items.Count);
+                break;
+            case "totalquantity":
+                if (isDescending) Query.OrderByDescending(r => r.Items.Sum(i => i.Quantity));
+                else Query.OrderBy(r => r.Items.Sum(i => i.Quantity));
+                break;
+            case "totalcost":
+                if (isDescending) Query.OrderByDescending(r => r.Items.Sum(i => i.Quantity * i.UnitCost));
+                else Query.OrderBy(r => r.Items.Sum(i => i.Quantity * i.UnitCost));
+                break;
+            case "date":
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(r => r.CreatedAt);
+                else Query.OrderBy(r => r.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(r => r.CreatedAt);
+                break;
+        }
+
         Query.Include(r => r.Items)
-            .OrderByDescending(r => r.CreatedAt)
             .Skip(skip)
             .Take(take);
     }

@@ -58,6 +58,8 @@ public static class PaymentEndpoints
             [FromQuery] string? provider,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetPaymentTransactionsQuery(
@@ -66,7 +68,9 @@ public static class PaymentEndpoints
                 paymentMethod,
                 provider,
                 page ?? 1,
-                pageSize ?? 20);
+                pageSize ?? 20,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PaymentPagedResult>>(query);
             return result.ToHttpResult();
         })

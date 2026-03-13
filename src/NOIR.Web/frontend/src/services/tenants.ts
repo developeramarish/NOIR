@@ -21,6 +21,8 @@ export interface GetTenantsParams {
   pageSize?: number
   search?: string
   isActive?: boolean
+  orderBy?: string
+  isDescending?: boolean
 }
 
 /**
@@ -42,6 +44,12 @@ export const getTenants = async (
   }
   if (params.isActive !== undefined) {
     searchParams.set('isActive', params.isActive.toString())
+  }
+  if (params.orderBy) {
+    searchParams.set('orderBy', params.orderBy)
+  }
+  if (params.isDescending != null) {
+    searchParams.set('isDescending', params.isDescending.toString())
   }
 
   const query = searchParams.toString()

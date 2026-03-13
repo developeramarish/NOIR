@@ -11,4 +11,6 @@ public sealed record GetPostsQuery(
     Guid? TagId = null,
     bool PublishedOnly = false,
     int Page = 1,
-    int PageSize = 20);
+    int PageSize = 20,
+    string? OrderBy = null,
+    bool IsDescending = true);

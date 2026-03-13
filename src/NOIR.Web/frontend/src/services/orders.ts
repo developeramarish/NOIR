@@ -20,6 +20,8 @@ export interface GetOrdersParams {
   customerEmail?: string
   fromDate?: string
   toDate?: string
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export const getOrders = async (params: GetOrdersParams = {}): Promise<OrderPagedResult> => {
@@ -30,6 +32,8 @@ export const getOrders = async (params: GetOrdersParams = {}): Promise<OrderPage
   if (params.customerEmail) queryParams.append('customerEmail', params.customerEmail)
   if (params.fromDate) queryParams.append('fromDate', params.fromDate)
   if (params.toDate) queryParams.append('toDate', params.toDate)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<OrderPagedResult>(`/orders${query ? `?${query}` : ''}`)

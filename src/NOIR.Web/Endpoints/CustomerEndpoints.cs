@@ -42,8 +42,8 @@ public static class CustomerEndpoints
             [FromQuery] CustomerSegment? segment,
             [FromQuery] CustomerTier? tier,
             [FromQuery] bool? isActive,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool? sortDescending,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetCustomersQuery(
@@ -53,8 +53,8 @@ public static class CustomerEndpoints
                 segment,
                 tier,
                 isActive,
-                sortBy,
-                sortDescending ?? true);
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<CustomerSummaryDto>>>(query);
             return result.ToHttpResult();
         })

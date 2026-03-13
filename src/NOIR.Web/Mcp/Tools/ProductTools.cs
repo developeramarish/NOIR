@@ -28,6 +28,8 @@ public sealed class ProductTools(IMessageBus bus)
         [Description("Only show products in stock")] bool? inStockOnly = null,
         [Description("Page number (default: 1)")] int page = 1,
         [Description("Page size, max 100 (default: 20)")] int pageSize = 20,
+        [Description("Sort by field: name, status, price, category, brand, createdAt (default: createdAt)")] string? orderBy = null,
+        [Description("Sort descending (default: true)")] bool isDescending = true,
         CancellationToken ct = default)
     {
         pageSize = Math.Clamp(pageSize, 1, 100);
@@ -35,7 +37,7 @@ public sealed class ProductTools(IMessageBus bus)
         var catId = categoryId is not null ? Guid.Parse(categoryId) : (Guid?)null;
 
         var result = await bus.InvokeAsync<Result<PagedResult<ProductListDto>>>(
-            new GetProductsQuery(search, productStatus, catId, brand, minPrice, maxPrice, inStockOnly, null, page, pageSize), ct);
+            new GetProductsQuery(search, productStatus, catId, brand, minPrice, maxPrice, inStockOnly, null, page, pageSize, null, orderBy, isDescending), ct);
         return result.Unwrap();
     }
 

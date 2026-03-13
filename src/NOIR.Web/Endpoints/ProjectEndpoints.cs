@@ -43,9 +43,11 @@ public static class ProjectEndpoints
             [FromQuery] Guid? ownerId,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
-            var query = new GetProjectsQuery(search, status, ownerId, page ?? 1, pageSize ?? 20);
+            var query = new GetProjectsQuery(search, status, ownerId, page ?? 1, pageSize ?? 20, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<ProjectListDto>>>(query);
             return result.ToHttpResult();
         })

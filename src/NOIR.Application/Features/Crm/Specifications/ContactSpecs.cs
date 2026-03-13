@@ -57,7 +57,9 @@ public sealed class ContactsFilterSpec : Specification<CrmContact>
         Guid? ownerId = null,
         ContactSource? source = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -77,8 +79,39 @@ public sealed class ContactsFilterSpec : Specification<CrmContact>
             Query.Where(c => c.Source == source.Value);
 
         Query.Include(c => c.Company!)
-             .Include(c => c.Owner!)
-             .OrderByDescending(c => c.CreatedAt);
+             .Include(c => c.Owner!);
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending)
+                    Query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName);
+                else
+                    Query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName);
+                break;
+            case "email":
+                if (isDescending) Query.OrderByDescending(c => c.Email);
+                else Query.OrderBy(c => c.Email);
+                break;
+            case "company":
+                if (isDescending) Query.OrderByDescending(c => c.Company != null ? c.Company.Name : string.Empty);
+                else Query.OrderBy(c => c.Company != null ? c.Company.Name : string.Empty);
+                break;
+            case "source":
+                if (isDescending) Query.OrderByDescending(c => c.Source);
+                else Query.OrderBy(c => c.Source);
+                break;
+            case "phone":
+                if (isDescending) Query.OrderByDescending(c => c.Phone ?? string.Empty);
+                else Query.OrderBy(c => c.Phone ?? string.Empty);
+                break;
+            case "createdat":
+            default:
+                if (isDescending) Query.OrderByDescending(c => c.CreatedAt);
+                else Query.OrderBy(c => c.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue) Query.Skip(skip.Value);
         if (take.HasValue) Query.Take(take.Value);

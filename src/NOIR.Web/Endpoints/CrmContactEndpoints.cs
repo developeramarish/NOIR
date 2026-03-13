@@ -23,9 +23,11 @@ public static class CrmContactEndpoints
             [FromQuery] ContactSource? source,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
-            var query = new GetContactsQuery(search, companyId, ownerId, source, page ?? 1, pageSize ?? 20);
+            var query = new GetContactsQuery(search, companyId, ownerId, source, page ?? 1, pageSize ?? 20, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<ContactListDto>>>(query);
             return result.ToHttpResult();
         })

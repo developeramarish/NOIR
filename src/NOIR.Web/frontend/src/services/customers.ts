@@ -28,8 +28,8 @@ export interface GetCustomersParams {
   segment?: CustomerSegment
   tier?: CustomerTier
   isActive?: boolean
-  sortBy?: string
-  sortDescending?: boolean
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface GetCustomerOrdersParams {
@@ -45,8 +45,8 @@ export const getCustomers = async (params: GetCustomersParams = {}): Promise<Cus
   if (params.segment) queryParams.append('segment', params.segment)
   if (params.tier) queryParams.append('tier', params.tier)
   if (params.isActive != null) queryParams.append('isActive', params.isActive.toString())
-  if (params.sortBy) queryParams.append('sortBy', params.sortBy)
-  if (params.sortDescending != null) queryParams.append('sortDescending', params.sortDescending.toString())
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<CustomerPagedResult>(`/customers${query ? `?${query}` : ''}`)

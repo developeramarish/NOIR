@@ -39,6 +39,8 @@ public static class OrderEndpoints
             [FromQuery] string? customerEmail,
             [FromQuery] DateTimeOffset? fromDate,
             [FromQuery] DateTimeOffset? toDate,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetOrdersQuery(
@@ -47,7 +49,9 @@ public static class OrderEndpoints
                 status,
                 customerEmail,
                 fromDate,
-                toDate);
+                toDate,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<OrderSummaryDto>>>(query);
             return result.ToHttpResult();
         })

@@ -22,6 +22,8 @@ export interface GetCustomerGroupsParams {
   isActive?: boolean
   page?: number
   pageSize?: number
+  orderBy?: string
+  isDescending?: boolean
 }
 
 /**
@@ -33,6 +35,8 @@ export const getCustomerGroups = async (params: GetCustomerGroupsParams = {}): P
   if (params.isActive !== undefined) queryParams.append('isActive', String(params.isActive))
   if (params.page) queryParams.append('page', params.page.toString())
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<CustomerGroupPagedResult>(`/customer-groups${query ? `?${query}` : ''}`)

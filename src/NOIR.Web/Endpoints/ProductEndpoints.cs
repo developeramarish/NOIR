@@ -67,6 +67,8 @@ public static class ProductEndpoints
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
             [FromQuery] string? attributeFilters,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             // Parse attribute filters from JSON string
@@ -95,7 +97,9 @@ public static class ProductEndpoints
                 lowStockOnly,
                 page ?? 1,
                 pageSize ?? 20,
-                parsedFilters);
+                parsedFilters,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<ProductListDto>>>(query);
             return result.ToHttpResult();
         })

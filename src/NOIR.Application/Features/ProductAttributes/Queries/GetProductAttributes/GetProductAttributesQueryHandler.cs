@@ -25,7 +25,9 @@ public class GetProductAttributesQueryHandler
             query.Type,
             query.Page,
             query.PageSize,
-            includeValues: true);
+            includeValues: true,
+            query.OrderBy,
+            query.IsDescending);
 
         var attributes = await _attributeRepository.ListAsync(spec, cancellationToken);
 

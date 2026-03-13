@@ -330,12 +330,16 @@ export interface GetContactsParams {
   companyId?: string
   ownerId?: string
   source?: ContactSource
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface GetCompaniesParams {
   page?: number
   pageSize?: number
   search?: string
+  orderBy?: string
+  isDescending?: boolean
 }
 
 export interface GetLeadsParams {

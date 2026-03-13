@@ -9,4 +9,6 @@ public sealed record GetReviewsQuery(
     ReviewStatus? Status = null,
     Guid? ProductId = null,
     int? Rating = null,
-    string? Search = null);
+    string? Search = null,
+    string? OrderBy = null,
+    bool IsDescending = true);

@@ -33,6 +33,8 @@ public static class PromotionEndpoints
             [FromQuery] PromotionType? promotionType,
             [FromQuery] DateTimeOffset? fromDate,
             [FromQuery] DateTimeOffset? toDate,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetPromotionsQuery(
@@ -42,7 +44,9 @@ public static class PromotionEndpoints
                 status,
                 promotionType,
                 fromDate,
-                toDate);
+                toDate,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<PromotionDto>>>(query);
             return result.ToHttpResult();
         })

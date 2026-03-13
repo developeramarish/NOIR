@@ -66,9 +66,11 @@ public static class InventoryEndpoints
             [FromQuery] int? pageSize,
             [FromQuery] InventoryReceiptType? type,
             [FromQuery] InventoryReceiptStatus? status,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
-            var query = new GetInventoryReceiptsQuery(page ?? 1, pageSize ?? 20, type, status);
+            var query = new GetInventoryReceiptsQuery(page ?? 1, pageSize ?? 20, type, status, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<InventoryReceiptSummaryDto>>>(query);
             return result.ToHttpResult();
         })

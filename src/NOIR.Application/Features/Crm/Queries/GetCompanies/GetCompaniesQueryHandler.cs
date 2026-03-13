@@ -15,7 +15,7 @@ public class GetCompaniesQueryHandler
     {
         var skip = (query.Page - 1) * query.PageSize;
 
-        var spec = new Specifications.CompaniesFilterSpec(query.Search, skip, query.PageSize);
+        var spec = new Specifications.CompaniesFilterSpec(query.Search, skip, query.PageSize, query.OrderBy, query.IsDescending);
         var companies = await _companyRepository.ListAsync(spec, cancellationToken);
 
         var countSpec = new Specifications.CompaniesCountSpec(query.Search);

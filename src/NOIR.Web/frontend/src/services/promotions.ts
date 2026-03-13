@@ -26,6 +26,8 @@ export interface GetPromotionsParams {
   promotionType?: PromotionType
   fromDate?: string
   toDate?: string
+  orderBy?: string
+  isDescending?: boolean
 }
 
 // ============================================================================
@@ -44,6 +46,8 @@ export const getPromotions = async (params: GetPromotionsParams = {}): Promise<P
   if (params.promotionType) queryParams.append('promotionType', params.promotionType)
   if (params.fromDate) queryParams.append('fromDate', params.fromDate)
   if (params.toDate) queryParams.append('toDate', params.toDate)
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<PromotionPagedResult>(`/promotions${query ? `?${query}` : ''}`)

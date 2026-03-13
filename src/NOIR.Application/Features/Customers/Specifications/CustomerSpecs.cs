@@ -70,8 +70,8 @@ public sealed class CustomersFilterSpec : Specification<Domain.Entities.Customer
         CustomerSegment? segment = null,
         CustomerTier? tier = null,
         bool? isActive = null,
-        string? sortBy = null,
-        bool sortDescending = true)
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.TagWith("CustomersFilter");
 
@@ -94,29 +94,45 @@ public sealed class CustomersFilterSpec : Specification<Domain.Entities.Customer
             Query.Where(c => c.IsActive == isActive.Value);
 
         // Sorting
-        switch (sortBy?.ToLowerInvariant())
+        switch (orderBy?.ToLowerInvariant())
         {
             case "name":
-                if (sortDescending)
+                if (isDescending)
                     Query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName);
                 else
                     Query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName);
                 break;
             case "totalorders":
-                if (sortDescending) Query.OrderByDescending(c => c.TotalOrders);
+                if (isDescending) Query.OrderByDescending(c => c.TotalOrders);
                 else Query.OrderBy(c => c.TotalOrders);
                 break;
             case "totalspent":
-                if (sortDescending) Query.OrderByDescending(c => c.TotalSpent);
+                if (isDescending) Query.OrderByDescending(c => c.TotalSpent);
                 else Query.OrderBy(c => c.TotalSpent);
                 break;
             case "loyaltypoints":
-                if (sortDescending) Query.OrderByDescending(c => c.LoyaltyPoints);
+                if (isDescending) Query.OrderByDescending(c => c.LoyaltyPoints);
                 else Query.OrderBy(c => c.LoyaltyPoints);
                 break;
             case "lastorderdate":
-                if (sortDescending) Query.OrderByDescending(c => c.LastOrderDate ?? DateTimeOffset.MinValue);
+                if (isDescending) Query.OrderByDescending(c => c.LastOrderDate ?? DateTimeOffset.MinValue);
                 else Query.OrderBy(c => c.LastOrderDate ?? DateTimeOffset.MinValue);
+                break;
+            case "phone":
+                if (isDescending) Query.OrderByDescending(c => c.Phone ?? string.Empty);
+                else Query.OrderBy(c => c.Phone ?? string.Empty);
+                break;
+            case "email":
+                if (isDescending) Query.OrderByDescending(c => c.Email);
+                else Query.OrderBy(c => c.Email);
+                break;
+            case "segment":
+                if (isDescending) Query.OrderByDescending(c => c.Segment);
+                else Query.OrderBy(c => c.Segment);
+                break;
+            case "tier":
+                if (isDescending) Query.OrderByDescending(c => c.Tier);
+                else Query.OrderBy(c => c.Tier);
                 break;
             default:
                 Query.OrderByDescending(c => c.CreatedAt);

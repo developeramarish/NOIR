@@ -7,7 +7,7 @@ public sealed record GetMediaFilesQuery(
     string? Search = null,
     string? FileType = null,
     string? Folder = null,
-    string SortBy = "createdAt",
-    string SortOrder = "desc",
+    string? OrderBy = null,
+    bool IsDescending = true,
     int Page = 1,
     int PageSize = 24);

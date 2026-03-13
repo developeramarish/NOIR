@@ -50,7 +50,9 @@ public sealed class CompaniesFilterSpec : Specification<CrmCompany>
     public CompaniesFilterSpec(
         string? search = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         if (!string.IsNullOrEmpty(search))
         {
@@ -60,8 +62,38 @@ public sealed class CompaniesFilterSpec : Specification<CrmCompany>
         }
 
         Query.Include(c => c.Owner!)
-             .Include(c => c.Contacts)
-             .OrderByDescending(c => c.CreatedAt);
+             .Include(c => c.Contacts);
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "name":
+                if (isDescending) Query.OrderByDescending(c => c.Name);
+                else Query.OrderBy(c => c.Name);
+                break;
+            case "industry":
+                if (isDescending) Query.OrderByDescending(c => c.Industry ?? string.Empty);
+                else Query.OrderBy(c => c.Industry ?? string.Empty);
+                break;
+            case "domain":
+                if (isDescending) Query.OrderByDescending(c => c.Domain ?? string.Empty);
+                else Query.OrderBy(c => c.Domain ?? string.Empty);
+                break;
+            case "owner":
+                if (isDescending) Query.OrderByDescending(c => c.Owner != null ? c.Owner.LastName : string.Empty);
+                else Query.OrderBy(c => c.Owner != null ? c.Owner.LastName : string.Empty);
+                break;
+            case "contactcount":
+                if (isDescending) Query.OrderByDescending(c => c.Contacts.Count);
+                else Query.OrderBy(c => c.Contacts.Count);
+                break;
+            case "createdat":
+            case "created":
+            default:
+                if (isDescending) Query.OrderByDescending(c => c.CreatedAt);
+                else Query.OrderBy(c => c.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue) Query.Skip(skip.Value);
         if (take.HasValue) Query.Take(take.Value);

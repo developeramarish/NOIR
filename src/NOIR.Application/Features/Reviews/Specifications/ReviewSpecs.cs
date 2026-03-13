@@ -97,7 +97,9 @@ public sealed class ReviewsModerationListSpec : Specification<ProductReview>
         int? rating = null,
         string? search = null,
         int skip = 0,
-        int take = 20)
+        int take = 20,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.Include(r => r.Media)
             .TagWith("ReviewsModerationList");
@@ -114,9 +116,31 @@ public sealed class ReviewsModerationListSpec : Specification<ProductReview>
         if (!string.IsNullOrEmpty(search))
             Query.Where(r => r.Content.Contains(search) || (r.Title != null && r.Title.Contains(search)));
 
-        Query.OrderByDescending(r => r.CreatedAt)
-            .Skip(skip)
-            .Take(take);
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "rating":
+                if (isDescending) Query.OrderByDescending(r => r.Rating);
+                else Query.OrderBy(r => r.Rating);
+                break;
+            case "title":
+                if (isDescending) Query.OrderByDescending(r => r.Title ?? string.Empty);
+                else Query.OrderBy(r => r.Title ?? string.Empty);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(r => r.Status);
+                else Query.OrderBy(r => r.Status);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(r => r.CreatedAt);
+                else Query.OrderBy(r => r.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(r => r.CreatedAt);
+                break;
+        }
+
+        Query.Skip(skip).Take(take);
     }
 }
 

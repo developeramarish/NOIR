@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, Loader2, Minus, Pencil, Plus, Tags, Trash2 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -56,7 +56,7 @@ export const ProductAttributesPage = () => {
   const canDeleteAttributes = hasPermission(Permissions.AttributesDelete)
   const showActions = canUpdateAttributes || canDeleteAttributes
 
-  const { params, searchInput, setSearchInput, isSearchStale, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
+  const { params, searchInput, setSearchInput, isSearchStale, setSorting, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
   const { data: attributesResponse, isLoading, error: queryError, refetch: refresh } = useProductAttributesQuery(params)
   const deleteMutation = useDeleteProductAttributeMutation()
 
@@ -109,19 +109,16 @@ export const ProductAttributesPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
       meta: { label: t('labels.name', 'Name') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
     }) as ColumnDef<ProductAttributeListItem, unknown>,
     ch.accessor('code', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.code', 'Code')} />,
       meta: { label: t('labels.code', 'Code') },
-      enableSorting: false,
       cell: ({ getValue }) => <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>,
     }) as ColumnDef<ProductAttributeListItem, unknown>,
     ch.accessor('type', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.type', 'Type')} />,
       meta: { label: t('labels.type', 'Type') },
-      enableSorting: false,
       cell: ({ row }) => {
         const { label, className, icon: TypeIcon } = getTypeBadge(row.original.type, t)
         return (
@@ -136,14 +133,12 @@ export const ProductAttributesPage = () => {
       id: 'values',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('productAttributes.values', 'Values')} />,
       meta: { label: t('productAttributes.values', 'Values'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<ProductAttributeListItem, unknown>,
     ch.accessor('isFilterable', {
       id: 'filterable',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('productAttributes.filterable', 'Filterable')} />,
       meta: { label: t('productAttributes.filterable', 'Filterable'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) =>
         getValue() ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <Minus className="h-4 w-4 text-muted-foreground mx-auto" />,
     }) as ColumnDef<ProductAttributeListItem, unknown>,
@@ -151,7 +146,6 @@ export const ProductAttributesPage = () => {
       id: 'variant',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('productAttributes.variant', 'Variant')} />,
       meta: { label: t('productAttributes.variant', 'Variant'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) =>
         getValue() ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <Minus className="h-4 w-4 text-muted-foreground mx-auto" />,
     }) as ColumnDef<ProductAttributeListItem, unknown>,
@@ -159,7 +153,6 @@ export const ProductAttributesPage = () => {
       id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.status', 'Status')} />,
       meta: { label: t('labels.status', 'Status') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(row.original.isActive ? 'green' : 'gray')}>
           {row.original.isActive ? t('labels.active', 'Active') : t('labels.inactive', 'Inactive')}
@@ -176,13 +169,14 @@ export const ProductAttributesPage = () => {
     rowCount: attributesResponse?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater({ pageIndex: params.page - 1, pageSize: params.pageSize }) : updater
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

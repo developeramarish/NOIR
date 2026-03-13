@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Eye, Plus } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -66,6 +66,7 @@ export const PaymentsPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<{ status?: PaymentStatus; paymentMethod?: PaymentMethod }>({ defaultPageSize: 20 })
@@ -97,13 +98,11 @@ export const PaymentsPage = () => {
     ch.accessor('transactionNumber', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.transactionNumber')} />,
       meta: { label: t('payments.transactionNumber') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-mono font-medium text-sm">{getValue()}</span>,
     }) as ColumnDef<PaymentTransactionListDto, unknown>,
     ch.accessor('amount', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.amount')} />,
       meta: { label: t('payments.amount') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium">
           {formatCurrency(row.original.amount, row.original.currency)}
@@ -113,7 +112,6 @@ export const PaymentsPage = () => {
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.status')} />,
       meta: { label: t('payments.status') },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={paymentStatusColors[row.original.status]}>
           {t(`payments.statuses.${row.original.status}`, row.original.status)}
@@ -123,14 +121,12 @@ export const PaymentsPage = () => {
     ch.accessor('provider', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.provider')} />,
       meta: { label: t('payments.provider') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm capitalize">{getValue()}</span>,
     }) as ColumnDef<PaymentTransactionListDto, unknown>,
     ch.accessor('paymentMethod', {
       id: 'method',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.method')} />,
       meta: { label: t('payments.method') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm">
           {t(`payments.methods.${row.original.paymentMethod}`, row.original.paymentMethod)}
@@ -140,7 +136,6 @@ export const PaymentsPage = () => {
     ch.accessor('createdAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.createdAt')} />,
       meta: { label: t('payments.createdAt') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {formatDateTime(row.original.createdAt)}
@@ -150,7 +145,6 @@ export const PaymentsPage = () => {
     ch.accessor('paidAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.paidAt')} />,
       meta: { label: t('payments.paidAt') },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {row.original.paidAt ? formatDateTime(row.original.paidAt) : '—'}
@@ -167,7 +161,7 @@ export const PaymentsPage = () => {
     rowCount: paymentsResponse?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -176,6 +170,7 @@ export const PaymentsPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

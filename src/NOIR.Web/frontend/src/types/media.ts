@@ -70,8 +70,8 @@ export interface MediaFilesParams {
   search?: string
   fileType?: string
   folder?: string
-  sortBy?: string
-  sortOrder?: string
+  orderBy?: string
+  isDescending?: boolean
   page?: number
   pageSize?: number
 }

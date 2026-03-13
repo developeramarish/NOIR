@@ -52,6 +52,8 @@ public static class BlogEndpoints
             [FromQuery] bool? publishedOnly,
             [FromQuery] int? page,
             [FromQuery] int? pageSize,
+            [FromQuery] string? orderBy,
+            [FromQuery] bool? isDescending,
             IMessageBus bus) =>
         {
             var query = new GetPostsQuery(
@@ -62,7 +64,9 @@ public static class BlogEndpoints
                 tagId,
                 publishedOnly ?? false,
                 page ?? 1,
-                pageSize ?? 20);
+                pageSize ?? 20,
+                orderBy,
+                isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<PostListDto>>>(query);
             return result.ToHttpResult();
         })

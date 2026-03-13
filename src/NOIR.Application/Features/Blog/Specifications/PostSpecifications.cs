@@ -11,7 +11,9 @@ public sealed class PostsSpec : Specification<Post>
         Guid? categoryId = null,
         Guid? authorId = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.Where(p => string.IsNullOrEmpty(search) ||
                          p.Title.Contains(search) ||
@@ -23,8 +25,39 @@ public sealed class PostsSpec : Specification<Post>
              .Include(p => p.Category!)
              .Include(p => p.FeaturedImage!)
              .Include("TagAssignments.Tag")
-             .OrderByDescending(p => p.CreatedAt)
              .TagWith("GetPosts");
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "title":
+                if (isDescending) Query.OrderByDescending(p => p.Title);
+                else Query.OrderBy(p => p.Title);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(p => p.Status);
+                else Query.OrderBy(p => p.Status);
+                break;
+            case "viewcount":
+                if (isDescending) Query.OrderByDescending(p => p.ViewCount);
+                else Query.OrderBy(p => p.ViewCount);
+                break;
+            case "publishedat":
+                if (isDescending) Query.OrderByDescending(p => p.PublishedAt ?? DateTimeOffset.MinValue);
+                else Query.OrderBy(p => p.PublishedAt ?? DateTimeOffset.MinValue);
+                break;
+            case "categoryname":
+                if (isDescending) Query.OrderByDescending(p => p.Category != null ? p.Category.Name : string.Empty);
+                else Query.OrderBy(p => p.Category != null ? p.Category.Name : string.Empty);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedAt);
+                else Query.OrderBy(p => p.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(p => p.CreatedAt);
+                break;
+        }
 
         if (skip.HasValue)
             Query.Skip(skip.Value);
@@ -43,7 +76,9 @@ public sealed class PublishedPostsSpec : Specification<Post>
         Guid? categoryId = null,
         Guid? tagId = null,
         int? skip = null,
-        int? take = null)
+        int? take = null,
+        string? orderBy = null,
+        bool isDescending = true)
     {
         Query.Where(p => p.Status == PostStatus.Published)
              .Where(p => p.PublishedAt != null && p.PublishedAt <= DateTimeOffset.UtcNow)
@@ -55,12 +90,43 @@ public sealed class PublishedPostsSpec : Specification<Post>
              .Include(p => p.Category!)
              .Include(p => p.FeaturedImage!)
              .Include("TagAssignments.Tag")
-             .OrderByDescending(p => p.PublishedAt!)
              .TagWith("GetPublishedPosts");
 
         if (tagId.HasValue)
         {
             Query.Where(p => p.TagAssignments.Any(ta => ta.TagId == tagId));
+        }
+
+        // Sorting
+        switch (orderBy?.ToLowerInvariant())
+        {
+            case "title":
+                if (isDescending) Query.OrderByDescending(p => p.Title);
+                else Query.OrderBy(p => p.Title);
+                break;
+            case "status":
+                if (isDescending) Query.OrderByDescending(p => p.Status);
+                else Query.OrderBy(p => p.Status);
+                break;
+            case "viewcount":
+                if (isDescending) Query.OrderByDescending(p => p.ViewCount);
+                else Query.OrderBy(p => p.ViewCount);
+                break;
+            case "publishedat":
+                if (isDescending) Query.OrderByDescending(p => p.PublishedAt ?? DateTimeOffset.MinValue);
+                else Query.OrderBy(p => p.PublishedAt ?? DateTimeOffset.MinValue);
+                break;
+            case "categoryname":
+                if (isDescending) Query.OrderByDescending(p => p.Category != null ? p.Category.Name : string.Empty);
+                else Query.OrderBy(p => p.Category != null ? p.Category.Name : string.Empty);
+                break;
+            case "createdat":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedAt);
+                else Query.OrderBy(p => p.CreatedAt);
+                break;
+            default:
+                Query.OrderByDescending(p => p.PublishedAt!);
+                break;
         }
 
         if (skip.HasValue)

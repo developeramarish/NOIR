@@ -21,6 +21,7 @@ import {
   CardTitle,
   ColorPopover,
   DataTable,
+  DataTableColumnHeader,
   DataTableToolbar,
   DropdownMenuItem,
   EmptyState,
@@ -79,7 +80,8 @@ export const BlogTagsPage = () => {
       </>
     )),
     ch.accessor('name', {
-      header: t('labels.name', 'Name'),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.name', 'Name')} />,
+      meta: { label: t('labels.name', 'Name') },
       cell: ({ row }) => (
         <div className="flex items-center gap-2.5">
           {row.original.color ? (
@@ -92,15 +94,15 @@ export const BlogTagsPage = () => {
       ),
     }) as ColumnDef<PostTagListItem, unknown>,
     ch.accessor('slug', {
-      header: t('labels.slug', 'Slug'),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.slug', 'Slug')} />,
+      meta: { label: t('labels.slug', 'Slug') },
       cell: ({ getValue }) => (
         <code className="text-sm bg-muted px-1.5 py-0.5 rounded">{getValue()}</code>
       ),
     }) as ColumnDef<PostTagListItem, unknown>,
     ch.accessor('postCount', {
-      header: t('blogTags.posts', 'Posts'),
-      enableSorting: false,
-      meta: { align: 'center' },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('blogTags.posts', 'Posts')} />,
+      meta: { align: 'center', label: t('blogTags.posts', 'Posts') },
       size: 80,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<PostTagListItem, unknown>,
@@ -114,6 +116,7 @@ export const BlogTagsPage = () => {
     columns,
     tableKey: 'blog-tags',
     rowCount: data.length,
+    manualSorting: false,
     state: {
       pagination: { pageIndex: 0, pageSize: 1000 },
       sorting: [],

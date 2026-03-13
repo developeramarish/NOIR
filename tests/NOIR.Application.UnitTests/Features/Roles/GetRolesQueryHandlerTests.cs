@@ -76,7 +76,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, true, It.IsAny<CancellationToken>()))
+                null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 3));
 
         _roleIdentityServiceMock
@@ -109,7 +109,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                "admin", 1, 20, null, true, It.IsAny<CancellationToken>()))
+                "admin", 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -144,7 +144,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, tenantId, true, It.IsAny<CancellationToken>()))
+                null, 1, 20, tenantId, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 2));
 
         _roleIdentityServiceMock
@@ -176,7 +176,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, false, It.IsAny<CancellationToken>()))
+                null, 1, 20, null, false, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -218,7 +218,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, true, It.IsAny<CancellationToken>()))
+                null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -267,7 +267,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, true, It.IsAny<CancellationToken>()))
+                null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -307,7 +307,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 2, 5, null, true, It.IsAny<CancellationToken>()))
+                null, 2, 5, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 25));
 
         _roleIdentityServiceMock
@@ -343,7 +343,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 2, null, true, It.IsAny<CancellationToken>()))
+                null, 1, 2, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 10));
 
         _roleIdentityServiceMock
@@ -378,7 +378,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 2, 5, null, true, It.IsAny<CancellationToken>()))
+                null, 2, 5, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 7));
 
         _roleIdentityServiceMock
@@ -412,7 +412,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, true, It.IsAny<CancellationToken>()))
+                null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 0));
 
         _roleIdentityServiceMock
@@ -441,7 +441,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                "nonexistent", 1, 20, null, true, It.IsAny<CancellationToken>()))
+                "nonexistent", 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 0));
 
         _roleIdentityServiceMock
@@ -478,7 +478,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                null, 1, 20, null, true, cancellationToken))
+                null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), cancellationToken))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -494,7 +494,7 @@ public class GetRolesQueryHandlerTests
 
         // Assert
         _roleIdentityServiceMock.Verify(
-            x => x.GetRolesPaginatedAsync(null, 1, 20, null, true, cancellationToken),
+            x => x.GetRolesPaginatedAsync(null, 1, 20, null, true, It.IsAny<string?>(), It.IsAny<bool>(), cancellationToken),
             Times.Once);
         _roleIdentityServiceMock.Verify(
             x => x.GetUserCountsAsync(It.IsAny<IEnumerable<string>>(), cancellationToken),
@@ -518,7 +518,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                "admin", 1, 20, tenantId, true, It.IsAny<CancellationToken>()))
+                "admin", 1, 20, tenantId, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -537,7 +537,7 @@ public class GetRolesQueryHandlerTests
         result.Value.Items.Should().HaveCount(1);
 
         _roleIdentityServiceMock.Verify(
-            x => x.GetRolesPaginatedAsync("admin", 1, 20, tenantId, true, It.IsAny<CancellationToken>()),
+            x => x.GetRolesPaginatedAsync("admin", 1, 20, tenantId, true, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -554,7 +554,7 @@ public class GetRolesQueryHandlerTests
 
         _roleIdentityServiceMock
             .Setup(x => x.GetRolesPaginatedAsync(
-                "manager", 2, 10, tenantId, false, It.IsAny<CancellationToken>()))
+                "manager", 2, 10, tenantId, false, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((roles as IReadOnlyList<RoleIdentityDto>, 1));
 
         _roleIdentityServiceMock
@@ -577,7 +577,7 @@ public class GetRolesQueryHandlerTests
         result.IsSuccess.Should().BeTrue();
 
         _roleIdentityServiceMock.Verify(
-            x => x.GetRolesPaginatedAsync("manager", 2, 10, tenantId, false, It.IsAny<CancellationToken>()),
+            x => x.GetRolesPaginatedAsync("manager", 2, 10, tenantId, false, It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

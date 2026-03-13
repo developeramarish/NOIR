@@ -18,7 +18,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { usePageContext } from '@/hooks/usePageContext'
@@ -206,6 +206,7 @@ export const ProjectsPage = () => {
     isSearchStale,
     isFilterPending,
     setFilter,
+    setSorting,
     setPage,
     setPageSize,
   } = useTableParams<{ status?: ProjectStatus }>({ defaultPageSize: 12 })
@@ -280,7 +281,6 @@ export const ProjectsPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('pm.projectName', { defaultValue: 'Project' })} />,
       meta: { label: t('pm.projectName', { defaultValue: 'Project' }) },
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div
@@ -303,7 +303,6 @@ export const ProjectsPage = () => {
     ch.accessor('status', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('pm.status', { defaultValue: 'Status' })} />,
       meta: { label: t('pm.status', { defaultValue: 'Status' }) },
-      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant="outline" className={getStatusBadgeClasses(statusColorMap[row.original.status])}>
           {t(`statuses.${row.original.status.charAt(0).toLowerCase() + row.original.status.slice(1)}`, { defaultValue: row.original.status })}
@@ -336,7 +335,6 @@ export const ProjectsPage = () => {
       id: 'members',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('pm.members', { defaultValue: 'Members' })} />,
       meta: { label: t('pm.members', { defaultValue: 'Members' }) },
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="flex items-center gap-1 text-sm text-muted-foreground">
           <Users className="h-3.5 w-3.5" />
@@ -347,7 +345,6 @@ export const ProjectsPage = () => {
     ch.accessor('dueDate', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('pm.dueDate', { defaultValue: 'Due Date' })} />,
       meta: { label: t('pm.dueDate', { defaultValue: 'Due Date' }) },
-      enableSorting: false,
       cell: ({ row }) => {
         const isOverdue = row.original.dueDate && new Date(row.original.dueDate) < new Date()
         return (
@@ -367,7 +364,7 @@ export const ProjectsPage = () => {
     rowCount: data?.totalCount ?? 0,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function'
@@ -376,6 +373,7 @@ export const ProjectsPage = () => {
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

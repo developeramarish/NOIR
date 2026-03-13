@@ -28,9 +28,11 @@ public static class CustomerGroupEndpoints
             [FromQuery] bool? isActive,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
+            [FromQuery] string? orderBy = null,
+            [FromQuery] bool? isDescending = null,
             IMessageBus bus = null!) =>
         {
-            var query = new GetCustomerGroupsQuery(search, isActive, pageNumber, pageSize);
+            var query = new GetCustomerGroupsQuery(search, isActive, pageNumber, pageSize, orderBy, isDescending ?? true);
             var result = await bus.InvokeAsync<Result<PagedResult<CustomerGroupListDto>>>(query);
             return result.ToHttpResult();
         })

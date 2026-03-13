@@ -22,7 +22,7 @@ public class GetInventoryReceiptsQueryHandler
     {
         var skip = (query.Page - 1) * query.PageSize;
 
-        var spec = new InventoryReceiptsListSpec(skip, query.PageSize, query.Type, query.Status);
+        var spec = new InventoryReceiptsListSpec(skip, query.PageSize, query.Type, query.Status, query.OrderBy, query.IsDescending);
         var receipts = await _repository.ListAsync(spec, cancellationToken);
 
         var countSpec = new InventoryReceiptsCountSpec(query.Type, query.Status);

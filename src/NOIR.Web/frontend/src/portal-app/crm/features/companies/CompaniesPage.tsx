@@ -10,7 +10,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
@@ -63,7 +63,7 @@ export const CompaniesPage = () => {
   const canDelete = hasPermission(Permissions.CrmCompaniesDelete)
   const showActions = canUpdate || canDelete
 
-  const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
+  const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setSorting, setPage, setPageSize } = useTableParams({ defaultPageSize: 20 })
 
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-crm-company' })
   const [companyToDelete, setCompanyToDelete] = useState<CompanyListDto | null>(null)
@@ -125,40 +125,34 @@ export const CompaniesPage = () => {
     ch.accessor('name', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.companies.name')} />,
       meta: { label: t('crm.companies.name') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="font-medium text-sm">{getValue()}</span>,
     }) as ColumnDef<CompanyListDto, unknown>,
     ch.accessor('domain', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.companies.domain')} />,
       meta: { label: t('crm.companies.domain') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<CompanyListDto, unknown>,
     ch.accessor('industry', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.companies.industry')} />,
       meta: { label: t('crm.companies.industry') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<CompanyListDto, unknown>,
     ch.accessor('ownerName', {
       id: 'owner',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.companies.owner')} />,
       meta: { label: t('crm.companies.owner') },
-      enableSorting: false,
       cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{getValue() || '-'}</span>,
     }) as ColumnDef<CompanyListDto, unknown>,
     ch.accessor('contactCount', {
       id: 'contactCount',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('crm.companies.contactsCount')} />,
       meta: { label: t('crm.companies.contactsCount'), align: 'center' },
-      enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<CompanyListDto, unknown>,
     ch.accessor('createdAt', {
       id: 'created',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created')} />,
       meta: { label: t('labels.created') },
-      enableSorting: false,
       cell: ({ getValue }) => (
         <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>
       ),
@@ -173,13 +167,14 @@ export const CompaniesPage = () => {
     rowCount: totalCount,
     state: {
       pagination: { pageIndex: params.page - 1, pageSize: params.pageSize },
-      sorting: [],
+      sorting: params.sorting as SortingState,
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater({ pageIndex: params.page - 1, pageSize: params.pageSize }) : updater
       if (next.pageIndex !== params.page - 1) setPage(next.pageIndex + 1)
       if (next.pageSize !== params.pageSize) setPageSize(next.pageSize)
     },
+    onSortingChange: setSorting,
     getRowId: (row) => row.id,
   })
 

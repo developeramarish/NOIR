@@ -28,6 +28,8 @@ export const getUsers = async (params: {
   isLocked?: boolean
   page?: number
   pageSize?: number
+  orderBy?: string
+  isDescending?: boolean
 }): Promise<PaginatedResponse<UserListItem>> => {
   const queryParams = new URLSearchParams()
   if (params.search) queryParams.append('Search', params.search)
@@ -35,6 +37,8 @@ export const getUsers = async (params: {
   if (params.isLocked !== undefined) queryParams.append('IsLocked', String(params.isLocked))
   if (params.page) queryParams.append('Page', params.page.toString())
   if (params.pageSize) queryParams.append('PageSize', params.pageSize.toString())
+  if (params.orderBy) queryParams.append('OrderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('IsDescending', params.isDescending.toString())
 
   const query = queryParams.toString()
   return apiClient<PaginatedResponse<UserListItem>>(`/users${query ? `?${query}` : ''}`)

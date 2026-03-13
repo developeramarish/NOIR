@@ -45,6 +45,8 @@ export interface GetProductsParams {
   lowStockOnly?: boolean
   page?: number
   pageSize?: number
+  orderBy?: string
+  isDescending?: boolean
   /** Attribute filters: key is attribute code, value is array of display values to match */
   attributeFilters?: Record<string, string[]>
 }
@@ -64,6 +66,8 @@ export const getProducts = async (params: GetProductsParams = {}): Promise<Produ
   if (params.lowStockOnly) queryParams.append('lowStockOnly', 'true')
   if (params.page) queryParams.append('page', params.page.toString())
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+  if (params.orderBy) queryParams.append('orderBy', params.orderBy)
+  if (params.isDescending != null) queryParams.append('isDescending', params.isDescending.toString())
   if (params.attributeFilters && Object.keys(params.attributeFilters).length > 0) {
     queryParams.append('attributeFilters', JSON.stringify(params.attributeFilters))
   }
