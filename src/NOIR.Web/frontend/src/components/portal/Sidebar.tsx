@@ -567,15 +567,16 @@ const NotificationSidebarItem = ({ isExpanded, t, onItemClick }: { isExpanded: b
       variant="ghost"
       data-active={isActive}
       className={cn(
-        'w-full justify-start relative overflow-hidden transition-all duration-200',
+        'group/nav w-full justify-start relative overflow-hidden transition-all duration-200',
         isExpanded ? 'px-3' : 'px-0 justify-center',
-        isActive && 'bg-sidebar-primary/5 text-sidebar-primary font-medium',
-        !isActive && 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+        isActive && 'bg-sidebar-primary/5 text-sidebar-primary font-medium hover:bg-highlight/10 hover:text-highlight',
+        !isActive && 'text-sidebar-foreground/70 hover:bg-highlight/10 hover:text-highlight'
       )}
     >
-      {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-primary rounded-r-full" />
-      )}
+      <div className={cn(
+        'absolute left-0 top-0 bottom-0 w-1 rounded-r-full transition-colors duration-200',
+        isActive ? 'bg-sidebar-primary group-hover/nav:bg-highlight' : 'bg-highlight opacity-0 group-hover/nav:opacity-100'
+      )} />
       <div className="relative">
         <Bell className={cn('h-5 w-5 flex-shrink-0', isExpanded && 'mr-3')} />
         {unreadCount > 0 && !isExpanded && (
@@ -801,16 +802,17 @@ const SidebarContent = ({
         asChild
         data-active={active}
         className={cn(
-          'w-full justify-start relative overflow-hidden transition-all duration-200',
+          'group/nav w-full justify-start relative overflow-hidden transition-all duration-200',
           isExpanded ? 'px-3' : 'px-0 justify-center',
-          active && 'bg-sidebar-primary/5 text-sidebar-primary font-medium',
-          !active && 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+          active && 'bg-sidebar-primary/5 text-sidebar-primary font-medium hover:bg-highlight/10 hover:text-highlight',
+          !active && 'text-sidebar-foreground/70 hover:bg-highlight/10 hover:text-highlight'
         )}
       >
         <ViewTransitionLink to={item.path} onClick={() => onItemClick?.(item.path)}>
-          {active && (
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-primary rounded-r-full" />
-          )}
+          <div className={cn(
+            'absolute left-0 top-0 bottom-0 w-1 rounded-r-full transition-colors duration-200',
+            active ? 'bg-sidebar-primary group-hover/nav:bg-highlight' : 'bg-highlight opacity-0 group-hover/nav:opacity-100'
+          )} />
           <Icon className={cn(
             'h-5 w-5 flex-shrink-0',
             isExpanded && 'mr-3'
@@ -1044,15 +1046,16 @@ export const MobileSidebarTrigger = ({
         asChild
         data-active={active}
         className={cn(
-          'w-full justify-start relative overflow-hidden transition-all duration-200 px-3',
-          active && 'bg-sidebar-primary/5 text-sidebar-primary font-medium',
-          !active && 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+          'group/nav w-full justify-start relative overflow-hidden transition-all duration-200 px-3',
+          active && 'bg-sidebar-primary/5 text-sidebar-primary font-medium hover:bg-highlight/10 hover:text-highlight',
+          !active && 'text-sidebar-foreground/70 hover:bg-highlight/10 hover:text-highlight'
         )}
       >
         <ViewTransitionLink to={item.path} onClick={() => onOpenChange(false)}>
-          {active && (
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-primary rounded-r-full" />
-          )}
+          <div className={cn(
+            'absolute left-0 top-0 bottom-0 w-1 rounded-r-full transition-colors duration-200',
+            active ? 'bg-sidebar-primary group-hover/nav:bg-highlight' : 'bg-highlight opacity-0 group-hover/nav:opacity-100'
+          )} />
           <Icon className="h-5 w-5 flex-shrink-0 mr-3" />
           <span className="flex-1 text-left">{t(item.titleKey)}</span>
         </ViewTransitionLink>
@@ -1125,15 +1128,16 @@ export const MobileSidebarTrigger = ({
                   variant="ghost"
                   asChild
                   className={cn(
-                    'w-full justify-start relative overflow-hidden transition-all duration-200 px-3',
-                    notificationActive && 'bg-sidebar-primary/5 text-sidebar-primary font-medium',
-                    !notificationActive && 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    'group/nav w-full justify-start relative overflow-hidden transition-all duration-200 px-3',
+                    notificationActive && 'bg-sidebar-primary/5 text-sidebar-primary font-medium hover:bg-highlight/10 hover:text-highlight',
+                    !notificationActive && 'text-sidebar-foreground/70 hover:bg-highlight/10 hover:text-highlight'
                   )}
                 >
                   <ViewTransitionLink to="/portal/notifications" onClick={() => onOpenChange(false)}>
-                    {notificationActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-primary rounded-r-full" />
-                    )}
+                    <div className={cn(
+                      'absolute left-0 top-0 bottom-0 w-1 rounded-r-full transition-colors duration-200',
+                      notificationActive ? 'bg-sidebar-primary group-hover/nav:bg-highlight' : 'bg-highlight opacity-0 group-hover/nav:opacity-100'
+                    )} />
                     <Bell className="h-5 w-5 flex-shrink-0 mr-3" />
                     <span className="flex-1 text-left">{t('notifications.title')}</span>
                     {unreadCount > 0 && (
