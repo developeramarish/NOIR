@@ -44,6 +44,8 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  ViewModeToggle,
+  type ViewModeOption,
 } from '@uikit'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { useProjectsQuery } from '@/portal-app/pm/queries'
@@ -191,6 +193,10 @@ export const ProjectsPage = () => {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const viewMode = (searchParams.get('view') ?? 'grid') as 'grid' | 'list'
+  const viewModeOptions: ViewModeOption<'grid' | 'list'>[] = useMemo(() => [
+    { value: 'grid', label: t('labels.grid', 'Grid'), icon: LayoutGrid, ariaLabel: t('pm.gridView', { defaultValue: 'Grid view' }) },
+    { value: 'list', label: t('labels.list', 'List'), icon: List, ariaLabel: t('pm.listView', { defaultValue: 'List view' }) },
+  ], [t])
   const sortBy = searchParams.get('sort') ?? 'created'
 
   const {
@@ -447,22 +453,7 @@ export const ProjectsPage = () => {
           />
         </div>
 
-        <div className="flex items-center rounded-md border p-0.5 bg-muted/30">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded cursor-pointer transition-colors ${viewMode === 'grid' ? 'bg-background shadow-sm' : 'hover:bg-muted'}`}
-            aria-label={t('pm.gridView', { defaultValue: 'Grid view' })}
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded cursor-pointer transition-colors ${viewMode === 'list' ? 'bg-background shadow-sm' : 'hover:bg-muted'}`}
-            aria-label={t('pm.listView', { defaultValue: 'List view' })}
-          >
-            <List className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <ViewModeToggle options={viewModeOptions} value={viewMode} onChange={setViewMode} />
       </div>
 
       {isLoading ? (
