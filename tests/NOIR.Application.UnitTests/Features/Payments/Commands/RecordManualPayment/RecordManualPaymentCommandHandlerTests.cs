@@ -87,6 +87,11 @@ public class RecordManualPaymentCommandHandlerTests
         return order;
     }
 
+    private static PaymentGateway CreateTestGateway()
+    {
+        return PaymentGateway.Create("manual", "Manual Payment", GatewayEnvironment.Production, TestTenantId);
+    }
+
     #endregion
 
     #region Success Scenarios
@@ -104,7 +109,7 @@ public class RecordManualPaymentCommandHandlerTests
 
         _gatewayRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<PaymentGatewayByProviderSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PaymentGateway?)null);
+            .ReturnsAsync(CreateTestGateway());
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -131,7 +136,7 @@ public class RecordManualPaymentCommandHandlerTests
 
         _gatewayRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<PaymentGatewayByProviderSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PaymentGateway?)null);
+            .ReturnsAsync(CreateTestGateway());
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -154,7 +159,7 @@ public class RecordManualPaymentCommandHandlerTests
 
         _gatewayRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<PaymentGatewayByProviderSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PaymentGateway?)null);
+            .ReturnsAsync(CreateTestGateway());
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -177,7 +182,7 @@ public class RecordManualPaymentCommandHandlerTests
 
         _gatewayRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<PaymentGatewayByProviderSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PaymentGateway?)null);
+            .ReturnsAsync(CreateTestGateway());
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -199,7 +204,7 @@ public class RecordManualPaymentCommandHandlerTests
 
         _gatewayRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<PaymentGatewayByProviderSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PaymentGateway?)null);
+            .ReturnsAsync(CreateTestGateway());
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
