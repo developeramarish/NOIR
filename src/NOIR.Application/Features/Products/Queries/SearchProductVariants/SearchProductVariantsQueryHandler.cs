@@ -46,7 +46,7 @@ public class SearchProductVariantsQueryHandler
                     p.Name,
                     v.Name,
                     v.Sku,
-                    v.Price,
+                    v.Price > 0 ? v.Price : p.BasePrice,
                     v.StockQuantity,
                     primaryImage?.Url);
             }))

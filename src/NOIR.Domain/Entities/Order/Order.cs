@@ -389,6 +389,23 @@ public class Order : TenantAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Completes the order directly from Confirmed status.
+    /// Used for manual/POS orders where payment is received immediately.
+    /// </summary>
+    public void ManualComplete()
+    {
+        if (Status != OrderStatus.Confirmed)
+            throw new InvalidOperationException($"Cannot manually complete order in {Status} status. Order must be Confirmed.");
+
+        var oldStatus = Status;
+        Status = OrderStatus.Completed;
+        CompletedAt = DateTimeOffset.UtcNow;
+
+        AddDomainEvent(new OrderStatusChangedEvent(Id, OrderNumber, oldStatus, Status));
+        AddDomainEvent(new OrderCompletedEvent(Id, OrderNumber));
+    }
+
+    /// <summary>
     /// Cancels the order.
     /// </summary>
     public void Cancel(string? reason = null)

@@ -148,6 +148,13 @@ export const manualCreateOrder = async (request: ManualCreateOrderRequest): Prom
   })
 }
 
+export const manualCreateAndCompleteOrder = async (request: ManualCreateOrderRequest): Promise<OrderDto> => {
+  return apiClient<OrderDto>('/orders/manual-complete', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
 // --- Product Variant Search (for manual order creation) ---
 
 export interface ProductVariantLookupDto {

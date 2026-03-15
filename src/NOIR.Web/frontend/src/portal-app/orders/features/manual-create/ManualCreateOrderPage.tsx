@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   Trash2,
   AlertTriangle,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -58,9 +59,11 @@ import {
 } from '@uikit'
 import {
   useManualCreateOrderMutation,
+  useManualCreateAndCompleteOrderMutation,
   useSearchProductVariantsQuery,
 } from '@/portal-app/orders/queries'
 import type { ManualCreateOrderRequest, ProductVariantLookupDto } from '@/services/orders'
+import { validatePromoCode } from '@/services/promotions'
 import { getCustomers } from '@/services/customers'
 import type { CustomerSummaryDto } from '@/types/customer'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -516,6 +519,7 @@ export const ManualCreateOrderPage = () => {
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
   const createOrderMutation = useManualCreateOrderMutation()
+  const createAndCompleteMutation = useManualCreateAndCompleteOrderMutation()
   usePageContext('Orders')
 
   // Form state
@@ -595,6 +599,31 @@ export const ManualCreateOrderPage = () => {
     [subtotal, orderDiscount, shippingAmount, taxAmount],
   )
 
+  // Coupon validation
+  const [couponValidation, setCouponValidation] = useState<{ isValid: boolean; message?: string | null } | null>(null)
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+
+  const handleCouponBlur = useCallback(async () => {
+    const code = form.getValues('couponCode')?.trim()
+    if (!code) {
+      setCouponValidation(null)
+      return
+    }
+    setIsValidatingCoupon(true)
+    setCouponValidation(null)
+    try {
+      const result = await validatePromoCode(code, subtotal)
+      setCouponValidation({ isValid: result.isValid, message: result.message })
+      if (result.isValid) {
+        form.setValue('discountAmount', result.discountAmount, { shouldValidate: true })
+      }
+    } catch {
+      setCouponValidation({ isValid: false, message: t('orders.manualCreate.couponValidationError') })
+    } finally {
+      setIsValidatingCoupon(false)
+    }
+  }, [form, subtotal, t])
+
   // Handlers
   const handleAddVariant = useCallback((variant: ProductVariantLookupDto) => {
     setOrderItems((prev) => [
@@ -645,42 +674,55 @@ export const ManualCreateOrderPage = () => {
     }
   }
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    const request: ManualCreateOrderRequest = {
-      customerEmail: data.customerEmail,
-      customerName: data.customerName || undefined,
-      customerPhone: data.customerPhone || undefined,
-      customerId: selectedCustomer?.id,
-      items: orderItems.map((item) => ({
-        productVariantId: item.variantId,
-        quantity: item.quantity,
-        unitPrice: item.customPrice ?? undefined,
-        discountAmount: item.discount > 0 ? item.discount : undefined,
-      })),
-      shippingAddress: buildAddressPayload(shippingAddress),
-      billingAddress: sameAsShipping
-        ? buildAddressPayload(shippingAddress)
-        : buildAddressPayload(billingAddress),
-      shippingMethod: data.shippingMethod || undefined,
-      shippingAmount: data.shippingAmount || undefined,
-      couponCode: data.couponCode || undefined,
-      discountAmount: data.discountAmount || undefined,
-      taxAmount: data.taxAmount || undefined,
-      customerNotes: data.customerNotes || undefined,
-      internalNotes: data.internalNotes || undefined,
-      paymentMethod: data.paymentMethod || undefined,
-      initialPaymentStatus: data.initialPaymentStatus || undefined,
-      currency: data.currency || undefined,
-    }
+  const buildRequest = useCallback((data: ManualOrderFormData): ManualCreateOrderRequest => ({
+    customerEmail: data.customerEmail,
+    customerName: data.customerName || undefined,
+    customerPhone: data.customerPhone || undefined,
+    customerId: selectedCustomer?.id,
+    items: orderItems.map((item) => ({
+      productVariantId: item.variantId,
+      quantity: item.quantity,
+      unitPrice: item.customPrice ?? undefined,
+      discountAmount: item.discount > 0 ? item.discount : undefined,
+    })),
+    shippingAddress: buildAddressPayload(shippingAddress),
+    billingAddress: sameAsShipping
+      ? buildAddressPayload(shippingAddress)
+      : buildAddressPayload(billingAddress),
+    shippingMethod: data.shippingMethod || undefined,
+    shippingAmount: data.shippingAmount || undefined,
+    couponCode: data.couponCode || undefined,
+    discountAmount: data.discountAmount || undefined,
+    taxAmount: data.taxAmount || undefined,
+    customerNotes: data.customerNotes || undefined,
+    internalNotes: data.internalNotes || undefined,
+    paymentMethod: data.paymentMethod || undefined,
+    initialPaymentStatus: data.initialPaymentStatus || undefined,
+    currency: data.currency || undefined,
+  }), [selectedCustomer?.id, orderItems, shippingAddress, billingAddress, sameAsShipping])
 
+  const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      const order = await createOrderMutation.mutateAsync(request)
+      const order = await createOrderMutation.mutateAsync(buildRequest(data))
       toast.success(t('orders.manualCreate.success'))
       navigate(`/portal/ecommerce/orders/${order.id}`)
     } catch {
       toast.error(t('orders.manualCreate.error'))
     }
   })
+
+  const handleCreateAndComplete = form.handleSubmit(async (data) => {
+    try {
+      const order = await createAndCompleteMutation.mutateAsync(buildRequest(data))
+      toast.success(t('orders.manualCreate.createAndCompleteSuccess'))
+      navigate(`/portal/ecommerce/orders/${order.id}`)
+    } catch {
+      toast.error(t('orders.manualCreate.error'))
+    }
+  })
+
+  const watchedPaymentStatus = form.watch('initialPaymentStatus')
+  const isAnyMutationPending = createOrderMutation.isPending || createAndCompleteMutation.isPending
 
   if (!canManageOrders) {
     return (
@@ -1084,8 +1126,32 @@ export const ManualCreateOrderPage = () => {
                     <FormItem>
                       <FormLabel>{t('orders.manualCreate.couponCode')}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder={t('orders.manualCreate.couponCode')} />
+                        <div className="relative">
+                          <Input
+                            {...field}
+                            placeholder={t('orders.manualCreate.couponCode')}
+                            onBlur={() => {
+                              field.onBlur()
+                              handleCouponBlur()
+                            }}
+                          />
+                          {isValidatingCoupon && (
+                            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                          )}
+                          {!isValidatingCoupon && couponValidation?.isValid && (
+                            <CheckCircle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-500" />
+                          )}
+                          {!isValidatingCoupon && couponValidation && !couponValidation.isValid && (
+                            <AlertTriangle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-destructive" />
+                          )}
+                        </div>
                       </FormControl>
+                      {couponValidation && !couponValidation.isValid && couponValidation.message && (
+                        <p className="text-sm text-destructive">{couponValidation.message}</p>
+                      )}
+                      {couponValidation?.isValid && couponValidation.message && (
+                        <p className="text-sm text-green-600">{couponValidation.message}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1277,11 +1343,24 @@ export const ManualCreateOrderPage = () => {
             </Button>
             <Button
               type="submit"
-              disabled={createOrderMutation.isPending || orderItems.length === 0}
+              disabled={isAnyMutationPending || orderItems.length === 0}
               className="cursor-pointer"
             >
               {createOrderMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('orders.manualCreate.createOrder')}
+            </Button>
+            <Button
+              type="button"
+              disabled={isAnyMutationPending || orderItems.length === 0 || watchedPaymentStatus !== 'Paid'}
+              onClick={handleCreateAndComplete}
+              className="cursor-pointer"
+            >
+              {createAndCompleteMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="mr-2 h-4 w-4" />
+              )}
+              {t('orders.manualCreate.createAndComplete')}
             </Button>
           </div>
         </form>
