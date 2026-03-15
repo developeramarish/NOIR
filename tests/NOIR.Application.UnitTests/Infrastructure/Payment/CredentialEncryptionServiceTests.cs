@@ -10,7 +10,6 @@ public class CredentialEncryptionServiceTests
 {
     private readonly Mock<IOptions<PaymentSettings>> _paymentSettingsMock;
     private readonly Mock<IConfiguration> _configurationMock;
-    private readonly Mock<ILogger<CredentialEncryptionService>> _loggerMock;
 
     // Valid 32-byte base64 encoded key (44 characters = 32 bytes when decoded)
     private const string Valid32ByteKey = "DBTW3bti/yqoq4lqsxLyIcdACdAH7sMNj0Nd8EQjDMg=";
@@ -22,7 +21,6 @@ public class CredentialEncryptionServiceTests
     {
         _paymentSettingsMock = new Mock<IOptions<PaymentSettings>>();
         _configurationMock = new Mock<IConfiguration>();
-        _loggerMock = new Mock<ILogger<CredentialEncryptionService>>();
 
         _paymentSettingsMock.Setup(x => x.Value).Returns(new PaymentSettings
         {
@@ -41,8 +39,7 @@ public class CredentialEncryptionServiceTests
         // Act
         var act = () => new CredentialEncryptionService(
             _paymentSettingsMock.Object,
-            _configurationMock.Object,
-            _loggerMock.Object);
+            _configurationMock.Object);
 
         // Assert
         act.Should().NotThrow();
@@ -60,8 +57,7 @@ public class CredentialEncryptionServiceTests
             // Act
             var act = () => new CredentialEncryptionService(
                 _paymentSettingsMock.Object,
-                _configurationMock.Object,
-                _loggerMock.Object);
+                _configurationMock.Object);
 
             // Assert
             act.Should().NotThrow();
@@ -231,8 +227,7 @@ public class CredentialEncryptionServiceTests
     {
         return new CredentialEncryptionService(
             _paymentSettingsMock.Object,
-            _configurationMock.Object,
-            _loggerMock.Object);
+            _configurationMock.Object);
     }
 
     private void SetupConfigurationKey(string? keyValue)

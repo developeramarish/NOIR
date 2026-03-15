@@ -95,7 +95,7 @@ export const DepartmentsPage = () => {
     { value: 'tree', label: t('labels.tree', 'Tree'), icon: GitBranch, ariaLabel: t('labels.treeView', 'Tree view') },
   ], [t])
 
-  const { data: departments, isLoading: loading, error: queryError, refetch: refresh } = useDepartmentsQuery()
+  const { data: departments, isLoading: loading, isPlaceholderData, error: queryError, refetch: refresh } = useDepartmentsQuery()
   const reorderMutation = useReorderDepartments()
   const error = queryError?.message ?? null
 
@@ -234,7 +234,7 @@ export const DepartmentsPage = () => {
     getRowId: (row) => row.id,
   })
 
-  const isContentStale = useDelayedLoading(isSearchStale)
+  const isContentStale = useDelayedLoading(isSearchStale || isPlaceholderData)
   const displayCount = viewMode === 'tree' ? filteredDepartments.length : paginatedDepartments.length
   const displayTotal = viewMode === 'tree' ? flatDepartments.length : filteredDepartments.length
 

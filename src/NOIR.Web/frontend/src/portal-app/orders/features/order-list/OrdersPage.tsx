@@ -97,7 +97,7 @@ export const OrdersPage = () => {
     status: statusFilter !== 'all' ? statusFilter as OrderStatus : undefined,
   }), [params, statusFilter])
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useOrdersQuery(queryParams)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useOrdersQuery(queryParams)
 
   const orders = data?.items ?? []
 
@@ -109,7 +109,7 @@ export const OrdersPage = () => {
   const bulkConfirmMutation = useBulkConfirmOrders()
   const bulkCancelMutation = useBulkCancelOrders()
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
 
   const handleStatusFilter = (value: string) => startFilterTransition(() => { setStatusFilter(value); setPage(1) })
 

@@ -297,7 +297,7 @@ export const DataTable = <TData extends RowData>({
     >
       <div
         className={cn(
-          'rounded-xl border border-border/50 overflow-hidden transition-opacity duration-150 [container-type:inline-size]',
+          'rounded-xl border border-border/50 overflow-hidden transition-opacity duration-300 [container-type:inline-size]',
           isStale && 'opacity-60 pointer-events-none',
           className,
         )}

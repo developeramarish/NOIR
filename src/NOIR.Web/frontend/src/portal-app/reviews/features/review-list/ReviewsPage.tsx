@@ -78,7 +78,6 @@ export const ReviewsPage = () => {
 
   // Table params (search, pagination, sorting)
   const { params, searchInput, setSearchInput, isSearchStale, setSorting, setPage, setPageSize, defaultPageSize } = useTableParams({ defaultPageSize: 20, tableKey: 'reviews' })
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isTabPending)
 
   // Dialog state
   const [detailReviewId, setDetailReviewId] = useState<string | undefined>()
@@ -95,9 +94,11 @@ export const ReviewsPage = () => {
   const {
     data,
     isLoading,
+    isPlaceholderData,
     refetch,
   } = useReviewsQuery(queryParams)
 
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isTabPending || isPlaceholderData)
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 
   // Mutations

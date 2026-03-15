@@ -109,7 +109,7 @@ export const CustomersPage = () => {
     tier: tierFilter !== 'all' ? tierFilter as CustomerTier : undefined,
   }), [params, segmentFilter, tierFilter])
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useCustomersQuery(queryParams)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useCustomersQuery(queryParams)
   const { data: stats } = useCustomerStatsQuery()
 
   const customers = data?.items ?? []
@@ -129,7 +129,7 @@ export const CustomersPage = () => {
     ? stats.topSpenders.reduce((sum, c) => sum + c.totalSpent, 0) / stats.topSpenders.length
     : 0
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
 
   const handleSegmentFilter = (value: string) => startFilterTransition(() => { setSegmentFilter(value); setPage(1) })
   const handleTierFilter = (value: string) => startFilterTransition(() => { setTierFilter(value); setPage(1) })

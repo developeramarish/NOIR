@@ -64,9 +64,9 @@ export const TenantsPage = () => {
     defaultPageSize,
   } = useTableParams({ defaultPageSize: 10, tableKey: 'tenants' })
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useTenantsQuery(params)
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useTenantsQuery(params)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const deleteMutation = useDeleteTenantMutation()
 
   const { isReconnecting } = useEntityUpdateSignal({

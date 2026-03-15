@@ -83,7 +83,7 @@ export const UsersPage = () => {
     defaultPageSize,
   } = useTableParams<{ role?: string; isLocked?: boolean }>({ defaultPageSize: 10, tableKey: 'users' })
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useUsersQuery(params)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useUsersQuery(params)
   const { data: availableRoles = [] } = useAvailableRolesQuery()
   const lockMutation = useLockUserMutation()
   const unlockMutation = useUnlockUserMutation()
@@ -114,7 +114,7 @@ export const UsersPage = () => {
     }
   }
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
 
   const setRoleFilter = (value: string) => setFilter('role', value === 'all' ? undefined : value)
   const setLockedFilter = (value: string) => {

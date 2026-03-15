@@ -90,7 +90,7 @@ export const ContactsPage = () => {
   const [contactToDelete, setContactToDelete] = useState<ContactListDto | null>(null)
   const deleteMutation = useDeleteContact()
 
-  const { data: contactsResponse, isLoading, error: queryError, refetch } = useContactsQuery(params)
+  const { data: contactsResponse, isLoading, isPlaceholderData, error: queryError, refetch } = useContactsQuery(params)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({
@@ -100,7 +100,7 @@ export const ContactsPage = () => {
 
   const contacts = contactsResponse?.items ?? []
   const { editItem: contactToEdit, openEdit, closeEdit } = useUrlEditDialog<ContactListDto>(contacts)
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const totalCount = contactsResponse?.totalCount ?? 0
 
   const handleSourceFilter = (value: string) => setFilter('source', value === 'all' ? undefined : (value as ContactSource))

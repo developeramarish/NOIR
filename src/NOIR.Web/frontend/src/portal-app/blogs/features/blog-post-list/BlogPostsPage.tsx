@@ -95,9 +95,9 @@ export const BlogPostsPage = () => {
     categoryId: categoryFilter !== 'all' ? categoryFilter : undefined,
   }), [params, statusFilter, categoryFilter])
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useBlogPostsQuery(queryParams)
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useBlogPostsQuery(queryParams)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const { data: categories = [] } = useBlogCategoriesQuery({})
   const deleteMutation = useDeleteBlogPostMutation()
   const bulkPublishMutation = useBulkPublishPosts()

@@ -74,9 +74,9 @@ export const BrandsPage = () => {
     defaultPageSize,
   } = useTableParams({ defaultPageSize: 20, tableKey: 'brands' })
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useBrandsQuery(params)
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useBrandsQuery(params)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const deleteMutation = useDeleteBrandMutation()
 
   const brands = data?.items ?? []

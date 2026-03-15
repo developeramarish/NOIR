@@ -127,7 +127,7 @@ export const EmployeesPage = () => {
 
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-employee' })
 
-  const { data: employeesResponse, isLoading, error: queryError, refetch } = useEmployeesQuery(params)
+  const { data: employeesResponse, isLoading, isPlaceholderData, error: queryError, refetch } = useEmployeesQuery(params)
   const { data: departments } = useDepartmentsQuery()
   const { data: allTags } = useTagsQuery({ isActive: true })
   const deactivateMutation = useDeactivateEmployee()
@@ -381,7 +381,7 @@ export const EmployeesPage = () => {
     getRowId: (row) => row.id,
   })
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const selectedIds = useSelectedIds(table.getState().rowSelection)
 
   return (

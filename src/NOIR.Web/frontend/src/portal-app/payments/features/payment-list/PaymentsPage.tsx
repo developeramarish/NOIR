@@ -76,7 +76,7 @@ export const PaymentsPage = () => {
     defaultPageSize,
   } = useTableParams<{ status?: PaymentStatus; paymentMethod?: PaymentMethod }>({ defaultPageSize: 20, tableKey: 'payments' })
 
-  const { data: paymentsResponse, isLoading, error: queryError, refetch } = usePaymentsQuery(params)
+  const { data: paymentsResponse, isLoading, isPlaceholderData, error: queryError, refetch } = usePaymentsQuery(params)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({
@@ -86,7 +86,7 @@ export const PaymentsPage = () => {
 
   const payments = paymentsResponse?.items ?? []
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
 
   const handleStatusFilter = (value: string) => setFilter('status', value === 'all' ? undefined : (value as PaymentStatus))
   const handleMethodFilter = (value: string) => setFilter('paymentMethod', value === 'all' ? undefined : (value as PaymentMethod))

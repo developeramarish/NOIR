@@ -216,7 +216,7 @@ export const ProjectsPage = () => {
     defaultPageSize,
   } = useTableParams<{ status?: ProjectStatus }>({ defaultPageSize: 12, tableKey: 'projects' })
 
-  const { data, isLoading, refetch } = useProjectsQuery({
+  const { data, isLoading, isPlaceholderData, refetch } = useProjectsQuery({
     ...params,
     status: params.filters.status,
   })
@@ -382,7 +382,7 @@ export const ProjectsPage = () => {
     getRowId: (row) => row.id,
   })
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const totalCount = data?.totalCount ?? 0
 
   return (

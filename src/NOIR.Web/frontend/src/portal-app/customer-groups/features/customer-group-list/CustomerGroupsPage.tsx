@@ -60,7 +60,7 @@ export const CustomerGroupsPage = () => {
   const showActions = canUpdateGroups || canDeleteGroups
 
   const { params, searchInput, setSearchInput, isSearchStale, isFilterPending, setSorting, setPage, setPageSize, defaultPageSize } = useTableParams({ defaultPageSize: 20, tableKey: 'customer-groups' })
-  const { data: groupsResponse, isLoading, error: queryError, refetch: refresh } = useCustomerGroupsQuery(params)
+  const { data: groupsResponse, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useCustomerGroupsQuery(params)
   const deleteMutation = useDeleteCustomerGroupMutation()
 
   const groups = groupsResponse?.items ?? []
@@ -68,7 +68,7 @@ export const CustomerGroupsPage = () => {
   const [groupToDelete, setGroupToDelete] = useState<CustomerGroupListItem | null>(null)
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-group' })
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({

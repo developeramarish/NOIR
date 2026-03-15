@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import {
   getPosts,
   getPostById,
@@ -14,6 +14,7 @@ export const useBlogPostsQuery = (params: GetPostsParams) =>
   useQuery({
     queryKey: blogPostKeys.list(params),
     queryFn: () => getPosts(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useBlogPostDetailQuery = (id: string | undefined) =>
@@ -27,10 +28,12 @@ export const useBlogCategoriesQuery = (params: GetCategoriesParams = {}) =>
   useQuery({
     queryKey: blogCategoryKeys.list(params),
     queryFn: () => getCategories(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useBlogTagsQuery = (params: GetTagsParams = {}) =>
   useQuery({
     queryKey: blogTagKeys.list(params),
     queryFn: () => getTags(params),
+    placeholderData: keepPreviousData,
   })

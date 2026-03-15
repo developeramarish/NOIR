@@ -63,7 +63,7 @@ export const ProductCategoriesPage = () => {
 
   const { params, searchInput, setSearchInput, isSearchStale } = useTableParams({ defaultPageSize: 1000 })
   const queryParams = useMemo(() => ({ search: params.search }), [params.search])
-  const { data: categories = [], isLoading, error: queryError, refetch: refresh } = useProductCategoriesQuery(queryParams)
+  const { data: categories = [], isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useProductCategoriesQuery(queryParams)
   const { editItem: categoryToEdit, openEdit: openEditCategory, closeEdit: closeEditCategory } = useUrlEditDialog<ProductCategoryListItem>(categories)
   const deleteMutation = useDeleteProductCategory()
   const reorderMutation = useReorderProductCategories()
@@ -205,7 +205,7 @@ export const ProductCategoriesPage = () => {
     getRowId: (row) => row.id,
   })
 
-  const isContentStale = useDelayedLoading(isSearchStale)
+  const isContentStale = useDelayedLoading(isSearchStale || isPlaceholderData)
   const treeCategories = categories.map(toTreeCategory)
 
   return (

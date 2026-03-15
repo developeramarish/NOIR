@@ -93,7 +93,7 @@ export const InventoryReceiptsPage = () => {
     defaultPageSize,
   } = useTableParams<{ type?: InventoryReceiptType; status?: InventoryReceiptStatus }>({ defaultPageSize: 20, tableKey: 'inventory-receipts' })
 
-  const { data: receiptsResponse, isLoading, error: queryError, refetch } = useInventoryReceiptsQuery(params)
+  const { data: receiptsResponse, isLoading, isPlaceholderData, error: queryError, refetch } = useInventoryReceiptsQuery(params)
   const confirmMutation = useConfirmInventoryReceiptMutation()
   const cancelMutation = useCancelInventoryReceiptMutation()
   const error = queryError?.message ?? null
@@ -104,7 +104,7 @@ export const InventoryReceiptsPage = () => {
   })
 
   const receipts = receiptsResponse?.items ?? []
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
 
   const handleTypeFilter = (value: string) => setFilter('type', value === 'all' ? undefined : (value as InventoryReceiptType))
   const handleStatusFilter = (value: string) => setFilter('status', value === 'all' ? undefined : (value as InventoryReceiptStatus))

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { getBrands, getActiveBrands, getBrandById, type GetBrandsParams } from '@/services/brands'
 import { brandKeys } from './queryKeys'
 
@@ -6,6 +6,7 @@ export const useBrandsQuery = (params: GetBrandsParams = {}) =>
   useQuery({
     queryKey: brandKeys.list(params),
     queryFn: () => getBrands(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useActiveBrandsQuery = () =>

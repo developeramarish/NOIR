@@ -76,11 +76,11 @@ export const RolesPage = () => {
     defaultPageSize,
   } = useTableParams({ defaultPageSize: 10, tableKey: 'roles' })
 
-  const { data, isLoading, error: queryError, refetch: refresh } = useRolesQuery(params)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useRolesQuery(params)
   const { editItem: roleToEdit, openEdit: openEditRole, closeEdit: closeEditRole } = useUrlEditDialog<RoleListItem>(data?.items)
   const deleteMutation = useDeleteRoleMutation()
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isFilterPendingTransition)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isFilterPendingTransition || isPlaceholderData)
 
   const handleTypeFilter = (value: string) => {
     startFilterTransition(() => setTypeFilter(value))

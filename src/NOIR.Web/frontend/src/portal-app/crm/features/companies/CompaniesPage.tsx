@@ -73,7 +73,7 @@ export const CompaniesPage = () => {
   const [companyToDelete, setCompanyToDelete] = useState<CompanyListDto | null>(null)
   const deleteMutation = useDeleteCompany()
 
-  const { data: companiesResponse, isLoading, error: queryError, refetch } = useCompaniesQuery(params)
+  const { data: companiesResponse, isLoading, isPlaceholderData, error: queryError, refetch } = useCompaniesQuery(params)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({
@@ -83,7 +83,7 @@ export const CompaniesPage = () => {
 
   const companies = companiesResponse?.items ?? []
   const { editItem: companyToEdit, openEdit, closeEdit } = useUrlEditDialog<CompanyListDto>(companies)
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const totalCount = companiesResponse?.totalCount ?? 0
 
   const handleViewCompany = (company: CompanyListDto) => {

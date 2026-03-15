@@ -61,7 +61,7 @@ export const ProductAttributesPage = () => {
   const showActions = canUpdateAttributes || canDeleteAttributes
 
   const { params, searchInput, setSearchInput, isSearchStale, setSorting, setPage, setPageSize, defaultPageSize } = useTableParams({ defaultPageSize: 20, tableKey: 'product-attributes' })
-  const { data: attributesResponse, isLoading, error: queryError, refetch: refresh } = useProductAttributesQuery(params)
+  const { data: attributesResponse, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useProductAttributesQuery(params)
   const deleteMutation = useDeleteProductAttributeMutation()
 
   const attributes = attributesResponse?.items ?? []
@@ -69,7 +69,7 @@ export const ProductAttributesPage = () => {
   const [attributeToDelete, setAttributeToDelete] = useState<ProductAttributeListItem | null>(null)
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-attribute' })
 
-  const isContentStale = useDelayedLoading(isSearchStale)
+  const isContentStale = useDelayedLoading(isSearchStale || isPlaceholderData)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({

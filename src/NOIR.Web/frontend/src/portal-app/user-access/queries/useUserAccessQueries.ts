@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { getRoles, getRoleById, getAllPermissions, getPermissionTemplates } from '@/services/roles'
 import { getUsers, getUserById, getUserRoles } from '@/services/users'
 import { getTenants, getTenant, type GetTenantsParams } from '@/services/tenants'
@@ -8,6 +8,7 @@ export const useRolesQuery = (params: RolesParams = {}) =>
   useQuery({
     queryKey: roleKeys.list(params),
     queryFn: () => getRoles(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useRoleDetailQuery = (id: string | undefined, enabled: boolean) =>
@@ -33,6 +34,7 @@ export const useUsersQuery = (params: UsersParams = {}) =>
   useQuery({
     queryKey: userKeys.list(params),
     queryFn: () => getUsers(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useAvailableRolesQuery = () =>
@@ -60,6 +62,7 @@ export const useTenantsQuery = (params: GetTenantsParams = {}) =>
   useQuery({
     queryKey: tenantKeys.list(params),
     queryFn: () => getTenants(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useTenantDetailQuery = (id: string | undefined, enabled: boolean) =>

@@ -34,4 +34,5 @@ export const useProductCategoriesQuery = (params: GetProductCategoriesParams = {
   useQuery({
     queryKey: productCategoryKeys.list(params),
     queryFn: () => getProductCategories(params),
+    placeholderData: keepPreviousData,
   })

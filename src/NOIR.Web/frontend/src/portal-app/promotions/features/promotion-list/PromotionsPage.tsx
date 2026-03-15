@@ -101,9 +101,8 @@ export const PromotionsPage = () => {
     promotionType: typeFilter !== 'all' ? typeFilter as PromotionType : undefined,
   }), [params, statusFilter, typeFilter])
 
-  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
-
-  const { data, isLoading, error: queryError, refetch: refresh } = usePromotionsQuery(queryParams)
+  const { data, isLoading, isPlaceholderData, error: queryError, refetch: refresh } = usePromotionsQuery(queryParams)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isPlaceholderData)
   const activateMutation = useActivatePromotionMutation()
   const deactivateMutation = useDeactivatePromotionMutation()
 

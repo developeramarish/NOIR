@@ -47,9 +47,9 @@ export const BlogTagsPage = () => {
   const [tagToDelete, setTagToDelete] = useState<PostTagListItem | null>(null)
 
   const { params, searchInput, setSearchInput, isSearchStale } = useTableParams({ defaultPageSize: 1000 })
-  const isContentStale = useDelayedLoading(isSearchStale)
   const queryParams = useMemo(() => ({ search: params.search }), [params.search])
-  const { data = [], isLoading, error: queryError, refetch: refresh } = useBlogTagsQuery(queryParams)
+  const { data = [], isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useBlogTagsQuery(queryParams)
+  const isContentStale = useDelayedLoading(isSearchStale || isPlaceholderData)
   const { editItem: tagToEdit, openEdit: openEditTag, closeEdit: closeEditTag } = useUrlEditDialog<PostTagListItem>(data)
   const deleteMutation = useDeleteBlogTagMutation()
 

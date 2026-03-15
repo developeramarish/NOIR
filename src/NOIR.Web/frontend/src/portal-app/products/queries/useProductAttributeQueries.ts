@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import {
   getProductAttributes,
   getActiveProductAttributes,
@@ -15,6 +15,7 @@ export const useProductAttributesQuery = (params: GetProductAttributesParams = {
   useQuery({
     queryKey: productAttributeKeys.list(params),
     queryFn: () => getProductAttributes(params),
+    placeholderData: keepPreviousData,
   })
 
 export const useActiveProductAttributesQuery = () =>

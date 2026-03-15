@@ -54,9 +54,9 @@ export const BlogCategoriesPage = () => {
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
 
   const { params, searchInput, setSearchInput, isSearchStale } = useTableParams({ defaultPageSize: 1000 })
-  const isContentStale = useDelayedLoading(isSearchStale)
   const queryParams = useMemo(() => ({ search: params.search }), [params.search])
-  const { data = [], isLoading, error: queryError, refetch: refresh } = useBlogCategoriesQuery(queryParams)
+  const { data = [], isLoading, isPlaceholderData, error: queryError, refetch: refresh } = useBlogCategoriesQuery(queryParams)
+  const isContentStale = useDelayedLoading(isSearchStale || isPlaceholderData)
   const { editItem: categoryToEdit, openEdit: openEditCategory, closeEdit: closeEditCategory } = useUrlEditDialog<PostCategoryListItem>(data)
   const deleteMutation = useDeleteBlogCategoryMutation()
   const reorderMutation = useReorderBlogCategoriesMutation()
