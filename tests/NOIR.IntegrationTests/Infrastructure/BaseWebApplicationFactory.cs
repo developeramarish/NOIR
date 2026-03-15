@@ -125,6 +125,9 @@ public abstract class BaseWebApplicationFactory : WebApplicationFactory<Program>
                 ["CookieSettings:SameSiteMode"] = "Strict",
                 ["CookieSettings:Path"] = "/",
                 ["CookieSettings:SecureInProduction"] = "false", // Allow non-secure in testing
+
+                // Payment Encryption Key - required for gateway credential encryption/decryption
+                ["Payment:EncryptionKeys:payment-credentials-key"] = "DBTW3bti/yqoq4lqsxLyIcdACdAH7sMNj0Nd8EQjDMg=",
             });
         });
 

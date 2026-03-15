@@ -56,7 +56,7 @@ public class RecordManualPaymentCommandHandler
 
         var tenantId = _currentUser.TenantId;
 
-        // Find a manual/COD gateway, or use a placeholder gateway ID
+        // Find a manual/COD gateway
         var gatewaySpec = new PaymentGatewayByProviderSpec("manual");
         var gateway = await _gatewayRepository.FirstOrDefaultAsync(gatewaySpec, cancellationToken);
 
@@ -67,8 +67,15 @@ public class RecordManualPaymentCommandHandler
             gateway = await _gatewayRepository.FirstOrDefaultAsync(codGatewaySpec, cancellationToken);
         }
 
-        var gatewayId = gateway?.Id ?? Guid.Empty;
-        var providerName = gateway?.Provider ?? "manual";
+        // Manual payments require a configured gateway
+        if (gateway == null)
+        {
+            return Result.Failure<PaymentTransactionDto>(
+                Error.Validation("PaymentGateway", "No manual or COD payment gateway is configured. Please configure a gateway before recording manual payments.", ErrorCodes.Payment.ProviderNotConfigured));
+        }
+
+        var gatewayId = gateway.Id;
+        var providerName = gateway.Provider;
 
         var transactionNumber = _paymentService.GenerateTransactionNumber();
         var idempotencyKey = Guid.NewGuid().ToString("N");

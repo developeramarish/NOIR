@@ -48,6 +48,19 @@ import type {
   UpdateGatewayRequest,
   TestConnectionResult,
 } from '@/types'
+import type { PaymentMethod } from '@/services/payments'
+
+// PaymentMethod enum-like const object for type-safe references
+const PaymentMethodEnum = {
+  EWallet: 'EWallet' as const,
+  QRCode: 'QRCode' as const,
+  BankTransfer: 'BankTransfer' as const,
+  CreditCard: 'CreditCard' as const,
+  DebitCard: 'DebitCard' as const,
+  Installment: 'Installment' as const,
+  COD: 'COD' as const,
+  BuyNowPayLater: 'BuyNowPayLater' as const,
+} satisfies Record<string, PaymentMethod>
 
 interface ConfigureGatewayDialogProps {
   open: boolean
@@ -210,12 +223,34 @@ export const ConfigureGatewayDialog = ({
 
         result = await onUpdate(gateway.id, updateRequest)
       } else {
+        // Map provider to supported payment methods
+        const getSupportedMethods = (provider: string): PaymentMethod[] => {
+          switch (provider.toLowerCase()) {
+            case 'cod':
+              return [PaymentMethodEnum.COD]
+            case 'vnpay':
+              return [
+                PaymentMethodEnum.QRCode,
+                PaymentMethodEnum.BankTransfer,
+                PaymentMethodEnum.CreditCard,
+                PaymentMethodEnum.DebitCard,
+              ]
+            case 'momo':
+            case 'zalopay':
+              return [PaymentMethodEnum.EWallet, PaymentMethodEnum.QRCode]
+            case 'sepay':
+              return [PaymentMethodEnum.BankTransfer]
+            default:
+              return [PaymentMethodEnum.COD]
+          }
+        }
+
         const configureRequest: ConfigureGatewayRequest = {
           provider: schema.provider,
           displayName: values.displayName as string,
           environment: values.environment as GatewayEnvironment,
           credentials,
-          supportedMethods: [], // Will be determined by provider
+          supportedMethods: getSupportedMethods(schema.provider),
           sortOrder: 0,
           isActive: false,
         }
