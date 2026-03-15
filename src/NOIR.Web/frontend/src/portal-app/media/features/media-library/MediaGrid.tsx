@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FolderOpen } from 'lucide-react'
+import { FolderOpen, Copy, Check } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge, Checkbox, FilePreviewModal, ThumbHashImage } from '@uikit'
 import type { MediaFileListItem } from '@/types'
 import { formatFileSize, extractFolderName } from './media-utils'
@@ -15,6 +16,18 @@ interface MediaGridProps {
 export const MediaGrid = ({ items, selectedIds, onToggleSelect, onOpenDetail }: MediaGridProps) => {
   const { t } = useTranslation('common')
   const [previewFile, setPreviewFile] = useState<MediaFileListItem | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleCopyUrl = async (item: MediaFileListItem) => {
+    try {
+      await navigator.clipboard.writeText(new URL(item.defaultUrl, window.location.origin).href)
+      setCopiedId(item.id)
+      toast.success(t('media.urlCopied', 'URL copied to clipboard'))
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch {
+      // Clipboard not available
+    }
+  }
 
   return (
     <>
@@ -48,6 +61,25 @@ export const MediaGrid = ({ items, selectedIds, onToggleSelect, onOpenDetail }: 
                 </Badge>
               </div>
             )}
+
+            {/* Copy URL button overlay */}
+            <div
+              className="absolute bottom-[72px] right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => handleCopyUrl(item)}
+                className="p-2 rounded-lg bg-background/80 backdrop-blur-sm hover:bg-background border border-border/50 shadow-sm transition-colors"
+                aria-label={t('media.copyUrl', 'Copy URL')}
+              >
+                {copiedId === item.id ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+            </div>
 
             {/* Thumbnail - click to preview */}
             <div

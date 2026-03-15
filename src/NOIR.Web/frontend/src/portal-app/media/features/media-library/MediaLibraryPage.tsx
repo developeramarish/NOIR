@@ -2,8 +2,9 @@ import { useState, useDeferredValue, useMemo, useTransition, useCallback } from 
 import { createColumnHelper } from '@tanstack/react-table'
 import type { ColumnDef } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
-import { ImageIcon, Plus, Trash2, Loader2, LayoutGrid, List as ListIcon, Pencil } from 'lucide-react'
+import { ImageIcon, Plus, Trash2, Loader2, LayoutGrid, List as ListIcon, Pencil, Copy } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { toast } from 'sonner'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -176,14 +177,39 @@ export const MediaLibraryPage = () => {
       header: t('labels.preview', 'Preview'),
       meta: { label: t('labels.preview', 'Preview') },
       enableSorting: false,
-      cell: ({ row }) => (
-        <FilePreviewTrigger
-          file={{ url: row.original.defaultUrl, name: row.original.originalFileName }}
-          thumbnailWidth={40}
-          thumbnailHeight={40}
-          className="rounded-lg"
-        />
-      ),
+      cell: ({ row }) => {
+        const handleCopyUrl = async () => {
+          try {
+            await navigator.clipboard.writeText(new URL(row.original.defaultUrl, window.location.origin).href)
+            toast.success(t('media.urlCopied', 'URL copied to clipboard'))
+          } catch {
+            // Clipboard not available
+          }
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <FilePreviewTrigger
+              file={{ url: row.original.defaultUrl, name: row.original.originalFileName }}
+              thumbnailWidth={40}
+              thumbnailHeight={40}
+              className="rounded-lg"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCopyUrl()
+              }}
+              aria-label={t('media.copyUrl', 'Copy URL')}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        )
+      },
     }) as ColumnDef<MediaFileListItem, unknown>,
     ch.accessor('originalFileName', {
       id: 'name',
