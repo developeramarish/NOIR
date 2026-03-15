@@ -26,6 +26,7 @@ import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
@@ -127,6 +128,8 @@ export const CustomersPage = () => {
   const avgSpent = stats?.topSpenders && stats.topSpenders.length > 0
     ? stats.topSpenders.reduce((sum, c) => sum + c.totalSpent, 0) / stats.topSpenders.length
     : 0
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const handleSegmentFilter = (value: string) => startFilterTransition(() => { setSegmentFilter(value); setPage(1) })
   const handleTierFilter = (value: string) => startFilterTransition(() => { setTierFilter(value); setPage(1) })
@@ -514,7 +517,7 @@ export const CustomersPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={selectedCount === 0 ? (customer) => navigate(`/portal/ecommerce/customers/${customer.id}`) : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

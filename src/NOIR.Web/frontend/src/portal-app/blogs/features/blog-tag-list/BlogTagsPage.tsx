@@ -11,6 +11,7 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Badge,
@@ -46,6 +47,7 @@ export const BlogTagsPage = () => {
   const [tagToDelete, setTagToDelete] = useState<PostTagListItem | null>(null)
 
   const { params, searchInput, setSearchInput, isSearchStale } = useTableParams({ defaultPageSize: 1000 })
+  const isContentStale = useDelayedLoading(isSearchStale)
   const queryParams = useMemo(() => ({ search: params.search }), [params.search])
   const { data = [], isLoading, error: queryError, refetch: refresh } = useBlogTagsQuery(queryParams)
   const { editItem: tagToEdit, openEdit: openEditTag, closeEdit: closeEditTag } = useUrlEditDialog<PostTagListItem>(data)
@@ -177,7 +179,7 @@ export const BlogTagsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale}
+            isStale={isContentStale}
             getRowAnimationClass={getRowAnimationClass}
             onRowClick={openEditTag}
             emptyState={

@@ -10,6 +10,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { useMediaFiles, useDeleteMediaFile, useRenameMediaFile, useBulkDeleteMediaFiles } from '@/hooks/useMediaFiles'
@@ -94,6 +95,7 @@ export const MediaLibraryPage = () => {
   }), [deferredSearch, fileTypeFilter, folderFilter, sortBy, sortOrder, currentPage])
 
   const { data, isLoading, isPlaceholderData, refetch } = useMediaFiles(queryParams)
+  const isContentStale = useDelayedLoading(isFilterPending || isSearchStale || isPlaceholderData)
 
   // Mutations
   const deleteMutation = useDeleteMediaFile()
@@ -398,7 +400,7 @@ export const MediaLibraryPage = () => {
           </div>
         </CardHeader>
 
-        <CardContent className={(isFilterPending || isSearchStale || isPlaceholderData) ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}>
           {/* Bulk Action Toolbar */}
           <BulkActionToolbar selectedCount={selectedIds.length} onClearSelection={clearSelection}>
             <Button
@@ -467,7 +469,7 @@ export const MediaLibraryPage = () => {
                 table={table}
                 density={settings.density}
                 isLoading={isLoading}
-                isStale={isSearchStale || isFilterPending || isPlaceholderData}
+                isStale={isContentStale}
                 onRowClick={(item) => setDetailFile(item)}
                 getRowAnimationClass={getRowAnimationClass}
                 emptyState={

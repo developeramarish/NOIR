@@ -1,5 +1,6 @@
 import { useState, useDeferredValue, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import {
   Building2,
   GitBranch,
@@ -233,6 +234,7 @@ export const DepartmentsPage = () => {
     getRowId: (row) => row.id,
   })
 
+  const isContentStale = useDelayedLoading(isSearchStale)
   const displayCount = viewMode === 'tree' ? filteredDepartments.length : paginatedDepartments.length
   const displayTotal = viewMode === 'tree' ? flatDepartments.length : filteredDepartments.length
 
@@ -285,7 +287,7 @@ export const DepartmentsPage = () => {
           </div>
         </CardHeader>
 
-        <CardContent className={isSearchStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -316,7 +318,7 @@ export const DepartmentsPage = () => {
                 table={table}
                 density={settings.density}
                 isLoading={loading}
-                isStale={isSearchStale}
+                isStale={isContentStale}
                 onRowClick={openEditDepartment}
                 getRowAnimationClass={getRowAnimationClass}
                 emptyState={

@@ -16,6 +16,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import {
@@ -103,6 +104,7 @@ export const InventoryReceiptsPage = () => {
   })
 
   const receipts = receiptsResponse?.items ?? []
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const handleTypeFilter = (value: string) => setFilter('type', value === 'all' ? undefined : (value as InventoryReceiptType))
   const handleStatusFilter = (value: string) => setFilter('status', value === 'all' ? undefined : (value as InventoryReceiptStatus))
@@ -316,7 +318,7 @@ export const InventoryReceiptsPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -327,7 +329,7 @@ export const InventoryReceiptsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={(receipt) => setSelectedReceiptId(receipt.id)}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

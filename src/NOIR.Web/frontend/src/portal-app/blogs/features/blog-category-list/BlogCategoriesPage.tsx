@@ -11,6 +11,7 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import {
   Badge,
@@ -53,6 +54,7 @@ export const BlogCategoriesPage = () => {
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
 
   const { params, searchInput, setSearchInput, isSearchStale } = useTableParams({ defaultPageSize: 1000 })
+  const isContentStale = useDelayedLoading(isSearchStale)
   const queryParams = useMemo(() => ({ search: params.search }), [params.search])
   const { data = [], isLoading, error: queryError, refetch: refresh } = useBlogCategoriesQuery(queryParams)
   const { editItem: categoryToEdit, openEdit: openEditCategory, closeEdit: closeEditCategory } = useUrlEditDialog<PostCategoryListItem>(data)
@@ -209,7 +211,7 @@ export const BlogCategoriesPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={isSearchStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -240,7 +242,7 @@ export const BlogCategoriesPage = () => {
                 table={table}
                 density={settings.density}
                 isLoading={isLoading}
-                isStale={isSearchStale}
+                isStale={isContentStale}
                 getRowAnimationClass={getRowAnimationClass}
                 onRowClick={openEditCategory}
                 emptyState={

@@ -12,6 +12,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
   Badge,
@@ -77,6 +78,7 @@ export const ReviewsPage = () => {
 
   // Table params (search, pagination, sorting)
   const { params, searchInput, setSearchInput, isSearchStale, setSorting, setPage, setPageSize, defaultPageSize } = useTableParams({ defaultPageSize: 20, tableKey: 'reviews' })
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isTabPending)
 
   // Dialog state
   const [detailReviewId, setDetailReviewId] = useState<string | undefined>()
@@ -388,7 +390,7 @@ export const ReviewsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending || isTabPending}
+            isStale={isContentStale}
             onRowClick={selectedCount === 0 ? (review) => setDetailReviewId(review.id) : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

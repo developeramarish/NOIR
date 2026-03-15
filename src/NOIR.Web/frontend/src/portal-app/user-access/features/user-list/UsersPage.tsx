@@ -13,6 +13,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
   Badge,
@@ -112,6 +113,8 @@ export const UsersPage = () => {
       return { success: false, error: message }
     }
   }
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const setRoleFilter = (value: string) => setFilter('role', value === 'all' ? undefined : value)
   const setLockedFilter = (value: string) => {
@@ -335,7 +338,7 @@ export const UsersPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -346,7 +349,7 @@ export const UsersPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={canEditUsers ? openEditUser : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={
