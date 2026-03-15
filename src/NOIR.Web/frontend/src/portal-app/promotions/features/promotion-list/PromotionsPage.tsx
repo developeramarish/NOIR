@@ -12,6 +12,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
   Badge,
@@ -99,6 +100,8 @@ export const PromotionsPage = () => {
     status: statusFilter !== 'all' ? statusFilter as PromotionStatus : undefined,
     promotionType: typeFilter !== 'all' ? typeFilter as PromotionType : undefined,
   }), [params, statusFilter, typeFilter])
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const { data, isLoading, error: queryError, refetch: refresh } = usePromotionsQuery(queryParams)
   const activateMutation = useActivatePromotionMutation()
@@ -346,7 +349,7 @@ export const PromotionsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={openEditPromotion}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

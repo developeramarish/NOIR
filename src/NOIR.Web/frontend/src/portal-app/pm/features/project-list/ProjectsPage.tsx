@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import {
   Eye,
   FolderKanban,
@@ -381,6 +382,7 @@ export const ProjectsPage = () => {
     getRowId: (row) => row.id,
   })
 
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
   const totalCount = data?.totalCount ?? 0
 
   return (
@@ -490,7 +492,7 @@ export const ProjectsPage = () => {
                 table={table}
                 density={settings.density}
                 isLoading={false}
-                isStale={isSearchStale || isFilterPending}
+                isStale={isContentStale}
                 onRowClick={handleProjectClick}
                 getRowAnimationClass={getRowAnimationClass}
                 emptyState={

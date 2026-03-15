@@ -1,6 +1,7 @@
 import { useState, useDeferredValue, useTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import type { DateRange } from 'react-day-picker'
 import { usePageContext } from '@/hooks/usePageContext'
 import { useRegionalSettings, getLocaleForFormat } from '@/contexts/RegionalSettingsContext'
@@ -284,6 +285,7 @@ export const ActivityTimelinePage = () => {
   const entries = timelineData?.items ?? []
   const totalCount = timelineData?.totalCount ?? 0
   const totalPages = Math.ceil(totalCount / pageSize)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
   const error = queryError ? (queryError instanceof Error ? queryError.message : t('activityTimeline.loadFailed', 'Failed to load activity timeline')) : null
 
   const handleRefresh = () => {
@@ -490,7 +492,7 @@ export const ActivityTimelinePage = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />

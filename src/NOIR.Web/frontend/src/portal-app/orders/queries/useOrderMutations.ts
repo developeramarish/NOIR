@@ -11,6 +11,7 @@ import {
   addOrderNote,
   deleteOrderNote,
   manualCreateOrder,
+  manualCreateAndCompleteOrder,
   bulkConfirmOrders,
   bulkCancelOrders,
   type ManualCreateOrderRequest,
@@ -105,6 +106,16 @@ export const useManualCreateOrderMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (request: ManualCreateOrderRequest) => manualCreateOrder(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+    },
+  })
+}
+
+export const useManualCreateAndCompleteOrderMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (request: ManualCreateOrderRequest) => manualCreateAndCompleteOrder(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
     },

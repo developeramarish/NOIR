@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { FolderTree, Plus, Pencil, Trash2, ChevronRight, List, GitBranch, Tags } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -204,6 +205,7 @@ export const ProductCategoriesPage = () => {
     getRowId: (row) => row.id,
   })
 
+  const isContentStale = useDelayedLoading(isSearchStale)
   const treeCategories = categories.map(toTreeCategory)
 
   return (
@@ -252,7 +254,7 @@ export const ProductCategoriesPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={isSearchStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -283,7 +285,7 @@ export const ProductCategoriesPage = () => {
                 table={table}
                 density={settings.density}
                 isLoading={isLoading}
-                isStale={isSearchStale}
+                isStale={isContentStale}
                 getRowAnimationClass={getRowAnimationClass}
                 onRowClick={canUpdateCategories ? openEditCategory : undefined}
                 emptyState={

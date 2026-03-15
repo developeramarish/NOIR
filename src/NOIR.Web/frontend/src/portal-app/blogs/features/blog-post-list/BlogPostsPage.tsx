@@ -11,6 +11,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
@@ -93,6 +94,8 @@ export const BlogPostsPage = () => {
     status: statusFilter !== 'all' ? statusFilter as PostStatus : undefined,
     categoryId: categoryFilter !== 'all' ? categoryFilter : undefined,
   }), [params, statusFilter, categoryFilter])
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const { data, isLoading, error: queryError, refetch: refresh } = useBlogPostsQuery(queryParams)
   const { data: categories = [] } = useBlogCategoriesQuery({})
@@ -435,7 +438,7 @@ export const BlogPostsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={selectedCount === 0 ? (post) => navigate(`/portal/blog/posts/${post.id}/edit`) : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

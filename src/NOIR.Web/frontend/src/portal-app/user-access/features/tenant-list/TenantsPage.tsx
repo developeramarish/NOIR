@@ -12,6 +12,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Button,
@@ -62,6 +63,8 @@ export const TenantsPage = () => {
     setPageSize,
     defaultPageSize,
   } = useTableParams({ defaultPageSize: 10, tableKey: 'tenants' })
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const { data, isLoading, error: queryError, refetch: refresh } = useTenantsQuery(params)
   const deleteMutation = useDeleteTenantMutation()
@@ -257,7 +260,7 @@ export const TenantsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={(tenant) => handleEdit(tenant, 'details')}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

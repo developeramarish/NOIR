@@ -12,6 +12,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
   Badge,
@@ -78,6 +79,8 @@ export const RolesPage = () => {
   const { data, isLoading, error: queryError, refetch: refresh } = useRolesQuery(params)
   const { editItem: roleToEdit, openEdit: openEditRole, closeEdit: closeEditRole } = useUrlEditDialog<RoleListItem>(data?.items)
   const deleteMutation = useDeleteRoleMutation()
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending || isFilterPendingTransition)
 
   const handleTypeFilter = (value: string) => {
     startFilterTransition(() => setTypeFilter(value))
@@ -276,7 +279,7 @@ export const RolesPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending || isFilterPendingTransition}
+            isStale={isContentStale}
             onRowClick={canUpdate ? openEditRole : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

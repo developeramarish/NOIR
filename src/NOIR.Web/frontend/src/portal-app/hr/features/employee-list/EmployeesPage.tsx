@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import {
   Eye,
   Pencil,
@@ -380,6 +381,7 @@ export const EmployeesPage = () => {
     getRowId: (row) => row.id,
   })
 
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
   const selectedIds = useSelectedIds(table.getState().rowSelection)
 
   return (
@@ -478,7 +480,7 @@ export const EmployeesPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -500,7 +502,7 @@ export const EmployeesPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={handleViewEmployee}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

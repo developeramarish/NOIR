@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { Check, Loader2, Minus, Pencil, Plus, Tags, Trash2 } from 'lucide-react'
 import { createColumnHelper } from '@tanstack/react-table'
 import type { ColumnDef, SortingState } from '@tanstack/react-table'
@@ -68,6 +69,7 @@ export const ProductAttributesPage = () => {
   const [attributeToDelete, setAttributeToDelete] = useState<ProductAttributeListItem | null>(null)
   const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-attribute' })
 
+  const isContentStale = useDelayedLoading(isSearchStale)
   const error = queryError?.message ?? null
 
   const { isReconnecting } = useEntityUpdateSignal({
@@ -226,7 +228,7 @@ export const ProductAttributesPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={`space-y-3 ${isSearchStale ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}`}>
+        <CardContent className={`space-y-3 ${isContentStale ? 'opacity-70 transition-opacity duration-200' : 'transition-opacity duration-200'}`}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -237,7 +239,7 @@ export const ProductAttributesPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale}
+            isStale={isContentStale}
             getRowAnimationClass={getRowAnimationClass}
             onRowClick={canUpdateAttributes ? openEditAttribute : undefined}
             emptyState={

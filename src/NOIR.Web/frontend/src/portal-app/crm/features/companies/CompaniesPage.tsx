@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import {
   Building2,
   Eye,
@@ -82,6 +83,7 @@ export const CompaniesPage = () => {
 
   const companies = companiesResponse?.items ?? []
   const { editItem: companyToEdit, openEdit, closeEdit } = useUrlEditDialog<CompanyListDto>(companies)
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
   const totalCount = companiesResponse?.totalCount ?? 0
 
   const handleViewCompany = (company: CompanyListDto) => {
@@ -224,7 +226,7 @@ export const CompaniesPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">{error}</div>
           )}
@@ -233,7 +235,7 @@ export const CompaniesPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={handleViewCompany}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

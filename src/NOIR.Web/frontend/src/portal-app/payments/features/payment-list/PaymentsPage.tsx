@@ -9,6 +9,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { createActionsColumn } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
@@ -84,6 +85,8 @@ export const PaymentsPage = () => {
   })
 
   const payments = paymentsResponse?.items ?? []
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const handleStatusFilter = (value: string) => setFilter('status', value === 'all' ? undefined : (value as PaymentStatus))
   const handleMethodFilter = (value: string) => setFilter('paymentMethod', value === 'all' ? undefined : (value as PaymentMethod))
@@ -259,7 +262,7 @@ export const PaymentsPage = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className={(isSearchStale || isFilterPending) ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
+        <CardContent className={isContentStale ? 'space-y-3 opacity-70 transition-opacity duration-200' : 'space-y-3 transition-opacity duration-200'}>
           {error && (
             <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
@@ -270,7 +273,7 @@ export const PaymentsPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={handleViewPayment}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={

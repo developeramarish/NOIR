@@ -7,6 +7,7 @@ using NOIR.Application.Features.Orders.Commands.ConfirmOrder;
 using NOIR.Application.Features.Orders.Commands.CreateOrder;
 using NOIR.Application.Features.Orders.Commands.DeliverOrder;
 using NOIR.Application.Features.Orders.Commands.DeleteOrderNote;
+using NOIR.Application.Features.Orders.Commands.ManualCreateAndCompleteOrder;
 using NOIR.Application.Features.Orders.Commands.ManualCreateOrder;
 using NOIR.Application.Features.Orders.Commands.ReturnOrder;
 using NOIR.Application.Features.Orders.Commands.ShipOrder;
@@ -133,6 +134,23 @@ public static class OrderEndpoints
         .WithName("ManualCreateOrder")
         .WithSummary("Manually create a new order")
         .WithDescription("Create an order without going through checkout flow. For admin use.")
+        .Produces<OrderDto>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        // Manual create and complete order (admin)
+        group.MapPost("/manual-complete", async (
+            ManualCreateAndCompleteOrderCommand command,
+            [FromServices] ICurrentUser currentUser,
+            IMessageBus bus) =>
+        {
+            var auditableCommand = command with { UserId = currentUser.UserId };
+            var result = await bus.InvokeAsync<Result<OrderDto>>(auditableCommand);
+            return result.ToHttpResult();
+        })
+        .RequireAuthorization(Permissions.OrdersManage)
+        .WithName("ManualCreateAndCompleteOrder")
+        .WithSummary("Manually create and complete an order")
+        .WithDescription("Create an order and immediately complete it. For POS/walk-in scenarios where payment is received on the spot.")
         .Produces<OrderDto>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 

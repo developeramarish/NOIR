@@ -20,6 +20,7 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
 import {
@@ -107,6 +108,8 @@ export const OrdersPage = () => {
 
   const bulkConfirmMutation = useBulkConfirmOrders()
   const bulkCancelMutation = useBulkCancelOrders()
+
+  const isContentStale = useDelayedLoading(isSearchStale || isFilterPending)
 
   const handleStatusFilter = (value: string) => startFilterTransition(() => { setStatusFilter(value); setPage(1) })
 
@@ -365,7 +368,7 @@ export const OrdersPage = () => {
             table={table}
             density={settings.density}
             isLoading={isLoading}
-            isStale={isSearchStale || isFilterPending}
+            isStale={isContentStale}
             onRowClick={selectedCount === 0 ? (order) => navigate(`/portal/ecommerce/orders/${order.id}`) : undefined}
             getRowAnimationClass={getRowAnimationClass}
             emptyState={
