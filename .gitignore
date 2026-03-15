@@ -26,6 +26,9 @@
 .agents/skills/playwright-skill/.temp-*.js
 .claude/skills/playwright-skill/.temp-*.js
 
+# Temporary working directory (screenshots, test artifacts, debug output)
+temp/
+
 # AI files to ignore
 .claude/settings.local.json
 .claude/*.local.*
