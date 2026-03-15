@@ -1,3 +1,5 @@
+import type { PaymentMethod } from '@/services/payments'
+
 /**
  * Payment Gateway Types
  *
@@ -94,7 +96,7 @@ export interface ConfigureGatewayRequest {
   displayName: string
   environment: GatewayEnvironment
   credentials: Record<string, string>
-  supportedMethods: string[]
+  supportedMethods: PaymentMethod[]
   sortOrder: number
   isActive: boolean
 }
@@ -103,7 +105,7 @@ export interface UpdateGatewayRequest {
   displayName?: string
   environment?: GatewayEnvironment
   credentials?: Record<string, string>
-  supportedMethods?: string[]
+  supportedMethods?: PaymentMethod[]
   sortOrder?: number
   isActive?: boolean
 }
