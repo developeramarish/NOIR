@@ -892,7 +892,7 @@ const SidebarContent = ({
               placeholder={t('nav.searchMenu')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="h-9 pl-8 pr-8 bg-sidebar-accent/50 border-sidebar-border text-sm placeholder:text-muted-foreground/70"
+              className="h-9 pl-8 pr-8 bg-sidebar/80 border-sidebar-border text-sm placeholder:text-muted-foreground/70"
             />
             {searchQuery && (
               <Button
