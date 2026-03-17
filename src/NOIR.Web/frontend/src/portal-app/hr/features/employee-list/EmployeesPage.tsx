@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
@@ -9,8 +9,6 @@ import {
   Users,
   UserX,
   UserCheck,
-  Download,
-  Upload,
   Tags,
   Building2,
 } from 'lucide-react'
@@ -64,12 +62,11 @@ import {
   useTagsQuery,
   useBulkAssignTags,
   useBulkChangeDepartment,
-  useImportEmployees,
 } from '@/portal-app/hr/queries'
-import { exportEmployees } from '@/services/hr'
 import type { EmployeeListDto, EmployeeStatus, EmploymentType } from '@/types/hr'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { EmployeeFormDialog } from '../../components/EmployeeFormDialog'
+import { EmployeeImportExport } from '../../components/EmployeeImportExport'
 import { TagChips } from '../../components/TagChips'
 
 const EMPLOYEE_STATUSES: EmployeeStatus[] = ['Active', 'Suspended', 'Resigned', 'Terminated']
@@ -107,10 +104,8 @@ export const EmployeesPage = () => {
   const [employeeToDeactivate, setEmployeeToDeactivate] = useState<EmployeeListDto | null>(null)
   const [bulkTagDialogOpen, setBulkTagDialogOpen] = useState(false)
   const [bulkDeptDialogOpen, setBulkDeptDialogOpen] = useState(false)
-  const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
   const [selectedDeptId, setSelectedDeptId] = useState<string>('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
     params,
@@ -134,7 +129,6 @@ export const EmployeesPage = () => {
   const reactivateMutation = useReactivateEmployee()
   const bulkAssignTagsMutation = useBulkAssignTags()
   const bulkChangeDeptMutation = useBulkChangeDepartment()
-  const importMutation = useImportEmployees()
   const error = queryError?.message ?? null
 
   const employees = employeesResponse?.items ?? []
@@ -208,41 +202,6 @@ export const EmployeesPage = () => {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.generic', 'An error occurred'))
     }
-  }
-
-  const handleExport = async () => {
-    try {
-      const blob = await exportEmployees({
-        departmentId: params.filters.departmentId,
-        status: params.filters.status,
-        employmentType: params.filters.employmentType,
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'employees.xlsx'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('errors.generic', 'An error occurred'))
-    }
-  }
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    try {
-      const result = await importMutation.mutateAsync(file)
-      if (result.failedCount > 0) {
-        toast.warning(t('hr.import.success') + ` (${result.successCount}/${result.totalRows})`)
-      } else {
-        toast.success(t('hr.import.success'))
-      }
-      setImportDialogOpen(false)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('errors.generic', 'An error occurred'))
-    }
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleToggleTagSelection = (tagId: string) => {
@@ -394,14 +353,11 @@ export const EmployeesPage = () => {
         responsive
         action={
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => setImportDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              {t('hr.import.title')}
-            </Button>
-            <Button variant="outline" size="sm" className="cursor-pointer" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              {t('hr.export.title')}
-            </Button>
+            <EmployeeImportExport
+              totalCount={employeesResponse?.totalCount}
+              filters={params.filters}
+              onImportComplete={() => refetch()}
+            />
             <Button className="group transition-all duration-300 cursor-pointer" onClick={() => openCreate()}>
               <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
               {t('hr.createEmployee')}
@@ -653,37 +609,6 @@ export const EmployeesPage = () => {
         </CredenzaContent>
       </Credenza>
 
-      {/* Import Dialog */}
-      <Credenza open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <CredenzaContent>
-          <CredenzaHeader>
-            <CredenzaTitle>{t('hr.import.title')}</CredenzaTitle>
-            <CredenzaDescription>
-              {t('hr.import.description')}
-            </CredenzaDescription>
-          </CredenzaHeader>
-          <CredenzaBody>
-            <div className="space-y-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,.xlsx"
-                onChange={handleImportFile}
-                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:cursor-pointer cursor-pointer"
-                aria-label={t('hr.import.selectFile')}
-              />
-              {importMutation.isPending && (
-                <p className="text-sm text-muted-foreground">{t('hr.import.importing')}</p>
-              )}
-            </div>
-          </CredenzaBody>
-          <CredenzaFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)} className="cursor-pointer">
-              {t('labels.cancel', 'Cancel')}
-            </Button>
-          </CredenzaFooter>
-        </CredenzaContent>
-      </Credenza>
     </div>
   )
 }

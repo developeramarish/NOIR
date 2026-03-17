@@ -53,7 +53,7 @@ import {
   Textarea,
 } from '@uikit'
 import { useOrdersQuery, useBulkConfirmOrders, useBulkCancelOrders } from '@/portal-app/orders/queries'
-import { ExportDropdownMenu } from '@/components/ExportDropdownMenu'
+import { ImportExportDropdown } from '@uikit'
 import { exportOrders } from '@/services/orders'
 import type { OrderStatus, OrderSummaryDto } from '@/types/order'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
@@ -278,7 +278,10 @@ export const OrdersPage = () => {
         responsive
         action={
           <div className="flex items-center gap-2">
-            <ExportDropdownMenu onExport={(format) => exportOrders({ format })} />
+            <ImportExportDropdown
+              onExportCsv={() => exportOrders({ format: 'CSV' })}
+              onExportExcel={() => exportOrders({ format: 'Excel' })}
+            />
             {canManageOrders && (
               <Button
                 className="group transition-all duration-300 cursor-pointer"

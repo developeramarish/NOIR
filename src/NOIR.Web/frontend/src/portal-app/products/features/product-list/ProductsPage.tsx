@@ -520,7 +520,7 @@ export const ProductsPage = () => {
         action={
           <div className="flex items-center gap-2">
             <ProductImportExport
-              products={data?.items || []}
+              totalCount={data?.totalCount}
               onImportComplete={() => {
                 // Refresh the product list after import
                 setPage(1)
@@ -528,7 +528,7 @@ export const ProductsPage = () => {
             />
             {canCreateProducts && (
               <ViewTransitionLink to="/portal/ecommerce/products/new">
-                <Button className="group transition-all duration-300">
+                <Button className="group transition-all duration-300 cursor-pointer">
                   <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
                   {t('products.newProduct', 'New Product')}
                 </Button>
@@ -774,8 +774,8 @@ export const ProductsPage = () => {
             loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(DEFAULT_PRODUCT_PAGE_SIZE)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="aspect-square bg-muted rounded-xl" />
+                  <div key={i}>
+                    <Skeleton className="aspect-square rounded-xl" />
                     <div className="p-3 space-y-2">
                       <Skeleton className="h-3 w-1/3" />
                       <Skeleton className="h-4 w-3/4" />

@@ -313,7 +313,7 @@ export const EmployeeDetailPage = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 text-xs cursor-pointer"
+                              className="text-xs cursor-pointer"
                               onClick={() => setShowTagSelector(true)}
                             >
                               <Tags className="h-3.5 w-3.5 mr-1" />

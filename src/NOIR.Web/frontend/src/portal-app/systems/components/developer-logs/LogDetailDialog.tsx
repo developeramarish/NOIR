@@ -75,7 +75,7 @@ export const LogDetailDialog = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-muted-foreground">{t('developerLogs.message')}</label>
-                <Button variant="ghost" size="sm" onClick={handleCopyMessage} className="h-7 gap-1.5">
+                <Button variant="ghost" size="sm" onClick={handleCopyMessage} className="gap-1.5">
                   {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                   {t('developerLogs.copy')}
                 </Button>

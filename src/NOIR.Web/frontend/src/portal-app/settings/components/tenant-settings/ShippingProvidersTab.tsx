@@ -134,7 +134,7 @@ export const ShippingProvidersTab = () => {
               variant="outline"
               size="sm"
               onClick={refresh}
-              className="mt-4 cursor-pointer group hover:shadow-md transition-all duration-300"
+              className="mt-4 cursor-pointer group hover:shadow-lg transition-all duration-300"
             >
               <RefreshCw className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:rotate-180" />
               {t('buttons.retry', 'Retry')}
@@ -160,7 +160,7 @@ export const ShippingProvidersTab = () => {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="cursor-pointer group hover:shadow-md transition-all duration-300"
+            className="cursor-pointer group hover:shadow-lg transition-all duration-300"
           >
             {isRefreshing ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

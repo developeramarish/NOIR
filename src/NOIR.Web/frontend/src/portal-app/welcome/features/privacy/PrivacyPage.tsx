@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ViewTransitionLink } from '@/components/navigation/ViewTransitionLink'
 import { ShieldCheck, ArrowLeft } from 'lucide-react'
-import { Button } from '@uikit'
+import { Button, Skeleton } from '@uikit'
 import { usePublicLegalPageQuery } from '@/hooks/queries/usePublicQueries'
 
 /**
@@ -17,11 +17,11 @@ export const PrivacyPage = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-16">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 w-64 bg-muted rounded" />
-            <div className="h-4 w-full bg-muted rounded" />
-            <div className="h-4 w-3/4 bg-muted rounded" />
-            <div className="h-4 w-5/6 bg-muted rounded" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
           </div>
         </div>
       </div>

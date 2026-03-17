@@ -333,7 +333,7 @@ export const BlogPostsPage = () => {
         description={t('blog.postsDescription')}
         action={
           <ViewTransitionLink to="/portal/blog/posts/new">
-            <Button className="group transition-all duration-300">
+            <Button className="group transition-all duration-300 cursor-pointer">
               <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
               {t('blog.newPost')}
             </Button>

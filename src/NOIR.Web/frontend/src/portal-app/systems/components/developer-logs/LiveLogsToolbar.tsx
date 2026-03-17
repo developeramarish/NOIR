@@ -250,7 +250,7 @@ export const LiveLogsToolbar = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full h-7 text-xs"
+                    className="w-full text-xs"
                     onClick={(e) => {
                       e.preventDefault()
                       onSelectedLevelsChange(new Set())

@@ -483,7 +483,7 @@ const WishlistItemCard = ({
   t,
 }: WishlistItemCardProps) => {
   return (
-    <div className="group rounded-xl border border-border/50 p-4 transition-all duration-300 hover:shadow-md hover:border-border">
+    <div className="group rounded-xl border border-border/50 p-4 transition-all duration-300 hover:shadow-lg hover:border-border">
       {/* Product Image */}
       <div className="relative mb-3">
         {item.productImage ? (

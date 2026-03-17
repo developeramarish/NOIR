@@ -35,7 +35,7 @@ export const MediaGrid = ({ items, selectedIds, onToggleSelect, onOpenDetail }: 
         {items.map((item) => (
           <div
             key={item.id}
-            className={`group relative rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer ${
+            className={`group relative rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${
               selectedIds.has(item.id) ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border/50 hover:border-primary/30'
             }`}
           >

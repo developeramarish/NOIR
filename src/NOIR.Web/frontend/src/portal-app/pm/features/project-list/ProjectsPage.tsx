@@ -46,6 +46,9 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   ViewModeToggle,
   type ViewModeOption,
 } from '@uikit'
@@ -144,37 +147,56 @@ const ProjectCard = ({
         </div>
         <div className="border-t border-border/40" />
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1" title={t('pm.tasks', { defaultValue: 'Tasks' })}>
-            <CheckSquare className="h-3 w-3 flex-shrink-0" />
-            <span className="tabular-nums">{project.completedTaskCount}/{project.taskCount}</span>
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex items-center gap-1">
+                <CheckSquare className="h-3 w-3 flex-shrink-0" />
+                <span className="tabular-nums">{project.completedTaskCount}/{project.taskCount}</span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('pm.tasks', { defaultValue: 'Tasks' })}</TooltipContent>
+          </Tooltip>
           {project.memberCount > 0 && (
-            <span className="flex items-center gap-1" title={t('pm.members', { defaultValue: 'Members' })}>
-              <Users className="h-3 w-3 flex-shrink-0" />
-              <span className="tabular-nums">{project.memberCount}</span>
-            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3 flex-shrink-0" />
+                  <span className="tabular-nums">{project.memberCount}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t('pm.members', { defaultValue: 'Members' })}</TooltipContent>
+            </Tooltip>
           )}
           {project.dueDate && (
-            <span
-              className={`flex items-center gap-1 ml-auto ${
-                isOverdue ? 'text-red-500 font-medium' : isDueSoon ? 'text-amber-500' : ''
-              }`}
-              title={t('pm.dueDate', { defaultValue: 'Due Date' })}
-            >
-              {isOverdue ? <Clock className="h-3 w-3 flex-shrink-0" /> : <Calendar className="h-3 w-3 flex-shrink-0" />}
-              {new Date(project.dueDate).toLocaleDateString()}
-            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className={`flex items-center gap-1 ml-auto ${
+                    isOverdue ? 'text-red-500 font-medium' : isDueSoon ? 'text-amber-500' : ''
+                  }`}
+                >
+                  {isOverdue ? <Clock className="h-3 w-3 flex-shrink-0" /> : <Calendar className="h-3 w-3 flex-shrink-0" />}
+                  {new Date(project.dueDate).toLocaleDateString()}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t('pm.dueDate', { defaultValue: 'Due Date' })}</TooltipContent>
+            </Tooltip>
           )}
         </div>
         {project.taskCount > 0 && (
-          <div className="h-1 bg-muted rounded-full overflow-hidden" title={`${progress}%`}>
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                progress === 100 ? 'bg-green-500' : 'bg-primary/60'
-              }`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="h-1 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    progress === 100 ? 'bg-green-500' : 'bg-primary/60'
+                  }`}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{progress}%</TooltipContent>
+          </Tooltip>
         )}
       </CardContent>
     </Card>

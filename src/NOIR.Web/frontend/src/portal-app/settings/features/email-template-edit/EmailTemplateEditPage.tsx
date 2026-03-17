@@ -64,6 +64,7 @@ import {
   Label,
   Skeleton,
   Switch,
+  Textarea,
 } from '@uikit'
 
 import {
@@ -732,12 +733,12 @@ export const EmailTemplateEditPage = () => {
             </CardHeader>
             {showPlainText && (
               <CardContent>
-                <textarea
+                <Textarea
                   value={plainTextBody}
                   onChange={(e) => setPlainTextBody(e.target.value)}
                   placeholder={t('emailTemplates.plainTextPlaceholder')}
                   aria-label={t('emailTemplates.plainTextBodyAriaLabel', 'Plain text email body')}
-                  className="w-full h-48 p-3 border rounded-lg resize-none font-mono text-sm bg-background text-foreground"
+                  className="h-48 resize-none font-mono text-sm"
                 />
               </CardContent>
             )}
@@ -843,7 +844,7 @@ export const EmailTemplateEditPage = () => {
               <CardTitle className="text-base">{t('labels.description')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <textarea
+              <Textarea
                 value={description}
                 onChange={(e) => {
                   setDescription(e.target.value)
@@ -851,7 +852,7 @@ export const EmailTemplateEditPage = () => {
                 }}
                 placeholder={t('emailTemplates.descriptionPlaceholder')}
                 aria-label={t('emailTemplates.templateDescription', 'Template description')}
-                className={`w-full h-24 p-3 border rounded-lg resize-none text-sm bg-background text-foreground ${errors.description ? 'border-destructive' : ''}`}
+                className={`h-24 resize-none text-sm ${errors.description ? 'border-destructive' : ''}`}
               />
               {errors.description && (
                 <p className="text-sm font-medium text-destructive mt-2">{errors.description}</p>

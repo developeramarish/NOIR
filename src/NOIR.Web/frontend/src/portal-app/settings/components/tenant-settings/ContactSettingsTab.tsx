@@ -11,6 +11,7 @@ import {
   CardTitle,
   Input,
   Label,
+  Skeleton,
   Textarea,
 } from '@uikit'
 
@@ -74,11 +75,11 @@ export const ContactSettingsTab = ({ canEdit }: ContactSettingsTabProps) => {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardContent className="py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 w-48 bg-muted rounded" />
-            <div className="h-10 w-full bg-muted rounded" />
-            <div className="h-4 w-48 bg-muted rounded" />
-            <div className="h-10 w-full bg-muted rounded" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </CardContent>
       </Card>

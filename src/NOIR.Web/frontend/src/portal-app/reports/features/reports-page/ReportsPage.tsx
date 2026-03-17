@@ -288,7 +288,7 @@ const CategoryBreakdownChart = ({
 const SkeletonRows = ({ columns, rows = 5 }: { columns: number; rows?: number }) => (
   <>
     {[...Array(rows)].map((_, i) => (
-      <TableRow key={i} className="animate-pulse">
+      <TableRow key={i}>
         {[...Array(columns)].map((_, j) => (
           <TableCell key={j}>
             <Skeleton className="h-4 w-full" />

@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Filter, Check, Tag, UserX, Calendar, X, ChevronDown, ChevronUp } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger, Avatar } from '@uikit'
+import { Input, Popover, PopoverContent, PopoverTrigger, Avatar } from '@uikit'
 import type { ProjectMemberDto, TaskLabelBriefDto } from '@/types/pm'
 
 // ─── Filter types ─────────────────────────────────────────────────────────────
@@ -141,30 +141,26 @@ const DateInput = ({
   value: string
   onChange: (v: string) => void
   placeholder?: string
-}) => {
-  const ref = useRef<HTMLInputElement>(null)
-  return (
-    <div className="relative">
-      <input
-        ref={ref}
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full pl-2 pr-7 py-1.5 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
-      />
-      {value && (
-        <button
-          onClick={() => onChange('')}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          aria-label="Clear date"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
-    </div>
-  )
-}
+}) => (
+  <div className="relative">
+    <Input
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="h-8 pl-2 pr-7 text-sm cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+    />
+    {value && (
+      <button
+        onClick={() => onChange('')}
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+        aria-label="Clear date"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    )}
+  </div>
+)
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 

@@ -230,7 +230,7 @@ export const RolesPage = () => {
         description={t('roles.description', 'Manage roles and permissions')}
         action={
           canCreate && (
-            <Button className="group transition-all duration-300" onClick={() => openCreate()}>
+            <Button className="group transition-all duration-300 cursor-pointer" onClick={() => openCreate()}>
               <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
               {t('roles.newRole', 'New Role')}
             </Button>

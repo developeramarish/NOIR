@@ -14,6 +14,7 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaBody,
+  CompactColorPicker,
   Input,
 } from '@uikit'
 import { useUpdateColumn } from '@/portal-app/pm/queries'
@@ -55,6 +56,8 @@ export const ColumnSettingsDialog = ({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(createSchema(t)) as never,
@@ -121,11 +124,12 @@ export const ColumnSettingsDialog = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">{t('pm.color')}</label>
-                <Input
-                  type="color"
-                  {...register('color')}
-                  className="mt-1 h-10 cursor-pointer"
-                />
+                <div className="mt-1">
+                  <CompactColorPicker
+                    value={watch('color') || '#6366f1'}
+                    onChange={(color) => setValue('color', color, { shouldValidate: true })}
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">{t('pm.wipLimit')}</label>

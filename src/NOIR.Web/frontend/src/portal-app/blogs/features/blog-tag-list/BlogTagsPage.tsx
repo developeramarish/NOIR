@@ -143,7 +143,7 @@ export const BlogTagsPage = () => {
         title={t('blogTags.title', 'Tags')}
         description={t('blogTags.description', 'Label and organize your content')}
         action={
-          <Button className="group transition-all duration-300" onClick={() => openCreate()}>
+          <Button className="group transition-all duration-300 cursor-pointer" onClick={() => openCreate()}>
             <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
             {t('blogTags.newTag', 'New Tag')}
           </Button>

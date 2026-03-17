@@ -226,7 +226,7 @@ const LabelPickerPopover = ({ activeIds, projectLabels, projectId, taskId: _task
               >
                 {createLabelMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : t('buttons.create', { defaultValue: 'Create' })}
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs cursor-pointer" onClick={() => setCreating(false)}>
+              <Button variant="ghost" size="sm" className="text-xs cursor-pointer" onClick={() => setCreating(false)}>
                 {t('buttons.cancel')}
               </Button>
             </div>

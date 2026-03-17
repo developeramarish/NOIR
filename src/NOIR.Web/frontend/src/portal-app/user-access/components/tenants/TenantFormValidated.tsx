@@ -14,7 +14,7 @@
  */
 
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Label, SimpleFormField as FormField, FormTextarea, FormError } from '@uikit'
+import { Button, Checkbox, CredenzaFooter, Label, SimpleFormField as FormField, FormTextarea, FormError } from '@uikit'
 import { useValidatedForm } from "@/hooks/useValidatedForm"
 import { updateTenantSchema } from "@/validation/schemas.generated"
 import type { Tenant } from "@/types"
@@ -236,7 +236,7 @@ export const TenantFormValidated = ({ tenant, onSubmit, onCancel }: TenantFormVa
         )
       })()}
 
-      <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+      <CredenzaFooter>
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="cursor-pointer">
           {t("buttons.cancel")}
         </Button>
@@ -248,7 +248,7 @@ export const TenantFormValidated = ({ tenant, onSubmit, onCancel }: TenantFormVa
               ? t("buttons.update")
               : t("buttons.create")}
         </Button>
-      </div>
+      </CredenzaFooter>
     </form>
   )
 }

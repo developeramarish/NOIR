@@ -63,7 +63,7 @@ const HistoryFileCard = ({
     <button
       onClick={onView}
       className={cn(
-        'w-full p-4 rounded-lg border text-left transition-all hover:shadow-md cursor-pointer',
+        'w-full p-4 rounded-lg border text-left transition-all hover:shadow-lg cursor-pointer',
         isSelected
           ? 'border-primary bg-primary/5 shadow-sm'
           : 'border-border hover:border-primary/50 bg-card'
@@ -280,7 +280,7 @@ const HistoryFileViewer = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full h-7 text-xs"
+                  className="w-full text-xs"
                   onClick={(e) => {
                     e.preventDefault()
                     setSelectedLevels(new Set())

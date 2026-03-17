@@ -117,7 +117,7 @@ export const WishlistAnalyticsPage = () => {
             <TableBody>
               {isLoading ? (
                 [...Array(5)].map((_, i) => (
-                  <TableRow key={i} className="animate-pulse">
+                  <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-6" /></TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">

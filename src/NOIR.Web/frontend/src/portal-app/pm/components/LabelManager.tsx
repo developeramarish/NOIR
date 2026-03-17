@@ -11,6 +11,7 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaBody,
+  CompactColorPicker,
   EmptyState,
   Input,
   Skeleton,
@@ -140,12 +141,12 @@ export const LabelManager = ({ projectId }: LabelManagerProps) => {
             </div>
             <div>
               <label className="text-sm font-medium">{t('pm.labelColor')}</label>
-              <Input
-                type="color"
-                value={newColor}
-                onChange={(e) => setNewColor(e.target.value)}
-                className="mt-1 h-10 cursor-pointer"
-              />
+              <div className="mt-1">
+                <CompactColorPicker
+                  value={newColor}
+                  onChange={setNewColor}
+                />
+              </div>
             </div>
           </CredenzaBody>
           <CredenzaFooter>

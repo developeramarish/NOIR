@@ -11,6 +11,7 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaBody,
+  CompactColorPicker,
   Input,
   Select,
   SelectContent,
@@ -195,12 +196,12 @@ export const ColumnManager = ({ projectId, columns }: ColumnManagerProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">{t('pm.color')}</label>
-                <Input
-                  type="color"
-                  value={newColor}
-                  onChange={(e) => setNewColor(e.target.value)}
-                  className="mt-1 h-10 cursor-pointer"
-                />
+                <div className="mt-1">
+                  <CompactColorPicker
+                    value={newColor}
+                    onChange={setNewColor}
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">{t('pm.wipLimit')}</label>

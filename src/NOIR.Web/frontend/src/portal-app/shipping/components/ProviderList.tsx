@@ -156,7 +156,7 @@ export const ProviderList = () => {
               <TableBody>
                 {isLoading ? (
                   [...Array(4)].map((_, i) => (
-                    <TableRow key={i} className="animate-pulse">
+                    <TableRow key={i}>
                       <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-8 w-20" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>

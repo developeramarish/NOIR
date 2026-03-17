@@ -304,7 +304,7 @@ export const DataTable = <TData extends RowData>({
         data-density={density}
         {...(keyboardNavProps as React.HTMLAttributes<HTMLDivElement>)}
       >
-        <UITable style={{ ...columnSizeVars, minWidth: `${minTableWidth}px` }}>
+        <UITable style={{ ...columnSizeVars, ...((isLoading || table.getRowModel().rows.length > 0) && { minWidth: `${minTableWidth}px` }) }}>
           {/* Colgroup — fixed cols get exact px, flex cols use cqi to fill remaining space */}
           <colgroup>
             {(() => {

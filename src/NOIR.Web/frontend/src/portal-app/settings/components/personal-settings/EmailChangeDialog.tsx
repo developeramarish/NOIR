@@ -19,6 +19,7 @@ import {
   CredenzaBody,
   CredenzaContent,
   CredenzaDescription,
+  CredenzaFooter,
   CredenzaHeader,
   CredenzaTitle,
   CredenzaTrigger,
@@ -418,6 +419,12 @@ export const EmailChangeDialog = ({
             )}
           </div>
         </CredenzaBody>
+
+        <CredenzaFooter>
+          <Button variant="outline" className="cursor-pointer" onClick={() => handleOpenChange(false)}>
+            {step === 'success' ? t('buttons.close', 'Close') : t('buttons.cancel', 'Cancel')}
+          </Button>
+        </CredenzaFooter>
       </CredenzaContent>
     </Credenza>
   )

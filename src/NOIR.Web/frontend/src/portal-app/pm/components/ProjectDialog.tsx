@@ -14,6 +14,7 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaBody,
+  ColorPicker,
   DatePicker,
   Form,
   FormControl,
@@ -328,42 +329,12 @@ export const ProjectDialog = ({ open, onOpenChange, project }: ProjectDialogProp
                   <FormItem>
                     <FormLabel>{t('pm.color')}</FormLabel>
                     <FormControl>
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-2">
-                          {PROJECT_COLORS.map((color) => (
-                            <button
-                              key={color}
-                              type="button"
-                              className={`h-7 w-7 rounded-full cursor-pointer transition-all border-2 ${
-                                field.value === color
-                                  ? 'border-foreground scale-110 shadow-md'
-                                  : 'border-transparent hover:border-muted-foreground/50 hover:scale-105'
-                              }`}
-                              style={{ backgroundColor: color }}
-                              onClick={() => field.onChange(color)}
-                              aria-label={color}
-                            />
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={field.value || '#6366f1'}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            className="h-8 w-8 rounded cursor-pointer border border-input bg-transparent p-0.5"
-                            aria-label={t('pm.colorPicker', { defaultValue: 'Project color picker' })}
-                          />
-                          <input
-                            type="text"
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            placeholder="#6366f1"
-                            maxLength={7}
-                            className="flex-1 text-sm bg-background border border-input rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring font-mono"
-                            aria-label={t('pm.colorHex', { defaultValue: 'Project color hex code' })}
-                          />
-                        </div>
-                      </div>
+                      <ColorPicker
+                        value={field.value || '#6366f1'}
+                        onChange={field.onChange}
+                        colors={PROJECT_COLORS}
+                        showCustomInput
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -8,6 +8,9 @@ import {
   CredenzaDescription,
   CredenzaHeader,
   CredenzaTitle,
+  Button,
+  CredenzaFooter,
+  Skeleton,
   Tabs,
   TabsContent,
   TabsList,
@@ -110,21 +113,21 @@ export const EditTenantDialog = ({ tenant, open, onOpenChange, onSuccess, active
               {loading ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-                    <div className="h-10 w-full bg-muted animate-pulse rounded-md" />
-                    <div className="h-3 w-48 bg-muted animate-pulse rounded" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                    <Skeleton className="h-3 w-48" />
                   </div>
                   <div className="space-y-2">
-                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-                    <div className="h-10 w-full bg-muted animate-pulse rounded-md" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-10 w-full rounded-md" />
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="h-4 w-4 bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-12" />
                   </div>
                   <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
-                    <div className="h-10 w-full sm:w-20 bg-muted animate-pulse rounded-md" />
-                    <div className="h-10 w-full sm:w-20 bg-muted animate-pulse rounded-md" />
+                    <Skeleton className="h-10 w-full sm:w-20 rounded-md" />
+                    <Skeleton className="h-10 w-full sm:w-20 rounded-md" />
                   </div>
                 </div>
               ) : fullTenant ? (
@@ -144,6 +147,11 @@ export const EditTenantDialog = ({ tenant, open, onOpenChange, onSuccess, active
                   compact
                 />
               )}
+              <CredenzaFooter>
+                <Button variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
+                  {t('buttons.close', 'Close')}
+                </Button>
+              </CredenzaFooter>
             </TabsContent>
           </Tabs>
         </CredenzaBody>

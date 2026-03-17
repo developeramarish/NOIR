@@ -169,7 +169,7 @@ const TimelineEntry = ({
         onClick={onViewDetails}
         className={cn(
           'flex-1 min-w-0 rounded-lg border transition-all mb-3 text-left',
-          'hover:shadow-md hover:border-primary/20 cursor-pointer',
+          'hover:shadow-lg hover:border-primary/20 cursor-pointer',
           !entry.isSuccess && 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20'
         )}
       >
@@ -224,10 +224,15 @@ const TimelineEntry = ({
                 </span>
               )}
               {entry.correlationId && (
-                <span className="flex items-center gap-1" title={t('activityTimeline.correlationId', 'Correlation ID')}>
-                  <Fingerprint className="h-3 w-3" />
-                  <span className="font-mono truncate max-w-[100px]">{entry.correlationId}</span>
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex items-center gap-1">
+                      <Fingerprint className="h-3 w-3" />
+                      <span className="font-mono truncate max-w-[100px]">{entry.correlationId}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{t('activityTimeline.correlationId', 'Correlation ID')}</TooltipContent>
+                </Tooltip>
               )}
               {entry.targetDisplayName && (
                 <span>
@@ -303,7 +308,7 @@ export const ActivityTimelinePage = () => {
         title={t('activityTimeline.title', 'Activity Timeline')}
         description={t('activityTimeline.description', 'Track and audit all user actions')}
         action={
-          <Button variant="outline" className="cursor-pointer group hover:shadow-md transition-all duration-300" onClick={handleRefresh} disabled={loading}>
+          <Button variant="outline" className="cursor-pointer group hover:shadow-lg transition-all duration-300" onClick={handleRefresh} disabled={loading}>
             <RefreshCw className={cn('mr-2 h-4 w-4 transition-transform duration-300', loading ? 'animate-spin' : 'group-hover:rotate-180')} />
             {t('buttons.refresh', 'Refresh')}
           </Button>

@@ -1865,6 +1865,28 @@
     "roles": "Vai trò",
     "platform": "Nền tảng"
   },
+  "importExport": {
+    "importExport": "Nhập/Xuất",
+    "import": "Nhập",
+    "exportCsv": "Xuất CSV",
+    "exportExcel": "Xuất Excel",
+    "importCsv": "Nhập CSV",
+    "downloadTemplate": "Tải mẫu",
+    "importing": "Đang nhập {{entity}}...",
+    "importingGeneric": "Đang nhập...",
+    "importComplete": "Nhập hoàn tất",
+    "pleaseWait": "Vui lòng chờ trong khi chúng tôi xử lý tệp của bạn.",
+    "summary": "Đây là tóm tắt kết quả nhập.",
+    "importSuccess": "{{count}} mục đã nhập thành công",
+    "importPartialErrors": "{{count}} dòng có lỗi",
+    "importFailed": "Nhập thất bại",
+    "successLabel": "Đã nhập",
+    "errorsLabel": "Lỗi",
+    "errorDetails": "Chi tiết lỗi:",
+    "row": "Dòng",
+    "invalidFile": "Tệp phải có ít nhất một dòng tiêu đề và một dòng dữ liệu",
+    "missingFields": "Thiếu trường bắt buộc: {{fields}}"
+  },
   "buttons": {
     "save": "Lưu",
     "saving": "Đang lưu...",

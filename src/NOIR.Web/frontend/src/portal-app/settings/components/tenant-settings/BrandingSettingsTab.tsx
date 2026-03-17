@@ -12,6 +12,7 @@ import {
   ColorPicker,
   ImageUploadField,
   Label,
+  Skeleton,
   Switch,
 } from '@uikit'
 
@@ -86,11 +87,11 @@ export const BrandingSettingsTab = ({ canEdit }: BrandingSettingsTabProps) => {
     return (
       <Card className="shadow-sm hover:shadow-lg transition-all duration-300">
         <CardContent className="py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 w-48 bg-muted rounded" />
-            <div className="h-24 w-full bg-muted rounded" />
-            <div className="h-4 w-48 bg-muted rounded" />
-            <div className="h-24 w-full bg-muted rounded" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-24 w-full" />
           </div>
         </CardContent>
       </Card>

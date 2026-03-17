@@ -224,13 +224,13 @@ export const ProjectDetailPage = () => {
             {project.members.length > 0 && (
               <ProjectMemberAvatars members={project.members} onClickMore={() => setMembersDialogOpen(true)} />
             )}
-            <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 h-8 text-xs" onClick={() => setMembersDialogOpen(true)}>
+            <Button variant="outline" size="sm" className="cursor-pointer gap-1.5 text-xs" onClick={() => setMembersDialogOpen(true)}>
               <UserPlus className="h-3.5 w-3.5" />
               {t('pm.share', { defaultValue: 'Share' })}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 cursor-pointer" aria-label={t('pm.boardMenu', { defaultValue: 'Board menu' })}>
+                <Button variant="outline" size="sm" className="w-8 p-0 cursor-pointer" aria-label={t('pm.boardMenu', { defaultValue: 'Board menu' })}>
                   <EllipsisVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>

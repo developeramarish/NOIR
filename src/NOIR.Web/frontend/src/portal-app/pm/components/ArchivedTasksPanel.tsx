@@ -215,7 +215,7 @@ const ArchivedTaskRow = ({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs cursor-pointer gap-1 hover:border-green-500/40 hover:text-green-600 hover:bg-green-500/5 transition-colors"
+            className="text-xs cursor-pointer gap-1 hover:border-green-500/40 hover:text-green-600 hover:bg-green-500/5 transition-colors"
             onClick={() => onRestore(task)}
             disabled={isRestoring}
             aria-label={t('pm.restoreTask', { defaultValue: 'Restore task' })}
@@ -226,7 +226,7 @@ const ArchivedTaskRow = ({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs cursor-pointer hover:border-destructive/40 hover:text-destructive hover:bg-destructive/5 transition-colors"
+            className="text-xs cursor-pointer hover:border-destructive/40 hover:text-destructive hover:bg-destructive/5 transition-colors"
             onClick={() => onDelete(task)}
             disabled={isDeleting}
             aria-label={t('pm.permanentDelete', { defaultValue: 'Delete permanently' })}
@@ -350,7 +350,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
                 <Button
                   size="sm"
                   variant="destructive"
-                  className="h-7 text-xs cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  className="text-xs cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   onClick={handleEmptyTrash}
                   disabled={emptyTrashMutation.isPending}
                 >
@@ -361,7 +361,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs cursor-pointer"
+                  className="text-xs cursor-pointer"
                   onClick={() => setEmptyConfirm(false)}
                   disabled={emptyTrashMutation.isPending}
                 >
@@ -372,7 +372,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 text-xs cursor-pointer text-destructive hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5 transition-colors"
+                className="text-xs cursor-pointer text-destructive hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5 transition-colors"
                 onClick={() => setEmptyConfirm(true)}
               >
                 <Trash2 className="h-3 w-3 mr-1" />

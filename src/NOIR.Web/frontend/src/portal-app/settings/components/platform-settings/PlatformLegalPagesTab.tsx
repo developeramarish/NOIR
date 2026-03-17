@@ -41,7 +41,7 @@ export const PlatformLegalPagesTab = ({ onEdit }: PlatformLegalPagesTabProps) =>
       <CardContent>
         <div className="grid gap-6 sm:grid-cols-2">
           {pages.map((page) => (
-            <Card key={page.id} className="overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+            <Card key={page.id} className="overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">

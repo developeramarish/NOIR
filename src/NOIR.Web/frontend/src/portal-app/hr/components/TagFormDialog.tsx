@@ -20,6 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  ColorPicker,
   Input,
   Select,
   SelectContent,
@@ -128,7 +129,7 @@ export const TagFormDialog = ({ open, onOpenChange, tag }: TagFormDialogProps) =
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
-  const selectedColor = form.watch('color')
+
 
   return (
     <Credenza open={open} onOpenChange={onOpenChange}>
@@ -195,35 +196,13 @@ export const TagFormDialog = ({ open, onOpenChange, tag }: TagFormDialogProps) =
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('hr.tags.color')}</FormLabel>
-                      <div className="flex flex-wrap gap-2">
-                        {PRESET_COLORS.map((color) => (
-                          <button
-                            key={color}
-                            type="button"
-                            className={`h-7 w-7 rounded-full cursor-pointer border-2 transition-all ${
-                              selectedColor === color ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'
-                            }`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => field.onChange(color)}
-                            aria-label={color}
-                          />
-                        ))}
-                      </div>
                       <FormControl>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Input
-                            {...field}
-                            type="color"
-                            className="h-9 w-14 cursor-pointer p-1"
-                            aria-label={t('hr.tags.color')}
-                          />
-                          <Input
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="#000000"
-                            className="flex-1"
-                          />
-                        </div>
+                        <ColorPicker
+                          value={field.value || PRESET_COLORS[0]}
+                          onChange={field.onChange}
+                          colors={PRESET_COLORS}
+                          showCustomInput
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

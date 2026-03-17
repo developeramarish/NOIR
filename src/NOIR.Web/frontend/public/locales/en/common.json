@@ -1865,6 +1865,28 @@
     "roles": "Roles",
     "platform": "Platform"
   },
+  "importExport": {
+    "importExport": "Import/Export",
+    "import": "Import",
+    "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
+    "importCsv": "Import CSV",
+    "downloadTemplate": "Download Template",
+    "importing": "Importing {{entity}}...",
+    "importingGeneric": "Importing...",
+    "importComplete": "Import Complete",
+    "pleaseWait": "Please wait while we process your file.",
+    "summary": "Here is a summary of the import.",
+    "importSuccess": "{{count}} items imported successfully",
+    "importPartialErrors": "{{count}} rows had errors",
+    "importFailed": "Import failed",
+    "successLabel": "Imported",
+    "errorsLabel": "Errors",
+    "errorDetails": "Error Details:",
+    "row": "Row",
+    "invalidFile": "File must have at least a header row and one data row",
+    "missingFields": "Missing required fields: {{fields}}"
+  },
   "buttons": {
     "save": "Save",
     "saving": "Saving...",
