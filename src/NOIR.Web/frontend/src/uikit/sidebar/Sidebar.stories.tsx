@@ -135,7 +135,7 @@ const SidebarDemo = ({ initialCollapsed = false }: { initialCollapsed?: boolean 
                       'w-full flex items-center rounded-md text-sm h-9 transition-all duration-200 cursor-pointer',
                       isExpanded ? 'px-3' : 'px-0 justify-center',
                       item.active
-                        ? 'bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary'
+                        ? 'bg-sidebar-primary/5 text-sidebar-primary font-medium hover:bg-sidebar-primary/10'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                     )}
                     aria-label={item.label}
