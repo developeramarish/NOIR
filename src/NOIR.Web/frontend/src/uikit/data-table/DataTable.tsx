@@ -283,6 +283,8 @@ export const DataTable = <TData extends RowData>({
     }),
   ) as React.CSSProperties
 
+  const hasRows = table.getRowModel().rows.length > 0
+
   // Minimum table width to force horizontal scroll before columns shrink
   const minTableWidth = table.getAllColumns().reduce((acc, col) => {
     return acc + (col.columnDef.minSize ?? col.columnDef.size ?? 100)
@@ -304,8 +306,13 @@ export const DataTable = <TData extends RowData>({
         data-density={density}
         {...(keyboardNavProps as React.HTMLAttributes<HTMLDivElement>)}
       >
-        <UITable style={{ ...columnSizeVars, ...((isLoading || table.getRowModel().rows.length > 0) && { minWidth: `${minTableWidth}px` }) }}>
-          {/* Colgroup — fixed cols get exact px, flex cols use cqi to fill remaining space */}
+        <UITable
+          style={{ ...columnSizeVars, ...((isLoading || hasRows) && { minWidth: `${minTableWidth}px` }) }}
+          wrapperClassName={(!isLoading && !hasRows) ? 'overflow-x-hidden' : undefined}
+        >
+          {/* Colgroup — fixed cols get exact px, flex cols use cqi to fill remaining space.
+              Skip when empty: cqi calc rounding across many columns can exceed container by subpixels → unwanted scrollbar */}
+          {(isLoading || hasRows) && (
           <colgroup>
             {(() => {
               const fixedTotal = visibleColumns.reduce((acc, col) => {
@@ -338,8 +345,10 @@ export const DataTable = <TData extends RowData>({
               })
             })()}
           </colgroup>
+          )}
 
-          {/* Header — SortableContext for column reorder when ordering is active */}
+          {/* Header — hidden when empty (no data to contextualize, avoids truncated headers) */}
+          {(isLoading || hasRows) && (
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
@@ -361,6 +370,7 @@ export const DataTable = <TData extends RowData>({
               </TableRow>
             ))}
           </TableHeader>
+          )}
 
         <TableBody>
           {isLoading ? (

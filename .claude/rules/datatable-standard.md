@@ -96,6 +96,12 @@ cell: ({ row }) => row.original.imageUrl ? (
 
 DataTable MUST receive an `emptyState` prop with `<EmptyState icon={...} title={...} description={...} />` — never plain text. UI audit `empty-state` rule enforces this.
 
+**Empty table behavior** (handled automatically by DataTable — no per-page code needed):
+- **No headers**: Column headers are hidden when 0 rows — they add noise and truncate on wide tables
+- **No colgroup**: Skipped to avoid subpixel rounding overflow across many `cqi` calc columns
+- **No horizontal scroll**: Wrapper uses `overflow-x-hidden` — nothing to scroll when empty
+- All three restore automatically when data loads or during loading skeleton state
+
 ## TypeScript: Filter Values
 
 `useTableParams<{ role?: string }>()` returns `params` where filter values live in `params.filters`, not at top level. Use `params.filters.role` (not `params.role`) in Select components.

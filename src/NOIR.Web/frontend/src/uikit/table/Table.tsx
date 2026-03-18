@@ -2,11 +2,13 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, style, ...props }, ref) => (
-  <div className="relative w-full overflow-x-auto overflow-y-hidden outline-none" tabIndex={0} role="region" aria-label="Scrollable table">
+interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  wrapperClassName?: string
+}
+
+const Table = React.forwardRef<HTMLTableElement, TableProps>(
+  ({ className, style, wrapperClassName, ...props }, ref) => (
+  <div className={cn("relative w-full overflow-x-auto overflow-y-hidden outline-none", wrapperClassName)} tabIndex={0} role="region" aria-label="Scrollable table">
     <table
       ref={ref}
       className={cn("w-full caption-bottom table-fixed", className)}
