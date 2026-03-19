@@ -38,6 +38,8 @@ export interface ContactListDto {
   hasCustomer: boolean
   leadCount: number
   createdAt: string
+  modifiedAt?: string
+  modifiedByName?: string
 }
 
 export interface ContactPagedResult {
@@ -78,6 +80,8 @@ export interface CompanyListDto {
   ownerName?: string
   contactCount: number
   createdAt: string
+  modifiedAt?: string
+  modifiedByName?: string
 }
 
 export interface CompanyPagedResult {

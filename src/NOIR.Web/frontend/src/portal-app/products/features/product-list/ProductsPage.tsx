@@ -11,7 +11,7 @@ import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import {
   Search,
   Package,
@@ -106,7 +106,7 @@ const ch = createColumnHelper<ProductListItem>()
 
 export const ProductsPage = () => {
   const { t } = useTranslation('common')
-  const { formatRelativeTime } = useRegionalSettings()
+  const { formatDateTime } = useRegionalSettings()
   const { hasPermission } = usePermissions()
   usePageContext('Products')
   const navigate = useNavigate()
@@ -457,18 +457,9 @@ export const ProductsPage = () => {
         </Badge>
       ),
     }) as ColumnDef<ProductListItem, unknown>,
-    ch.accessor('createdAt', {
-      id: 'created',
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created', 'Created')} />,
-      meta: { label: t('labels.created', 'Created') },
-      cell: ({ getValue }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatRelativeTime(getValue())}
-        </span>
-      ),
-    }) as ColumnDef<ProductListItem, unknown>,
+    ...createFullAuditColumns<ProductListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdateProducts, canCreateProducts, canPublishProducts, canDeleteProducts])
+  ], [t, canUpdateProducts, canCreateProducts, canPublishProducts, canDeleteProducts, formatDateTime])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({

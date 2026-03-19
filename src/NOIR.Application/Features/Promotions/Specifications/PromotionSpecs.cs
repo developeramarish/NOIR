@@ -130,6 +130,16 @@ public sealed class PromotionsFilterSpec : Specification<Domain.Entities.Promoti
                 if (isDescending) Query.OrderByDescending(p => p.CurrentUsageCount);
                 else Query.OrderBy(p => p.CurrentUsageCount);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedBy);
+                else Query.OrderBy(p => p.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(p => p.ModifiedBy);
+                else Query.OrderBy(p => p.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(p => p.CreatedAt);
                 break;

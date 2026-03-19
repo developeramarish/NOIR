@@ -9,13 +9,18 @@ public class GetReviewsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<ProductReview, Guid>> _reviewRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetReviewsQueryHandler _handler;
 
     public GetReviewsQueryHandlerTests()
     {
         _reviewRepositoryMock = new Mock<IRepository<ProductReview, Guid>>();
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
 
-        _handler = new GetReviewsQueryHandler(_reviewRepositoryMock.Object);
+        _handler = new GetReviewsQueryHandler(_reviewRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static ProductReview CreateTestReview(

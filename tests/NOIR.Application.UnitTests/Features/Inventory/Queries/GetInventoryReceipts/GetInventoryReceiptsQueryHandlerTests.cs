@@ -14,6 +14,7 @@ public class GetInventoryReceiptsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<InventoryReceipt, Guid>> _repositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetInventoryReceiptsQueryHandler _handler;
 
     private const string TestTenantId = "test-tenant";
@@ -21,7 +22,11 @@ public class GetInventoryReceiptsQueryHandlerTests
     public GetInventoryReceiptsQueryHandlerTests()
     {
         _repositoryMock = new Mock<IRepository<InventoryReceipt, Guid>>();
-        _handler = new GetInventoryReceiptsQueryHandler(_repositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetInventoryReceiptsQueryHandler(_repositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static InventoryReceipt CreateTestReceipt(

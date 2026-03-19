@@ -48,6 +48,20 @@ public sealed class MediaFilesFilteredSpec : Specification<MediaFile>
                 else
                     Query.OrderBy(m => m.SizeBytes);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending)
+                    Query.OrderByDescending(m => m.CreatedBy);
+                else
+                    Query.OrderBy(m => m.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending)
+                    Query.OrderByDescending(m => m.ModifiedBy);
+                else
+                    Query.OrderBy(m => m.ModifiedBy);
+                break;
             default: // "createdAt"
                 if (isDescending)
                     Query.OrderByDescending(m => m.CreatedAt);

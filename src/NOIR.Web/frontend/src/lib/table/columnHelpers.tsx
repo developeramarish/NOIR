@@ -4,8 +4,10 @@
  * helpers for the recurring patterns (select, actions, status badge, etc.).
  */
 import type { ColumnDef, RowData } from '@tanstack/react-table'
+import type { TFunction } from 'i18next'
 import { EllipsisVertical } from 'lucide-react'
 import { Checkbox } from '@uikit'
+import { DataTableColumnHeader } from '@/uikit/data-table/DataTableColumnHeader'
 import { Button } from '@/uikit/button/Button'
 import {
   DropdownMenu,
@@ -94,3 +96,118 @@ export const createSelectColumn = <TData extends RowData>(): ColumnDef<TData, un
     />
   ),
 })
+
+/**
+ * Standard audit columns (Created At, Modified At) for list pages.
+ * Place as the LAST data columns in the columns array.
+ * NEVER use formatRelativeTime in DataTable — always formatDateTime.
+ */
+export const createAuditColumns = <TData extends RowData>(
+  t: TFunction,
+  formatDateTime: (date: Date | string) => string,
+): ColumnDef<TData, unknown>[] => {
+  const cols: ColumnDef<RowData, unknown>[] = [
+    {
+      id: 'createdAt',
+      accessorFn: (row) => (row as Record<string, unknown>).createdAt,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.createdAt', 'Created At')} />,
+      meta: { label: t('labels.createdAt', 'Created At') },
+      size: 160,
+      cell: ({ getValue }) => {
+        const value = getValue() as string | null | undefined
+        return value ? (
+          <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDateTime(value)}</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )
+      },
+    },
+    {
+      id: 'modifiedAt',
+      accessorFn: (row) => (row as Record<string, unknown>).modifiedAt,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.modifiedAt', 'Modified At')} />,
+      meta: { label: t('labels.modifiedAt', 'Modified At') },
+      size: 160,
+      cell: ({ getValue }) => {
+        const value = getValue() as string | null | undefined
+        return value ? (
+          <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDateTime(value)}</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )
+      },
+    },
+  ]
+  return cols as ColumnDef<TData, unknown>[]
+}
+
+/**
+ * Full audit columns (Created At, Creator, Modified At, Editor) for list pages.
+ * Use this when the backend provides createdByName and modifiedByName.
+ * Place as the LAST data columns in the columns array.
+ */
+export const createFullAuditColumns = <TData extends RowData>(
+  t: TFunction,
+  formatDateTime: (date: Date | string) => string,
+): ColumnDef<TData, unknown>[] => [
+  {
+    id: 'createdAt',
+    accessorFn: (row) => (row as Record<string, unknown>).createdAt,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.createdAt', 'Created At')} />,
+    meta: { label: t('labels.createdAt', 'Created At') },
+    size: 160,
+    cell: ({ getValue }) => {
+      const value = getValue() as string | null | undefined
+      return value ? (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDateTime(value)}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )
+    },
+  } as ColumnDef<TData, unknown>,
+  {
+    id: 'createdBy',
+    accessorFn: (row) => (row as Record<string, unknown>).createdByName,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.creator', 'Creator')} />,
+    meta: { label: t('labels.creator', 'Creator') },
+    size: 140,
+    cell: ({ getValue }) => {
+      const name = getValue() as string | null | undefined
+      return name ? (
+        <span className="text-sm text-muted-foreground">{name}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )
+    },
+  } as ColumnDef<TData, unknown>,
+  {
+    id: 'modifiedAt',
+    accessorFn: (row) => (row as Record<string, unknown>).modifiedAt,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.modifiedAt', 'Modified At')} />,
+    meta: { label: t('labels.modifiedAt', 'Modified At'), defaultHidden: true },
+    size: 160,
+    cell: ({ getValue }) => {
+      const value = getValue() as string | null | undefined
+      return value ? (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDateTime(value)}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )
+    },
+  } as ColumnDef<TData, unknown>,
+  {
+    id: 'modifiedBy',
+    accessorFn: (row) => (row as Record<string, unknown>).modifiedByName,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.editor', 'Editor')} />,
+    meta: { label: t('labels.editor', 'Editor'), defaultHidden: true },
+    size: 140,
+    cell: ({ getValue }) => {
+      const name = getValue() as string | null | undefined
+      return name ? (
+        <span className="text-sm text-muted-foreground">{name}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )
+    },
+  } as ColumnDef<TData, unknown>,
+]

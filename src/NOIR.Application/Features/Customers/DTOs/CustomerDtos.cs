@@ -44,6 +44,9 @@ public sealed record CustomerSummaryDto
     public int LoyaltyPoints { get; init; }
     public bool IsActive { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset? ModifiedAt { get; init; }
+    public string? CreatedByName { get; init; }
+    public string? ModifiedByName { get; init; }
 }
 
 /// <summary>

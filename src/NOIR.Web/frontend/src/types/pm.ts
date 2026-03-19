@@ -25,6 +25,8 @@ export interface ProjectListDto {
   icon: string | null
   visibility: ProjectVisibility
   createdAt: string
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 export interface ProjectDto {

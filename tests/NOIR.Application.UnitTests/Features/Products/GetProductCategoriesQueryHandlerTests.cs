@@ -13,6 +13,7 @@ public class GetProductCategoriesQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<ProductCategory, Guid>> _categoryRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetProductCategoriesQueryHandler _handler;
 
     private const string TestTenantId = "test-tenant";
@@ -20,9 +21,14 @@ public class GetProductCategoriesQueryHandlerTests
     public GetProductCategoriesQueryHandlerTests()
     {
         _categoryRepositoryMock = new Mock<IRepository<ProductCategory, Guid>>();
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
 
         _handler = new GetProductCategoriesQueryHandler(
-            _categoryRepositoryMock.Object);
+            _categoryRepositoryMock.Object,
+            _userDisplayNameServiceMock.Object);
     }
 
     private static GetProductCategoriesQuery CreateTestQuery(

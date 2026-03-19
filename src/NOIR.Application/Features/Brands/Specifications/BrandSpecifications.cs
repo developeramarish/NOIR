@@ -136,6 +136,16 @@ public sealed class BrandsPagedSpec : Specification<Brand>
                 if (isDescending) Query.OrderByDescending(b => b.SortOrder);
                 else Query.OrderBy(b => b.SortOrder);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(b => b.CreatedBy);
+                else Query.OrderBy(b => b.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(b => b.ModifiedBy);
+                else Query.OrderBy(b => b.ModifiedBy);
+                break;
             default:
                 Query.OrderBy(b => b.SortOrder)
                      .ThenBy(b => b.Name);

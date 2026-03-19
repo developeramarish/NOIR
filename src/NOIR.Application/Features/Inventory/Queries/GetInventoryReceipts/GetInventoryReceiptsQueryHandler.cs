@@ -10,10 +10,12 @@ namespace NOIR.Application.Features.Inventory.Queries.GetInventoryReceipts;
 public class GetInventoryReceiptsQueryHandler
 {
     private readonly IRepository<InventoryReceipt, Guid> _repository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetInventoryReceiptsQueryHandler(IRepository<InventoryReceipt, Guid> repository)
+    public GetInventoryReceiptsQueryHandler(IRepository<InventoryReceipt, Guid> repository, IUserDisplayNameService userDisplayNameService)
     {
         _repository = repository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<InventoryReceiptSummaryDto>>> Handle(
@@ -28,7 +30,15 @@ public class GetInventoryReceiptsQueryHandler
         var countSpec = new InventoryReceiptsCountSpec(query.Type, query.Status);
         var totalCount = await _repository.CountAsync(countSpec, cancellationToken);
 
-        var items = receipts.Select(InventoryReceiptMapper.ToSummaryDto).ToList();
+        // Resolve user names
+        var userIds = receipts
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = receipts.Select(r => InventoryReceiptMapper.ToSummaryDto(r, userNames)).ToList();
 
         var result = PagedResult<InventoryReceiptSummaryDto>.Create(items, totalCount, query.Page - 1, query.PageSize);
 

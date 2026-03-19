@@ -8,7 +8,7 @@ public static class PromotionMapper
     /// <summary>
     /// Maps a Promotion entity to PromotionDto including related data.
     /// </summary>
-    public static PromotionDto ToDto(Domain.Entities.Promotion.Promotion promotion)
+    public static PromotionDto ToDto(Domain.Entities.Promotion.Promotion promotion, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         return new PromotionDto
         {
@@ -38,7 +38,9 @@ public static class PromotionMapper
                 .Select(ToUsageDto)
                 .ToList(),
             CreatedAt = promotion.CreatedAt,
-            ModifiedAt = promotion.ModifiedAt
+            ModifiedAt = promotion.ModifiedAt,
+            CreatedByName = promotion.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(promotion.CreatedBy) : null,
+            ModifiedByName = promotion.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(promotion.ModifiedBy) : null
         };
     }
 

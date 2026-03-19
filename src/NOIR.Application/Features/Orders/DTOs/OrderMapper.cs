@@ -49,7 +49,7 @@ public static class OrderMapper
     /// <summary>
     /// Maps an Order entity to OrderSummaryDto.
     /// </summary>
-    public static OrderSummaryDto ToSummaryDto(Order order)
+    public static OrderSummaryDto ToSummaryDto(Order order, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         return new OrderSummaryDto
         {
@@ -61,7 +61,10 @@ public static class OrderMapper
             CustomerEmail = order.CustomerEmail,
             CustomerName = order.CustomerName,
             ItemCount = order.Items.Count,
-            CreatedAt = order.CreatedAt
+            CreatedAt = order.CreatedAt,
+            ModifiedAt = order.ModifiedAt,
+            CreatedByName = order.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(order.CreatedBy) : null,
+            ModifiedByName = order.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(order.ModifiedBy) : null
         };
     }
 

@@ -26,7 +26,7 @@ import { usePageContext } from '@/hooks/usePageContext'
 import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
@@ -212,7 +212,7 @@ export const ProjectsPage = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
-  const { formatDate } = useRegionalSettings()
+  const { formatDate, formatDateTime } = useRegionalSettings()
   usePageContext('ProjectsPage')
 
   const { getRowAnimationClass } = useRowHighlight()
@@ -385,8 +385,9 @@ export const ProjectsPage = () => {
         )
       },
     }) as ColumnDef<ProjectListDto, unknown>,
+    ...createFullAuditColumns<ProjectListDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: sortedItems,

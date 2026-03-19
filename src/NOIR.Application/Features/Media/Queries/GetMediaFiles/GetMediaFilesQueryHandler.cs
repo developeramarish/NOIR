@@ -9,10 +9,12 @@ namespace NOIR.Application.Features.Media.Queries.GetMediaFiles;
 public class GetMediaFilesQueryHandler
 {
     private readonly IRepository<MediaFile, Guid> _repository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetMediaFilesQueryHandler(IRepository<MediaFile, Guid> repository)
+    public GetMediaFilesQueryHandler(IRepository<MediaFile, Guid> repository, IUserDisplayNameService userDisplayNameService)
     {
         _repository = repository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<MediaFileListDto>>> Handle(
@@ -39,6 +41,14 @@ public class GetMediaFilesQueryHandler
 
         var totalCount = await _repository.CountAsync(countSpec, cancellationToken);
 
+        // Resolve user names
+        var userIds = mediaFiles
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
         var items = mediaFiles.Select(m => new MediaFileListDto(
             m.Id,
             m.ShortId,
@@ -54,7 +64,10 @@ public class GetMediaFilesQueryHandler
             m.MimeType,
             m.SizeBytes,
             m.AltText,
-            m.CreatedAt)).ToList();
+            m.CreatedAt,
+            m.ModifiedAt,
+            m.CreatedBy != null ? userNames.GetValueOrDefault(m.CreatedBy) : null,
+            m.ModifiedBy != null ? userNames.GetValueOrDefault(m.ModifiedBy) : null)).ToList();
 
         var pageIndex = query.Page - 1;
         var result = PagedResult<MediaFileListDto>.Create(items, totalCount, pageIndex, query.PageSize);

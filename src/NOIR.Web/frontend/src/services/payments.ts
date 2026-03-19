@@ -60,6 +60,8 @@ export interface PaymentTransactionListDto {
   paymentMethod: PaymentMethod
   paidAt?: string
   createdAt: string
+  modifiedAt?: string
+  modifiedByName?: string
 }
 
 export interface PaymentOperationLogDto {

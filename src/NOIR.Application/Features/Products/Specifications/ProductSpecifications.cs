@@ -141,6 +141,16 @@ public sealed class ProductsSpec : Specification<Product>
                 if (isDescending) Query.OrderByDescending(p => p.CreatedAt);
                 else Query.OrderBy(p => p.CreatedAt);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedBy);
+                else Query.OrderBy(p => p.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(p => p.ModifiedBy);
+                else Query.OrderBy(p => p.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(p => p.CreatedAt)
                      .ThenBy(p => p.Name);

@@ -9,13 +9,18 @@ public class GetCustomersQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<Customer, Guid>> _customerRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetCustomersQueryHandler _handler;
 
     public GetCustomersQueryHandlerTests()
     {
         _customerRepositoryMock = new Mock<IRepository<Customer, Guid>>();
 
-        _handler = new GetCustomersQueryHandler(_customerRepositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetCustomersQueryHandler(_customerRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Customer CreateTestCustomer(

@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Customers.Queries.GetCustomers;
 public class GetCustomersQueryHandler
 {
     private readonly IRepository<Domain.Entities.Customer.Customer, Guid> _customerRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetCustomersQueryHandler(IRepository<Domain.Entities.Customer.Customer, Guid> customerRepository)
+    public GetCustomersQueryHandler(IRepository<Domain.Entities.Customer.Customer, Guid> customerRepository, IUserDisplayNameService userDisplayNameService)
     {
         _customerRepository = customerRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<CustomerSummaryDto>>> Handle(
@@ -38,7 +40,15 @@ public class GetCustomersQueryHandler
             query.IsDescending);
         var customers = await _customerRepository.ListAsync(listSpec, cancellationToken);
 
-        var items = customers.Select(CustomerMapper.ToSummaryDto).ToList();
+        // Resolve user names
+        var userIds = customers
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = customers.Select(c => CustomerMapper.ToSummaryDto(c, userNames)).ToList();
 
         var pageIndex = query.Page - 1;
         return Result.Success(PagedResult<CustomerSummaryDto>.Create(

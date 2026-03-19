@@ -91,6 +91,16 @@ public sealed class CustomerGroupsPagedSpec : Specification<CustomerGroup>
                 if (isDescending) Query.OrderByDescending(g => (object)g.CreatedAt);
                 else Query.OrderBy(g => (object)g.CreatedAt);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(g => g.CreatedBy);
+                else Query.OrderBy(g => g.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(g => g.ModifiedBy);
+                else Query.OrderBy(g => g.ModifiedBy);
+                break;
             default:
                 Query.OrderBy(g => g.Name);
                 break;

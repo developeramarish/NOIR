@@ -31,6 +31,7 @@ export interface UserListItem {
   isLocked: boolean
   isSystemUser: boolean
   roles: string[]
+  modifiedByName?: string | null
 }
 
 /**

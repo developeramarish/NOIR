@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Promotions.Queries.GetPromotions;
 public class GetPromotionsQueryHandler
 {
     private readonly IRepository<Domain.Entities.Promotion.Promotion, Guid> _repository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetPromotionsQueryHandler(IRepository<Domain.Entities.Promotion.Promotion, Guid> repository)
+    public GetPromotionsQueryHandler(IRepository<Domain.Entities.Promotion.Promotion, Guid> repository, IUserDisplayNameService userDisplayNameService)
     {
         _repository = repository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<PromotionDto>>> Handle(
@@ -40,7 +42,15 @@ public class GetPromotionsQueryHandler
             query.IsDescending);
         var promotions = await _repository.ListAsync(listSpec, cancellationToken);
 
-        var items = promotions.Select(PromotionMapper.ToDto).ToList();
+        // Resolve user names
+        var userIds = promotions
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = promotions.Select(p => PromotionMapper.ToDto(p, userNames)).ToList();
 
         var pageIndex = query.Page - 1;
         return Result.Success(PagedResult<PromotionDto>.Create(

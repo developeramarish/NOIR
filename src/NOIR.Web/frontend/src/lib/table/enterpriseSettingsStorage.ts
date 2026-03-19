@@ -10,13 +10,14 @@ const CURRENT_VERSION = 3
 export const loadEnterpriseSettings = (
   tableKey: string,
   columnIds: string[],
-  defaultPinLeft: string[] = ['actions', 'select']
+  defaultPinLeft: string[] = ['actions', 'select'],
+  columnMeta?: Record<string, { defaultHidden?: boolean }>
 ): EnterpriseTableSettings => {
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}:${tableKey}`)
 
     if (!raw) {
-      return createDefaultSettings(columnIds, defaultPinLeft)
+      return createDefaultSettings(columnIds, defaultPinLeft, columnMeta)
     }
 
     const parsed = JSON.parse(raw) as Partial<EnterpriseTableSettings> & { version?: number }
@@ -25,11 +26,11 @@ export const loadEnterpriseSettings = (
     const migrated = migrateSettings(parsed, columnIds, defaultPinLeft)
 
     // Ensure all columns exist in settings
-    const withNewColumns = ensureAllColumns(migrated, columnIds)
+    const withNewColumns = ensureAllColumns(migrated, columnIds, columnMeta)
 
     return withNewColumns
   } catch {
-    return createDefaultSettings(columnIds, defaultPinLeft)
+    return createDefaultSettings(columnIds, defaultPinLeft, columnMeta)
   }
 }
 
@@ -109,7 +110,8 @@ const migrateSettings = (
  */
 const ensureAllColumns = (
   settings: EnterpriseTableSettings,
-  columnIds: string[]
+  columnIds: string[],
+  columnMeta?: Record<string, { defaultHidden?: boolean }>
 ): EnterpriseTableSettings => {
   const existingIds = new Set(settings.columnOrder)
   const newColumnIds = columnIds.filter(id => !existingIds.has(id))
@@ -118,9 +120,9 @@ const ensureAllColumns = (
     return settings
   }
 
-  // Add new columns to visibility (default: true)
+  // Add new columns to visibility (respect defaultHidden from column meta)
   const newVisibility = Object.fromEntries(
-    newColumnIds.map(id => [id, true])
+    newColumnIds.map(id => [id, columnMeta?.[id]?.defaultHidden === true ? false : true])
   )
 
   // Add new columns to order (at the end, before any right-pinned)

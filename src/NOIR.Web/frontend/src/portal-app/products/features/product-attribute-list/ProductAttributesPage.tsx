@@ -12,8 +12,9 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -51,6 +52,7 @@ const ch = createColumnHelper<ProductAttributeListItem>()
 export const ProductAttributesPage = () => {
   const { t } = useTranslation('common')
   const { hasPermission } = usePermissions()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('ProductAttributes')
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
@@ -165,8 +167,9 @@ export const ProductAttributesPage = () => {
         </Badge>
       ),
     }) as ColumnDef<ProductAttributeListItem, unknown>,
+    ...createFullAuditColumns<ProductAttributeListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdateAttributes, canDeleteAttributes, showActions])
+  ], [t, canUpdateAttributes, canDeleteAttributes, showActions, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: attributes,

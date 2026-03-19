@@ -41,7 +41,11 @@ public sealed record ProductAttributeListDto(
     bool IsVariantAttribute,
     bool IsGlobal,
     bool IsActive,
-    int ValueCount);
+    int ValueCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Product attribute value DTO.

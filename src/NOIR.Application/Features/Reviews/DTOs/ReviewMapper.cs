@@ -8,7 +8,7 @@ public static class ReviewMapper
     /// <summary>
     /// Maps a ProductReview entity to ReviewDto.
     /// </summary>
-    public static ReviewDto ToDto(ProductReview review, string? productName = null, string? userName = null)
+    public static ReviewDto ToDto(ProductReview review, string? productName = null, string? userName = null, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         return new ReviewDto
         {
@@ -27,7 +27,10 @@ public static class ReviewMapper
             AdminResponse = review.AdminResponse,
             AdminRespondedAt = review.AdminRespondedAt,
             MediaUrls = review.Media.OrderBy(m => m.DisplayOrder).Select(m => m.MediaUrl).ToList(),
-            CreatedAt = review.CreatedAt
+            CreatedAt = review.CreatedAt,
+            ModifiedAt = review.ModifiedAt,
+            CreatedByName = review.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(review.CreatedBy) : null,
+            ModifiedByName = review.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(review.ModifiedBy) : null
         };
     }
 

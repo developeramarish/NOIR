@@ -16,12 +16,17 @@ namespace NOIR.Application.UnitTests.Features.CustomerGroups;
 public class GetCustomerGroupsQueryHandlerTests
 {
     private readonly Mock<IRepository<CustomerGroup, Guid>> _repositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetCustomerGroupsQueryHandler _handler;
 
     public GetCustomerGroupsQueryHandlerTests()
     {
         _repositoryMock = new Mock<IRepository<CustomerGroup, Guid>>();
-        _handler = new GetCustomerGroupsQueryHandler(_repositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetCustomerGroupsQueryHandler(_repositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static CustomerGroup CreateTestGroup(string name, string? description = null)

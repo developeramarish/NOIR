@@ -60,7 +60,10 @@ public sealed record ProductListDto(
     bool InStock,
     string? PrimaryImageUrl,
     IReadOnlyCollection<ProductAttributeDisplayDto>? DisplayAttributes,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Simplified attribute display for product cards (only showInProductCard=true).
@@ -131,7 +134,11 @@ public sealed record ProductCategoryListDto(
     int ProductCount,
     Guid? ParentId,
     string? ParentName,
-    int ChildCount);
+    int ChildCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 // ===== Request DTOs =====
 

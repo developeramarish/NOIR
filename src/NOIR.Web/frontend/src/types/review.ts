@@ -23,6 +23,8 @@ export interface ReviewDto {
   adminRespondedAt?: string | null
   mediaUrls: string[]
   createdAt: string
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 export interface ReviewDetailDto {

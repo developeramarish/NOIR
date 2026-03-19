@@ -35,7 +35,10 @@ public sealed record ContactListDto(
     string? OwnerName,
     ContactSource Source,
     bool HasCustomer,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Brief lead info nested in ContactDto.

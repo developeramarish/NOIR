@@ -106,6 +106,16 @@ public sealed class ContactsFilterSpec : Specification<CrmContact>
                 if (isDescending) Query.OrderByDescending(c => c.Phone ?? string.Empty);
                 else Query.OrderBy(c => c.Phone ?? string.Empty);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(c => c.CreatedBy);
+                else Query.OrderBy(c => c.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(c => c.ModifiedBy);
+                else Query.OrderBy(c => c.ModifiedBy);
+                break;
             case "createdat":
             default:
                 if (isDescending) Query.OrderByDescending(c => c.CreatedAt);

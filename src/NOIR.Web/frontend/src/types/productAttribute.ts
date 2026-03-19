@@ -86,6 +86,7 @@ export interface ProductAttributeListItem {
   isGlobal: boolean
   isActive: boolean
   valueCount: number
+  modifiedByName?: string | null
 }
 
 // ============================================================================

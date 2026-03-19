@@ -61,6 +61,8 @@ export interface PostListItem {
   viewCount: number
   readingTimeMinutes: number
   createdAt: string
+  modifiedAt?: string
+  modifiedByName?: string
 }
 
 // Category with hierarchy support
@@ -92,6 +94,7 @@ export interface PostCategoryListItem {
   parentId?: string
   parentName?: string
   childCount: number
+  modifiedByName?: string
 }
 
 // Tag details
@@ -114,6 +117,7 @@ export interface PostTagListItem {
   description?: string
   color?: string
   postCount: number
+  modifiedByName?: string
 }
 
 // Blog paginated response

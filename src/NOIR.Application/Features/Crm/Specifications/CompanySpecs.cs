@@ -87,6 +87,16 @@ public sealed class CompaniesFilterSpec : Specification<CrmCompany>
                 if (isDescending) Query.OrderByDescending(c => c.Contacts.Count);
                 else Query.OrderBy(c => c.Contacts.Count);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(c => c.CreatedBy);
+                else Query.OrderBy(c => c.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(c => c.ModifiedBy);
+                else Query.OrderBy(c => c.ModifiedBy);
+                break;
             case "createdat":
             case "created":
             default:

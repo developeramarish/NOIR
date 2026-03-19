@@ -110,6 +110,16 @@ public sealed class EmployeesFilterSpec : Specification<Employee>
                 if (isDescending) Query.OrderByDescending(e => e.Email);
                 else Query.OrderBy(e => e.Email);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(e => e.CreatedBy);
+                else Query.OrderBy(e => e.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(e => e.ModifiedBy);
+                else Query.OrderBy(e => e.ModifiedBy);
+                break;
             case "createdat":
             default:
                 Query.OrderByDescending(e => e.CreatedAt);

@@ -85,7 +85,9 @@ public class ReorderBlogCategoriesCommandHandler
             c.ParentId.HasValue && categoryLookup.TryGetValue(c.ParentId.Value, out var parentName)
                 ? parentName
                 : null,
-            childCountLookup.TryGetValue(c.Id, out var childCount) ? childCount : 0
+            childCountLookup.TryGetValue(c.Id, out var childCount) ? childCount : 0,
+            c.CreatedAt,
+            c.ModifiedAt
         )).ToList();
 
         return Result.Success(result);

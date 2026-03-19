@@ -81,6 +81,16 @@ public sealed class InventoryReceiptsListSpec : Specification<InventoryReceipt>
                 if (isDescending) Query.OrderByDescending(r => r.CreatedAt);
                 else Query.OrderBy(r => r.CreatedAt);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(r => r.CreatedBy);
+                else Query.OrderBy(r => r.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(r => r.ModifiedBy);
+                else Query.OrderBy(r => r.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(r => r.CreatedAt);
                 break;

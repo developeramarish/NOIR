@@ -38,7 +38,7 @@ public class GetCustomerOrdersQueryHandler
         var listSpec = new OrdersByCustomerIdSpec(query.CustomerId, skip, query.PageSize);
         var orders = await _orderRepository.ListAsync(listSpec, cancellationToken);
 
-        var items = orders.Select(OrderMapper.ToSummaryDto).ToList();
+        var items = orders.Select(o => OrderMapper.ToSummaryDto(o)).ToList();
 
         var pageIndex = query.Page - 1;
         return Result.Success(PagedResult<OrderSummaryDto>.Create(

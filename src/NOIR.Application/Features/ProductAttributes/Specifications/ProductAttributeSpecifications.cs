@@ -208,6 +208,16 @@ public sealed class ProductAttributesPagedSpec : Specification<ProductAttribute>
                 if (isDescending) Query.OrderByDescending(a => a.Values.Count);
                 else Query.OrderBy(a => a.Values.Count);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(a => a.CreatedBy);
+                else Query.OrderBy(a => a.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(a => a.ModifiedBy);
+                else Query.OrderBy(a => a.ModifiedBy);
+                break;
             default:
                 Query.OrderBy(a => a.SortOrder).ThenBy(a => a.Name);
                 break;

@@ -7,6 +7,7 @@ namespace NOIR.Application.UnitTests.Features.Pm.Queries;
 public class GetProjectsQueryHandlerTests
 {
     private readonly Mock<IRepository<Project, Guid>> _projectRepoMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetProjectsQueryHandler _handler;
 
     private const string TestTenantId = "tenant-123";
@@ -14,7 +15,11 @@ public class GetProjectsQueryHandlerTests
     public GetProjectsQueryHandlerTests()
     {
         _projectRepoMock = new Mock<IRepository<Project, Guid>>();
-        _handler = new GetProjectsQueryHandler(_projectRepoMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetProjectsQueryHandler(_projectRepoMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     [Fact]

@@ -54,7 +54,9 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
                 r.IsPlatformRole,
                 r.SortOrder,
                 r.IconName,
-                r.Color));
+                r.Color,
+                r.CreatedAt,
+                r.ModifiedAt));
     }
 
     public async Task<(IReadOnlyList<RoleIdentityDto> Roles, int TotalCount)> GetRolesPaginatedAsync(
@@ -89,6 +91,12 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
             "createdat" => isDescending
                 ? query.OrderByDescending(r => r.CreatedAt)
                 : query.OrderBy(r => r.CreatedAt),
+            "createdby" or "creator" => isDescending
+                ? query.OrderByDescending(r => r.CreatedBy)
+                : query.OrderBy(r => r.CreatedBy),
+            "modifiedby" or "editor" => isDescending
+                ? query.OrderByDescending(r => r.ModifiedBy)
+                : query.OrderBy(r => r.ModifiedBy),
             _ => query.OrderBy(r => r.SortOrder).ThenBy(r => r.Name),
         };
 
@@ -107,7 +115,9 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
                 r.IsPlatformRole,
                 r.SortOrder,
                 r.IconName,
-                r.Color))
+                r.Color,
+                r.CreatedAt,
+                r.ModifiedAt))
             .ToListAsync(ct);
 
         return (roles, totalCount);
@@ -173,6 +183,12 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
             "createdat" => isDescending
                 ? query.OrderByDescending(r => r.CreatedAt)
                 : query.OrderBy(r => r.CreatedAt),
+            "createdby" or "creator" => isDescending
+                ? query.OrderByDescending(r => r.CreatedBy)
+                : query.OrderBy(r => r.CreatedBy),
+            "modifiedby" or "editor" => isDescending
+                ? query.OrderByDescending(r => r.ModifiedBy)
+                : query.OrderBy(r => r.ModifiedBy),
             _ => query.OrderBy(r => r.SortOrder).ThenBy(r => r.Name),
         };
 
@@ -191,7 +207,9 @@ public class RoleIdentityService : IRoleIdentityService, IScopedService
                 r.IsPlatformRole,
                 r.SortOrder,
                 r.IconName,
-                r.Color))
+                r.Color,
+                r.CreatedAt,
+                r.ModifiedAt))
             .ToListAsync(ct);
 
         return (roles, totalCount);

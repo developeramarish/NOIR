@@ -47,6 +47,7 @@ export interface PromotionDto {
   recentUsages: PromotionUsageDto[]
   createdAt: string
   modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 /**

@@ -12,12 +12,17 @@ public class GetPostsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<Post, Guid>> _repositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetPostsQueryHandler _handler;
 
     public GetPostsQueryHandlerTests()
     {
         _repositoryMock = new Mock<IRepository<Post, Guid>>();
-        _handler = new GetPostsQueryHandler(_repositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetPostsQueryHandler(_repositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Post CreateTestPost(

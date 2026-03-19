@@ -28,6 +28,8 @@ public sealed record PromotionDto
     public IReadOnlyList<PromotionUsageDto> RecentUsages { get; init; } = [];
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset? ModifiedAt { get; init; }
+    public string? CreatedByName { get; init; }
+    public string? ModifiedByName { get; init; }
 }
 
 /// <summary>

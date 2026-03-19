@@ -52,6 +52,7 @@ export interface MediaFileListItem {
   sizeBytes: number
   altText?: string
   createdAt: string
+  modifiedByName?: string
 }
 
 // Paginated result

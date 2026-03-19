@@ -42,7 +42,11 @@ public sealed record EmployeeListDto(
     string? Position,
     string? ManagerName,
     EmployeeStatus Status,
-    EmploymentType EmploymentType);
+    EmploymentType EmploymentType,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Lightweight employee for autocomplete search.

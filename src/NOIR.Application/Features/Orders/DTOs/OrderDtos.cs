@@ -106,6 +106,9 @@ public sealed record OrderSummaryDto
     public string? CustomerName { get; init; }
     public int ItemCount { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset? ModifiedAt { get; init; }
+    public string? CreatedByName { get; init; }
+    public string? ModifiedByName { get; init; }
 }
 
 /// <summary>

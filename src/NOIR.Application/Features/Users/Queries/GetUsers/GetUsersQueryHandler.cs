@@ -39,6 +39,7 @@ public class GetUsersQueryHandler
         var rolesDict = await _userIdentityService.GetRolesForUsersAsync(userIds, cancellationToken);
 
         // Map to UserListDto with roles (filtering already done at database level)
+        // Note: Users are Identity entities — CreatedBy/ModifiedBy not available from UserIdentityDto
         var userListDtos = users.Select(user =>
         {
             var roles = rolesDict.TryGetValue(user.Id, out var userRoles) ? userRoles : [];
@@ -50,7 +51,9 @@ public class GetUsersQueryHandler
                 user.DisplayName ?? user.FullName,
                 isLocked,
                 user.IsSystemUser,
-                roles);
+                roles,
+                user.CreatedAt,
+                user.ModifiedAt);
         }).ToList();
 
         var result = PaginatedList<UserListDto>.Create(

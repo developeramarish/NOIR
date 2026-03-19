@@ -21,7 +21,11 @@ public sealed record CustomerGroupListDto(
     string Name,
     string Slug,
     bool IsActive,
-    int MemberCount);
+    int MemberCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Request to create a new customer group.

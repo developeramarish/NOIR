@@ -36,6 +36,9 @@ public sealed record InventoryReceiptSummaryDto
     public int ItemCount { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
     public string? CreatedBy { get; init; }
+    public DateTimeOffset? ModifiedAt { get; init; }
+    public string? CreatedByName { get; init; }
+    public string? ModifiedByName { get; init; }
 }
 
 /// <summary>

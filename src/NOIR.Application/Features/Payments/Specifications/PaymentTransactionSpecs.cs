@@ -108,6 +108,16 @@ public sealed class PaymentTransactionsSpec : Specification<PaymentTransaction>
                 if (isDescending) Query.OrderByDescending(t => t.CreatedAt);
                 else Query.OrderBy(t => t.CreatedAt);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(t => t.CreatedBy);
+                else Query.OrderBy(t => t.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(t => t.ModifiedBy);
+                else Query.OrderBy(t => t.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(t => (object)t.CreatedAt);
                 break;

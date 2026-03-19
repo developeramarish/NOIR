@@ -12,7 +12,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useMediaFiles, useDeleteMediaFile, useRenameMediaFile, useBulkDeleteMediaFiles } from '@/hooks/useMediaFiles'
 import { getPaginationRange } from '@/lib/utils/pagination'
 import type { MediaFileListItem } from '@/types'
@@ -50,7 +50,7 @@ const ch = createColumnHelper<MediaFileListItem>()
 
 export const MediaLibraryPage = () => {
   const { t } = useTranslation('common')
-  const { formatRelativeTime } = useRegionalSettings()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Media')
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
 
@@ -254,18 +254,8 @@ export const MediaLibraryPage = () => {
       meta: { align: 'right' as const, label: t('media.size', 'Size') },
       cell: ({ getValue }) => <span className="text-sm">{formatFileSize(getValue())}</span>,
     }) as ColumnDef<MediaFileListItem, unknown>,
-    ch.accessor('createdAt', {
-      id: 'uploaded',
-      header: t('labels.uploaded', 'Uploaded'),
-      meta: { label: t('labels.uploaded', 'Uploaded') },
-      enableSorting: false,
-      cell: ({ getValue }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatRelativeTime(getValue())}
-        </span>
-      ),
-    }) as ColumnDef<MediaFileListItem, unknown>,
-  ], [t])
+    ...createFullAuditColumns<MediaFileListItem>(t, formatDateTime),
+  ], [t, formatDateTime])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({

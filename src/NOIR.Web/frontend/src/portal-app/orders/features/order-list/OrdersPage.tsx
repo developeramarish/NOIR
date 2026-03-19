@@ -18,7 +18,7 @@ import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
@@ -168,12 +168,7 @@ export const OrdersPage = () => {
         <span className="font-medium">{formatCurrency(row.original.grandTotal, row.original.currency)}</span>
       ),
     }) as ColumnDef<OrderSummaryDto, unknown>,
-    ch.accessor('createdAt', {
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
-      meta: { label: t('labels.date', 'Date') },
-      size: 160,
-      cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,
-    }) as ColumnDef<OrderSummaryDto, unknown>,
+    ...createFullAuditColumns<OrderSummaryDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, canManageOrders, formatDateTime])
 

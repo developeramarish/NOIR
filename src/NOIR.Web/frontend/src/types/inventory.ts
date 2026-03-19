@@ -87,6 +87,8 @@ export interface InventoryReceiptSummaryDto {
   itemCount: number
   createdAt: string
   createdBy?: string | null
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 export interface InventoryReceiptItemDto {

@@ -206,4 +206,6 @@ public record RoleIdentityDto(
     bool IsPlatformRole = false,
     int SortOrder = 0,
     string? IconName = null,
-    string? Color = null);
+    string? Color = null,
+    DateTimeOffset CreatedAt = default,
+    DateTimeOffset? ModifiedAt = null);

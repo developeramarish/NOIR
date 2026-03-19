@@ -18,4 +18,7 @@ public sealed record MediaFileListDto(
     string MimeType,
     long SizeBytes,
     string? AltText,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);

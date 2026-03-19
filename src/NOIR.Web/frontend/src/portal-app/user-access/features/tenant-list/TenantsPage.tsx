@@ -11,7 +11,7 @@ import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
@@ -44,7 +44,7 @@ const ch = createColumnHelper<TenantListItem>()
 export const TenantsPage = () => {
   const { t } = useTranslation('common')
   usePageContext('Tenants')
-  const { formatDate } = useRegionalSettings()
+  const { formatDate, formatDateTime } = useRegionalSettings()
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
 
@@ -179,16 +179,9 @@ export const TenantsPage = () => {
       cell: ({ getValue }) => <TenantStatusBadge isActive={getValue()} />,
       size: 120,
     }) as ColumnDef<TenantListItem, unknown>,
-    ch.accessor('createdAt', {
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.createdAt')} />,
-      meta: { label: t('labels.createdAt') },
-      cell: ({ getValue }) => (
-        <span className="text-sm text-muted-foreground">{formatDate(getValue())}</span>
-      ),
-      size: 140,
-    }) as ColumnDef<TenantListItem, unknown>,
+    ...createFullAuditColumns<TenantListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, formatDate])
+  ], [t, formatDate, formatDateTime])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 

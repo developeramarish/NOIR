@@ -12,12 +12,17 @@ public class GetTenantsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IMultiTenantStore<Tenant>> _tenantStoreMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetTenantsQueryHandler _handler;
 
     public GetTenantsQueryHandlerTests()
     {
         _tenantStoreMock = new Mock<IMultiTenantStore<Tenant>>();
-        _handler = new GetTenantsQueryHandler(_tenantStoreMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetTenantsQueryHandler(_tenantStoreMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Tenant CreateTestTenant(

@@ -174,6 +174,12 @@ public class UserIdentityService : IUserIdentityService, IScopedService
             "createdat" => isDescending
                 ? query.OrderByDescending(u => u.CreatedAt)
                 : query.OrderBy(u => u.CreatedAt),
+            "createdby" or "creator" => isDescending
+                ? query.OrderByDescending(u => u.CreatedBy)
+                : query.OrderBy(u => u.CreatedBy),
+            "modifiedby" or "editor" => isDescending
+                ? query.OrderByDescending(u => u.ModifiedBy)
+                : query.OrderBy(u => u.ModifiedBy),
             _ => isDescending
                 ? query.OrderByDescending(u => u.CreatedAt)
                 : query.OrderBy(u => u.CreatedAt),

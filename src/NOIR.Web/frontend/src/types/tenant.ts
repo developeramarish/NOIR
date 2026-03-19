@@ -29,6 +29,7 @@ export interface TenantListItem {
   name: string | null
   isActive: boolean
   createdAt: string
+  modifiedByName?: string | null
 }
 
 /**

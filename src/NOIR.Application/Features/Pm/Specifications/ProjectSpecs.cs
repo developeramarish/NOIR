@@ -113,6 +113,16 @@ public sealed class ProjectsByFilterSpec : Specification<Project>
                 if (isDescending) Query.OrderByDescending(p => p.Members.Count);
                 else Query.OrderBy(p => p.Members.Count);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(p => p.CreatedBy);
+                else Query.OrderBy(p => p.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(p => p.ModifiedBy);
+                else Query.OrderBy(p => p.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(p => p.CreatedAt);
                 break;

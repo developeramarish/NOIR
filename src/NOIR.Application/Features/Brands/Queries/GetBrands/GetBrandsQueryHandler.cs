@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Brands.Queries.GetBrands;
 public class GetBrandsQueryHandler
 {
     private readonly IRepository<Brand, Guid> _brandRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetBrandsQueryHandler(IRepository<Brand, Guid> brandRepository)
+    public GetBrandsQueryHandler(IRepository<Brand, Guid> brandRepository, IUserDisplayNameService userDisplayNameService)
     {
         _brandRepository = brandRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<BrandListDto>>> Handle(
@@ -36,7 +38,15 @@ public class GetBrandsQueryHandler
 
         var totalCount = await _brandRepository.CountAsync(countSpec, cancellationToken);
 
-        var items = brands.Select(BrandMapper.ToListDto).ToList();
+        // Resolve user names
+        var userIds = brands
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = brands.Select(b => BrandMapper.ToListDto(b, userNames)).ToList();
 
         // PagedResult expects pageIndex (0-based), but query.Page is 1-based
         var pageIndex = query.Page - 1;

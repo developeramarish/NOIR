@@ -87,6 +87,8 @@ export interface OrderSummaryDto {
   customerName?: string | null
   itemCount: number
   createdAt: string
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 export interface OrderPagedResult {

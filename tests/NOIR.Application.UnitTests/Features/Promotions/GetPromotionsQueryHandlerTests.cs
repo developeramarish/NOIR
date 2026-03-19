@@ -9,13 +9,18 @@ public class GetPromotionsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<Promotion, Guid>> _promotionRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetPromotionsQueryHandler _handler;
 
     public GetPromotionsQueryHandlerTests()
     {
         _promotionRepositoryMock = new Mock<IRepository<Promotion, Guid>>();
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
 
-        _handler = new GetPromotionsQueryHandler(_promotionRepositoryMock.Object);
+        _handler = new GetPromotionsQueryHandler(_promotionRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Promotion CreateTestPromotion(

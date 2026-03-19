@@ -134,6 +134,16 @@ public sealed class CustomersFilterSpec : Specification<Domain.Entities.Customer
                 if (isDescending) Query.OrderByDescending(c => c.Tier);
                 else Query.OrderBy(c => c.Tier);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(c => c.CreatedBy);
+                else Query.OrderBy(c => c.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(c => c.ModifiedBy);
+                else Query.OrderBy(c => c.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(c => c.CreatedAt);
                 break;

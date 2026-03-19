@@ -57,7 +57,7 @@ public class GetCustomerStatsQueryHandler
             ActiveCustomers = activeCount,
             SegmentDistribution = segmentDistribution,
             TierDistribution = tierDistribution,
-            TopSpenders = topSpenders.Select(CustomerMapper.ToSummaryDto).ToList()
+            TopSpenders = topSpenders.Select(c => CustomerMapper.ToSummaryDto(c)).ToList()
         });
     }
 }

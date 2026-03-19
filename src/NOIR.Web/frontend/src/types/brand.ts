@@ -43,6 +43,7 @@ export interface BrandListItem {
   isFeatured: boolean
   sortOrder: number
   productCount: number
+  modifiedByName?: string | null
 }
 
 // ============================================================================

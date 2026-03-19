@@ -92,6 +92,8 @@ export interface ProductListItem {
   primaryImageUrl?: string | null
   displayAttributes?: ProductAttributeDisplay[] | null
   createdAt: string
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 /**
@@ -184,6 +186,7 @@ export interface ProductCategoryListItem {
   parentId?: string | null
   parentName?: string | null
   childCount: number
+  modifiedByName?: string | null
 }
 
 // ============================================================================

@@ -49,10 +49,13 @@ export interface EnterpriseTableSettings {
  */
 export const createDefaultSettings = (
   columnIds: string[],
-  defaultPinLeft: string[] = ['actions', 'select']
+  defaultPinLeft: string[] = ['actions', 'select'],
+  columnMeta?: Record<string, { defaultHidden?: boolean }>
 ): EnterpriseTableSettings => ({
   version: 3,
-  columnVisibility: Object.fromEntries(columnIds.map(id => [id, true])),
+  columnVisibility: Object.fromEntries(
+    columnIds.map(id => [id, columnMeta?.[id]?.defaultHidden === true ? false : true])
+  ),
   columnOrder: columnIds,
   columnSizing: {},
   columnPinning: {

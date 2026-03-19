@@ -31,6 +31,7 @@ export interface CustomerGroupListItem {
   description?: string | null
   isActive: boolean
   memberCount: number
+  modifiedByName?: string | null
 }
 
 // ============================================================================

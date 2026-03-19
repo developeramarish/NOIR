@@ -12,7 +12,8 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -49,6 +50,7 @@ const ch = createColumnHelper<PostCategoryListItem>()
 
 export const BlogCategoriesPage = () => {
   const { t } = useTranslation('common')
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Blog Categories')
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
@@ -148,8 +150,9 @@ export const BlogCategoriesPage = () => {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.sortOrder', 'Sort Order')} />,
       meta: { label: t('labels.sortOrder', 'Sort Order') },
     }) as ColumnDef<PostCategoryListItem, unknown>,
+    ...createFullAuditColumns<PostCategoryListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data,

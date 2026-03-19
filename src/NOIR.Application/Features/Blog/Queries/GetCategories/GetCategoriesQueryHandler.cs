@@ -7,10 +7,12 @@ namespace NOIR.Application.Features.Blog.Queries.GetCategories;
 public class GetCategoriesQueryHandler
 {
     private readonly IRepository<PostCategory, Guid> _categoryRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetCategoriesQueryHandler(IRepository<PostCategory, Guid> categoryRepository)
+    public GetCategoriesQueryHandler(IRepository<PostCategory, Guid> categoryRepository, IUserDisplayNameService userDisplayNameService)
     {
         _categoryRepository = categoryRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<List<PostCategoryListDto>>> Handle(
@@ -41,6 +43,14 @@ public class GetCategoriesQueryHandler
             .GroupBy(c => c.ParentId!.Value)
             .ToDictionary(g => g.Key, g => g.Count());
 
+        // Resolve user names
+        var userIds = categories
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
         var result = categories.Select(c => new PostCategoryListDto(
             c.Id,
             c.Name,
@@ -52,7 +62,11 @@ public class GetCategoriesQueryHandler
             c.ParentId.HasValue && categoryDict.TryGetValue(c.ParentId.Value, out var parentName)
                 ? parentName
                 : c.Parent?.Name,
-            childCountLookup.TryGetValue(c.Id, out var childCount) ? childCount : 0
+            childCountLookup.TryGetValue(c.Id, out var childCount) ? childCount : 0,
+            c.CreatedAt,
+            c.ModifiedAt,
+            c.CreatedBy != null ? userNames.GetValueOrDefault(c.CreatedBy) : null,
+            c.ModifiedBy != null ? userNames.GetValueOrDefault(c.ModifiedBy) : null
         )).ToList();
 
         return Result.Success(result);

@@ -10,7 +10,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useUrlTab } from '@/hooks/useUrlTab'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
@@ -216,12 +216,7 @@ export const ReviewsPage = () => {
         </Badge>
       ),
     }) as ColumnDef<ReviewDto, unknown>,
-    ch.accessor('createdAt', {
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
-      meta: { label: t('labels.date', 'Date') },
-      size: 150,
-      cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>,
-    }) as ColumnDef<ReviewDto, unknown>,
+    ...createFullAuditColumns<ReviewDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t, formatDateTime])
 

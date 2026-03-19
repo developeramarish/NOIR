@@ -12,13 +12,18 @@ public class GetProductAttributesQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<ProductAttribute, Guid>> _attributeRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetProductAttributesQueryHandler _handler;
 
     public GetProductAttributesQueryHandlerTests()
     {
         _attributeRepositoryMock = new Mock<IRepository<ProductAttribute, Guid>>();
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
 
-        _handler = new GetProductAttributesQueryHandler(_attributeRepositoryMock.Object);
+        _handler = new GetProductAttributesQueryHandler(_attributeRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static ProductAttribute CreateTestAttribute(

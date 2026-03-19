@@ -21,10 +21,14 @@ public static class CustomerGroupMapper
     /// <summary>
     /// Maps a CustomerGroup entity to a CustomerGroupListDto.
     /// </summary>
-    public static CustomerGroupListDto ToListDto(CustomerGroup group) => new(
+    public static CustomerGroupListDto ToListDto(CustomerGroup group, IReadOnlyDictionary<string, string?>? userNames = null) => new(
         group.Id,
         group.Name,
         group.Slug,
         group.IsActive,
-        group.MemberCount);
+        group.MemberCount,
+        group.CreatedAt,
+        group.ModifiedAt,
+        group.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(group.CreatedBy) : null,
+        group.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(group.ModifiedBy) : null);
 }

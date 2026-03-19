@@ -10,7 +10,7 @@ import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { BulkActionToolbar } from '@/components/BulkActionToolbar'
@@ -63,7 +63,7 @@ const ch = createColumnHelper<PostListItem>()
 
 export const BlogPostsPage = () => {
   const { t } = useTranslation('common')
-  const { formatRelativeTime } = useRegionalSettings()
+  const { formatDateTime } = useRegionalSettings()
   const { hasPermission } = usePermissions()
   usePageContext('Blog Posts')
   const navigate = useNavigate()
@@ -250,14 +250,9 @@ export const BlogPostsPage = () => {
       size: 80,
       cell: ({ getValue }) => getValue().toLocaleString(),
     }) as ColumnDef<PostListItem, unknown>,
-    ch.accessor('createdAt', {
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created')} />,
-      meta: { label: t('labels.created') },
-      size: 130,
-      cell: ({ getValue }) => formatRelativeTime(getValue()),
-    }) as ColumnDef<PostListItem, unknown>,
+    ...createFullAuditColumns<PostListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: tableData,

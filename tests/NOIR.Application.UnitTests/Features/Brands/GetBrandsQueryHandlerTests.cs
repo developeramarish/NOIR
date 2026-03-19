@@ -9,13 +9,18 @@ public class GetBrandsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<Brand, Guid>> _brandRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetBrandsQueryHandler _handler;
 
     public GetBrandsQueryHandlerTests()
     {
         _brandRepositoryMock = new Mock<IRepository<Brand, Guid>>();
 
-        _handler = new GetBrandsQueryHandler(_brandRepositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetBrandsQueryHandler(_brandRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Brand CreateTestBrand(string name, string slug, bool isFeatured = false, bool isActive = true)

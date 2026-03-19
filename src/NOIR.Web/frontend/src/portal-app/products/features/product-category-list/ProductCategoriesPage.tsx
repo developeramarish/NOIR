@@ -12,8 +12,9 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -52,6 +53,7 @@ const ch = createColumnHelper<ProductCategoryListItem>()
 export const ProductCategoriesPage = () => {
   const { t } = useTranslation('common')
   const { hasPermission } = usePermissions()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Product Categories')
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
@@ -188,8 +190,9 @@ export const ProductCategoriesPage = () => {
           <span className="text-muted-foreground">—</span>
         ),
     }) as ColumnDef<ProductCategoryListItem, unknown>,
+    ...createFullAuditColumns<ProductCategoryListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdateCategories, canDeleteCategories, showActions])
+  ], [t, canUpdateCategories, canDeleteCategories, showActions, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: categories,

@@ -3,10 +3,12 @@ namespace NOIR.Application.Features.Pm.Queries.GetProjects;
 public class GetProjectsQueryHandler
 {
     private readonly IRepository<Project, Guid> _projectRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetProjectsQueryHandler(IRepository<Project, Guid> projectRepository)
+    public GetProjectsQueryHandler(IRepository<Project, Guid> projectRepository, IUserDisplayNameService userDisplayNameService)
     {
         _projectRepository = projectRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<Features.Pm.DTOs.ProjectListDto>>> Handle(
@@ -25,6 +27,14 @@ public class GetProjectsQueryHandler
             query.Search, query.Status, query.OwnerId);
         var totalCount = await _projectRepository.CountAsync(countSpec, cancellationToken);
 
+        // Resolve user names
+        var userIds = projects
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
         var items = projects.Select(p =>
         {
             var taskCount = p.Tasks.Count;
@@ -36,8 +46,10 @@ public class GetProjectsQueryHandler
                 p.StartDate, p.EndDate, p.DueDate,
                 p.Owner != null ? $"{p.Owner.FirstName} {p.Owner.LastName}" : null,
                 p.Members.Count, taskCount, completedTaskCount,
-                p.Color, p.Icon, p.Visibility, p.CreatedAt,
-                p.ProjectCode, p.OwnerId, p.Owner?.AvatarUrl, progressPercent);
+                p.Color, p.Icon, p.Visibility, p.CreatedAt, p.ModifiedAt,
+                p.ProjectCode, p.OwnerId, p.Owner?.AvatarUrl, progressPercent,
+                p.CreatedBy != null ? userNames.GetValueOrDefault(p.CreatedBy) : null,
+                p.ModifiedBy != null ? userNames.GetValueOrDefault(p.ModifiedBy) : null);
         }).ToList();
 
         return Result.Success(PagedResult<Features.Pm.DTOs.ProjectListDto>.Create(

@@ -30,7 +30,11 @@ public sealed record BrandListDto(
     string? LogoUrl,
     bool IsActive,
     bool IsFeatured,
-    int ProductCount);
+    int ProductCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Request to create a new brand.

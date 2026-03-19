@@ -23,7 +23,7 @@ import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
 import {
   Badge,
@@ -64,6 +64,7 @@ import {
   useBulkChangeDepartment,
 } from '@/portal-app/hr/queries'
 import type { EmployeeListDto, EmployeeStatus, EmploymentType } from '@/types/hr'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
 import { EmployeeFormDialog } from '../../components/EmployeeFormDialog'
 import { EmployeeImportExport } from '../../components/EmployeeImportExport'
@@ -97,6 +98,7 @@ const ch = createColumnHelper<EmployeeListDto>()
 export const EmployeesPage = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Employees')
 
   const { getRowAnimationClass } = useRowHighlight()
@@ -315,8 +317,9 @@ export const EmployeesPage = () => {
       aggregationFn: 'count',
       aggregatedCell: aggregatedCells.count(),
     }) as ColumnDef<EmployeeListDto, unknown>,
+    ...createFullAuditColumns<EmployeeListDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity, setGrouping } = useEnterpriseTable({
     data: employees,

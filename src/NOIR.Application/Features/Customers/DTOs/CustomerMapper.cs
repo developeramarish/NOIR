@@ -37,7 +37,7 @@ public static class CustomerMapper
     /// <summary>
     /// Maps a Customer entity to CustomerSummaryDto (list view).
     /// </summary>
-    public static CustomerSummaryDto ToSummaryDto(Domain.Entities.Customer.Customer customer)
+    public static CustomerSummaryDto ToSummaryDto(Domain.Entities.Customer.Customer customer, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         return new CustomerSummaryDto
         {
@@ -52,7 +52,10 @@ public static class CustomerMapper
             TotalSpent = customer.TotalSpent,
             LoyaltyPoints = customer.LoyaltyPoints,
             IsActive = customer.IsActive,
-            CreatedAt = customer.CreatedAt
+            CreatedAt = customer.CreatedAt,
+            ModifiedAt = customer.ModifiedAt,
+            CreatedByName = customer.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(customer.CreatedBy) : null,
+            ModifiedByName = customer.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(customer.ModifiedBy) : null
         };
     }
 

@@ -18,7 +18,8 @@ import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import {
   Badge,
@@ -83,6 +84,7 @@ const ch = createColumnHelper<DepartmentFlatItem>()
 
 export const DepartmentsPage = () => {
   const { t } = useTranslation('common')
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Departments')
 
   const { getRowAnimationClass } = useRowHighlight()
@@ -213,8 +215,9 @@ export const DepartmentsPage = () => {
         )
       ),
     }) as ColumnDef<DepartmentFlatItem, unknown>,
+    ...createFullAuditColumns<DepartmentFlatItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, flatDepartments])
+  ], [t, flatDepartments, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: paginatedDepartments,

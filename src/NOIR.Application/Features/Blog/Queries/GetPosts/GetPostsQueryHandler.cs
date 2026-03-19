@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Blog.Queries.GetPosts;
 public class GetPostsQueryHandler
 {
     private readonly IRepository<Post, Guid> _postRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetPostsQueryHandler(IRepository<Post, Guid> postRepository)
+    public GetPostsQueryHandler(IRepository<Post, Guid> postRepository, IUserDisplayNameService userDisplayNameService)
     {
         _postRepository = postRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<PostListDto>>> Handle(
@@ -58,7 +60,15 @@ public class GetPostsQueryHandler
         }
         var totalCount = await _postRepository.CountAsync(countSpec, cancellationToken);
 
-        var items = posts.Select(MapToListDto).ToList();
+        // Resolve user names
+        var userIds = posts
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = posts.Select(p => MapToListDto(p, userNames)).ToList();
 
         var pageIndex = query.Page - 1;
         var result = PagedResult<PostListDto>.Create(items, totalCount, pageIndex, query.PageSize);
@@ -66,7 +76,7 @@ public class GetPostsQueryHandler
         return Result.Success(result);
     }
 
-    private static PostListDto MapToListDto(Post post)
+    private static PostListDto MapToListDto(Post post, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         // Resolve featured image URL: prefer MediaFile.DefaultUrl, fallback to direct URL
         var featuredImageUrl = post.FeaturedImage?.DefaultUrl ?? post.FeaturedImageUrl;
@@ -93,7 +103,10 @@ public class GetPostsQueryHandler
             null, // AuthorName would require user lookup
             post.ViewCount,
             post.ReadingTimeMinutes,
-            post.CreatedAt);
+            post.CreatedAt,
+            post.ModifiedAt,
+            post.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(post.CreatedBy) : null,
+            post.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(post.ModifiedBy) : null);
     }
 
     /// <summary>

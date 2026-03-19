@@ -2131,7 +2131,15 @@
     "pickDateRange": "Pick a date range",
     "uploaded": "Uploaded",
     "preview": "Preview",
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "modifiedAt": "Modified At",
+    "creator": "Creator",
+    "editor": "Editor",
+    "lastEditor": "Editor",
+    "density": "Row density",
+    "densityCompact": "Compact",
+    "densityNormal": "Normal",
+    "densityComfortable": "Comfortable"
   },
   "dataTable": {
     "sortAscending": "Sort Ascending",

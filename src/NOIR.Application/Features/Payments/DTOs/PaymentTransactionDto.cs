@@ -38,7 +38,10 @@ public record PaymentTransactionListDto(
     PaymentStatus Status,
     PaymentMethod PaymentMethod,
     DateTimeOffset? PaidAt,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Comprehensive payment details aggregating transaction, logs, webhooks, and refunds.

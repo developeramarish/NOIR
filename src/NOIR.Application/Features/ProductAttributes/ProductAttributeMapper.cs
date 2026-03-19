@@ -37,7 +37,7 @@ public static class ProductAttributeMapper
     /// <summary>
     /// Maps a ProductAttribute entity to a ProductAttributeListDto.
     /// </summary>
-    public static ProductAttributeListDto ToListDto(ProductAttribute attribute) => new(
+    public static ProductAttributeListDto ToListDto(ProductAttribute attribute, IReadOnlyDictionary<string, string?>? userNames = null) => new(
         attribute.Id,
         attribute.Code,
         attribute.Name,
@@ -46,7 +46,11 @@ public static class ProductAttributeMapper
         attribute.IsVariantAttribute,
         attribute.IsGlobal,
         attribute.IsActive,
-        attribute.Values.Count);
+        attribute.Values.Count,
+        attribute.CreatedAt,
+        attribute.ModifiedAt,
+        attribute.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(attribute.CreatedBy) : null,
+        attribute.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(attribute.ModifiedBy) : null);
 
     /// <summary>
     /// Maps a ProductAttributeValue entity to a ProductAttributeValueDto.

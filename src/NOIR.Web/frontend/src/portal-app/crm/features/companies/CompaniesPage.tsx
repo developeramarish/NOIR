@@ -21,7 +21,7 @@ import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import {
   Badge,
@@ -155,16 +155,9 @@ export const CompaniesPage = () => {
       meta: { label: t('crm.companies.contactsCount'), align: 'center' },
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<CompanyListDto, unknown>,
-    ch.accessor('createdAt', {
-      id: 'created',
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.created')} />,
-      meta: { label: t('labels.created') },
-      cell: ({ getValue }) => (
-        <span className="text-sm text-muted-foreground">{formatDateTime(getValue())}</span>
-      ),
-    }) as ColumnDef<CompanyListDto, unknown>,
+    ...createFullAuditColumns<CompanyListDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdate, canDelete, showActions])
+  ], [t, canUpdate, canDelete, showActions, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: companies,

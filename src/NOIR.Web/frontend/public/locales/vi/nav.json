@@ -1,24 +1,24 @@
 {
   "menu": {
-    "dashboard": "Bảng Điều Khiển",
-    "customers": "Khách Hàng",
-    "orders": "Đơn Hàng",
-    "products": "Sản Phẩm",
-    "reports": "Báo Cáo",
-    "settings": "Cài Đặt",
-    "users": "Người Dùng",
-    "roles": "Vai Trò",
+    "dashboard": "Tổng quan",
+    "customers": "Khách hàng",
+    "orders": "Đơn hàng",
+    "products": "Sản phẩm",
+    "reports": "Báo cáo",
+    "settings": "Cài đặt",
+    "users": "Người dùng",
+    "roles": "Vai trò",
     "permissions": "Quyền",
-    "profile": "Hồ Sơ",
-    "logout": "Đăng Xuất"
+    "profile": "Hồ sơ",
+    "logout": "Đăng xuất"
   },
   "header": {
     "search": "Tìm kiếm...",
-    "notifications": "Thông Báo",
+    "notifications": "Thông báo",
     "noNotifications": "Không có thông báo mới",
     "viewAll": "Xem tất cả"
   },
   "breadcrumb": {
-    "home": "Trang Chủ"
+    "home": "Trang chủ"
   }
 }

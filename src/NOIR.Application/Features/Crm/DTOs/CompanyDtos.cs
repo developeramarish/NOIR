@@ -30,7 +30,10 @@ public sealed record CompanyListDto(
     string? Industry,
     string? OwnerName,
     int ContactCount,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Request body for creating a company.

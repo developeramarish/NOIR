@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Orders.Queries.GetOrders;
 public class GetOrdersQueryHandler
 {
     private readonly IRepository<Order, Guid> _orderRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetOrdersQueryHandler(IRepository<Order, Guid> orderRepository)
+    public GetOrdersQueryHandler(IRepository<Order, Guid> orderRepository, IUserDisplayNameService userDisplayNameService)
     {
         _orderRepository = orderRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<OrderSummaryDto>>> Handle(
@@ -38,7 +40,15 @@ public class GetOrdersQueryHandler
             query.IsDescending);
         var orders = await _orderRepository.ListAsync(listSpec, cancellationToken);
 
-        var items = orders.Select(OrderMapper.ToSummaryDto).ToList();
+        // Resolve user names
+        var userIds = orders
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = orders.Select(o => OrderMapper.ToSummaryDto(o, userNames)).ToList();
 
         // PagedResult expects pageIndex (0-based), but query.Page is 1-based
         var pageIndex = query.Page - 1;

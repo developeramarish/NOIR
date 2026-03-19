@@ -13,6 +13,7 @@ public class GetOrdersQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<Order, Guid>> _repositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetOrdersQueryHandler _handler;
 
     private const string TestTenantId = "test-tenant";
@@ -20,7 +21,11 @@ public class GetOrdersQueryHandlerTests
     public GetOrdersQueryHandlerTests()
     {
         _repositoryMock = new Mock<IRepository<Order, Guid>>();
-        _handler = new GetOrdersQueryHandler(_repositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetOrdersQueryHandler(_repositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static Order CreateTestOrder(

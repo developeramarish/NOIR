@@ -12,12 +12,17 @@ public class GetTagsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<PostTag, Guid>> _repositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetTagsQueryHandler _handler;
 
     public GetTagsQueryHandlerTests()
     {
         _repositoryMock = new Mock<IRepository<PostTag, Guid>>();
-        _handler = new GetTagsQueryHandler(_repositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetTagsQueryHandler(_repositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static PostTag CreateTestTag(

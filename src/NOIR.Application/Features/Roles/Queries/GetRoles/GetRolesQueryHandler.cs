@@ -43,7 +43,9 @@ public class GetRolesQueryHandler
             role.IconName,
             role.Color,
             userCounts.TryGetValue(role.Id, out var userCount) ? userCount : 0,
-            permissionCounts.TryGetValue(role.Id, out var permCount) ? permCount : 0
+            permissionCounts.TryGetValue(role.Id, out var permCount) ? permCount : 0,
+            role.CreatedAt,
+            role.ModifiedAt
         )).ToList();
 
         var result = PaginatedList<RoleListDto>.Create(

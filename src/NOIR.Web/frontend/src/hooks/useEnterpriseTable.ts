@@ -86,18 +86,33 @@ export const useEnterpriseTable = <TData>({
     [columns]
   )
 
+  // ─── Column meta (defaultHidden support) ──────────────────────────────────
+  const columnMeta = useMemo(() => {
+    const meta: Record<string, { defaultHidden?: boolean }> = {}
+    for (const col of columns) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const id = col.id ?? (col as any).accessorKey as string | undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (id && col.meta && (col.meta as any).defaultHidden) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        meta[id] = { defaultHidden: (col.meta as any).defaultHidden }
+      }
+    }
+    return meta
+  }, [columns])
+
   // ─── Enterprise settings (persisted to localStorage) ────────────────────────
   const [settings, setSettings] = useState<EnterpriseTableSettings>(() =>
-    loadEnterpriseSettings(tableKey, columnIds, defaultPinLeft)
+    loadEnterpriseSettings(tableKey, columnIds, defaultPinLeft, columnMeta)
   )
 
   const defaultSettingsRef = useRef<EnterpriseTableSettings>(
-    createDefaultSettings(columnIds, defaultPinLeft)
+    createDefaultSettings(columnIds, defaultPinLeft, columnMeta)
   )
 
   useEffect(() => {
-    defaultSettingsRef.current = createDefaultSettings(columnIds, defaultPinLeft)
-  }, [columnIds, defaultPinLeft])
+    defaultSettingsRef.current = createDefaultSettings(columnIds, defaultPinLeft, columnMeta)
+  }, [columnIds, defaultPinLeft, columnMeta])
 
   // Debounced save to localStorage
   const debouncedSave = useDebouncedCallback(
@@ -130,8 +145,8 @@ export const useEnterpriseTable = <TData>({
   )
 
   const resetToDefault = useCallback(() => {
-    setSettings(createDefaultSettings(columnIds, defaultPinLeft))
-  }, [columnIds, defaultPinLeft])
+    setSettings(createDefaultSettings(columnIds, defaultPinLeft, columnMeta))
+  }, [columnIds, defaultPinLeft, columnMeta])
 
   // ─── Column actions ────────────────────────────────────────────────────────
   const toggleColumnVisibility = useCallback((columnId: string, visible: boolean) => {

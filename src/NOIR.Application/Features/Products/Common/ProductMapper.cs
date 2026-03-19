@@ -188,7 +188,7 @@ public static class ProductMapper
     /// Selects primary image or first available image.
     /// Includes display attributes (only those with showInProductCard=true).
     /// </summary>
-    public static ProductListDto ToListDto(Product product)
+    public static ProductListDto ToListDto(Product product, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         var primaryImage = product.Images.FirstOrDefault(i => i.IsPrimary)
                         ?? product.Images.FirstOrDefault();
@@ -216,7 +216,10 @@ public static class ProductMapper
             product.InStock,
             primaryImage?.Url,
             displayAttributes.Count > 0 ? displayAttributes : null,
-            product.CreatedAt);
+            product.CreatedAt,
+            product.ModifiedAt,
+            product.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(product.CreatedBy) : null,
+            product.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(product.ModifiedBy) : null);
     }
 
     /// <summary>
@@ -293,7 +296,7 @@ public static class ProductMapper
     /// <summary>
     /// Maps a ProductCategory entity to ProductCategoryListDto.
     /// </summary>
-    public static ProductCategoryListDto ToListDto(ProductCategory category)
+    public static ProductCategoryListDto ToListDto(ProductCategory category, IReadOnlyDictionary<string, string?>? userNames = null)
     {
         return new ProductCategoryListDto(
             category.Id,
@@ -304,7 +307,11 @@ public static class ProductMapper
             category.ProductCount,
             category.ParentId,
             category.Parent?.Name,
-            category.Children?.Count ?? 0);
+            category.Children?.Count ?? 0,
+            category.CreatedAt,
+            category.ModifiedAt,
+            category.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(category.CreatedBy) : null,
+            category.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(category.ModifiedBy) : null);
     }
 
     /// <summary>

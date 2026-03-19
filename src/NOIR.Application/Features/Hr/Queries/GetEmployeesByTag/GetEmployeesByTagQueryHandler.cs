@@ -53,7 +53,7 @@ public class GetEmployeesByTagQueryHandler
                 a.Employee.Department?.Name ?? "",
                 a.Employee.Position,
                 a.Employee.Manager != null ? $"{a.Employee.Manager.FirstName} {a.Employee.Manager.LastName}" : null,
-                a.Employee.Status, a.Employee.EmploymentType))
+                a.Employee.Status, a.Employee.EmploymentType, a.Employee.CreatedAt, a.Employee.ModifiedAt))
             .ToList();
 
         return Result.Success(PagedResult<EmployeeListDto>.Create(

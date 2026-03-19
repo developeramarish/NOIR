@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Products.Queries.GetProducts;
 public class GetProductsQueryHandler
 {
     private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetProductsQueryHandler(IRepository<Product, Guid> productRepository)
+    public GetProductsQueryHandler(IRepository<Product, Guid> productRepository, IUserDisplayNameService userDisplayNameService)
     {
         _productRepository = productRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<ProductListDto>>> Handle(
@@ -52,7 +54,15 @@ public class GetProductsQueryHandler
 
         var totalCount = await _productRepository.CountAsync(countSpec, cancellationToken);
 
-        var items = products.Select(ProductMapper.ToListDto).ToList();
+        // Resolve user names
+        var userIds = products
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = products.Select(p => ProductMapper.ToListDto(p, userNames)).ToList();
 
         var pageIndex = query.Page - 1;
         var result = PagedResult<ProductListDto>.Create(items, totalCount, pageIndex, query.PageSize);

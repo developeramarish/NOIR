@@ -50,10 +50,13 @@ public sealed record ProjectListDto(
     string? Icon,
     ProjectVisibility Visibility,
     DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
     string ProjectCode = "",
     Guid? OwnerId = null,
     string? OwnerAvatarUrl = null,
-    decimal ProgressPercent = 0);
+    decimal ProgressPercent = 0,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Project member detail.

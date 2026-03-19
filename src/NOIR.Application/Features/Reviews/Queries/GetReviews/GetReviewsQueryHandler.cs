@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Reviews.Queries.GetReviews;
 public class GetReviewsQueryHandler
 {
     private readonly IRepository<ProductReview, Guid> _reviewRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetReviewsQueryHandler(IRepository<ProductReview, Guid> reviewRepository)
+    public GetReviewsQueryHandler(IRepository<ProductReview, Guid> reviewRepository, IUserDisplayNameService userDisplayNameService)
     {
         _reviewRepository = reviewRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(
@@ -29,7 +31,15 @@ public class GetReviewsQueryHandler
             query.OrderBy, query.IsDescending);
         var reviews = await _reviewRepository.ListAsync(listSpec, cancellationToken);
 
-        var items = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();
+        // Resolve user names
+        var userIds = reviews
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = reviews.Select(r => ReviewMapper.ToDto(r, userNames: userNames)).ToList();
 
         var pageIndex = query.Page - 1;
         return Result.Success(PagedResult<ReviewDto>.Create(

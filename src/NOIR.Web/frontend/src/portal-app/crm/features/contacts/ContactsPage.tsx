@@ -21,8 +21,9 @@ import { useUrlDialog } from '@/hooks/useUrlDialog'
 import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -64,6 +65,7 @@ export const ContactsPage = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('CRM Contacts')
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
@@ -199,8 +201,9 @@ export const ContactsPage = () => {
       enableSorting: false,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<ContactListDto, unknown>,
+    ...createFullAuditColumns<ContactListDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdate, canDelete, showActions])
+  ], [t, canUpdate, canDelete, showActions, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: contacts,

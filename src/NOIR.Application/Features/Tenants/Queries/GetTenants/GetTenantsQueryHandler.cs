@@ -9,10 +9,12 @@ namespace NOIR.Application.Features.Tenants.Queries.GetTenants;
 public class GetTenantsQueryHandler
 {
     private readonly IMultiTenantStore<Tenant> _tenantStore;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetTenantsQueryHandler(IMultiTenantStore<Tenant> tenantStore)
+    public GetTenantsQueryHandler(IMultiTenantStore<Tenant> tenantStore, IUserDisplayNameService userDisplayNameService)
     {
         _tenantStore = tenantStore;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PaginatedList<TenantListDto>>> Handle(GetTenantsQuery query, CancellationToken cancellationToken)
@@ -59,6 +61,14 @@ public class GetTenantsQueryHandler
             .Take(query.PageSize)
             .ToList();
 
+        // Resolve user names
+        var userIds = pagedTenants
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
         // Map to DTOs
         var tenantDtos = pagedTenants.Select(t => new TenantListDto(
             t.Id,
@@ -66,7 +76,10 @@ public class GetTenantsQueryHandler
             t.Name,
             t.Domain,
             t.IsActive,
-            t.CreatedAt
+            t.CreatedAt,
+            t.ModifiedAt,
+            t.CreatedBy != null ? userNames.GetValueOrDefault(t.CreatedBy) : null,
+            t.ModifiedBy != null ? userNames.GetValueOrDefault(t.ModifiedBy) : null
         )).ToList();
 
         var result = PaginatedList<TenantListDto>.Create(

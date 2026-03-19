@@ -13,12 +13,17 @@ public class GetPaymentTransactionsQueryHandlerTests
     #region Test Setup
 
     private readonly Mock<IRepository<PaymentTransaction, Guid>> _paymentRepositoryMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetPaymentTransactionsQueryHandler _handler;
 
     public GetPaymentTransactionsQueryHandlerTests()
     {
         _paymentRepositoryMock = new Mock<IRepository<PaymentTransaction, Guid>>();
-        _handler = new GetPaymentTransactionsQueryHandler(_paymentRepositoryMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetPaymentTransactionsQueryHandler(_paymentRepositoryMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     private static PaymentTransaction CreateTestTransaction(

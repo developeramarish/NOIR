@@ -39,6 +39,7 @@ export interface RoleListItem {
   color: string | null
   userCount: number
   permissionCount: number
+  modifiedByName?: string | null
 }
 
 /**

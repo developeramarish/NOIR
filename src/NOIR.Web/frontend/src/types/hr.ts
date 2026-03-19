@@ -47,6 +47,7 @@ export interface EmployeeListDto {
   status: EmployeeStatus
   employmentType: EmploymentType
   tags: TagBriefDto[]
+  modifiedByName?: string | null
 }
 
 export interface EmployeeSearchDto {

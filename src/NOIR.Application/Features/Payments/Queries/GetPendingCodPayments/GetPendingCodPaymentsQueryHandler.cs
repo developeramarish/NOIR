@@ -34,7 +34,8 @@ public class GetPendingCodPaymentsQueryHandler
             p.Status,
             p.PaymentMethod,
             p.PaidAt,
-            p.CreatedAt)).ToList();
+            p.CreatedAt,
+            p.ModifiedAt)).ToList();
 
         var result = PagedResult<PaymentTransactionListDto>.Create(
             items,

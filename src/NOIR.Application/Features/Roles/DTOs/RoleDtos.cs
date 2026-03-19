@@ -32,7 +32,11 @@ public sealed record RoleListDto(
     string? IconName,
     string? Color,
     int UserCount,
-    int PermissionCount);
+    int PermissionCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Role hierarchy item showing parent-child relationships.

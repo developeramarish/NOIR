@@ -141,6 +141,16 @@ public sealed class OrdersListSpec : Specification<Order>
                 if (isDescending) Query.OrderByDescending(o => o.CreatedAt);
                 else Query.OrderBy(o => o.CreatedAt);
                 break;
+            case "createdby":
+            case "creator":
+                if (isDescending) Query.OrderByDescending(o => o.CreatedBy);
+                else Query.OrderBy(o => o.CreatedBy);
+                break;
+            case "modifiedby":
+            case "editor":
+                if (isDescending) Query.OrderByDescending(o => o.ModifiedBy);
+                else Query.OrderBy(o => o.ModifiedBy);
+                break;
             default:
                 Query.OrderByDescending(o => o.CreatedAt);
                 break;

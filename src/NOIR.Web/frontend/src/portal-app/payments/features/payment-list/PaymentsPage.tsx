@@ -11,7 +11,7 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
 import {
   Badge,
@@ -144,15 +144,6 @@ export const PaymentsPage = () => {
       ),
       enableGrouping: true,
     }) as ColumnDef<PaymentTransactionListDto, unknown>,
-    ch.accessor('createdAt', {
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.createdAt')} />,
-      meta: { label: t('payments.createdAt') },
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDateTime(row.original.createdAt)}
-        </span>
-      ),
-    }) as ColumnDef<PaymentTransactionListDto, unknown>,
     ch.accessor('paidAt', {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('payments.paidAt')} />,
       meta: { label: t('payments.paidAt') },
@@ -162,8 +153,9 @@ export const PaymentsPage = () => {
         </span>
       ),
     }) as ColumnDef<PaymentTransactionListDto, unknown>,
+    ...createFullAuditColumns<PaymentTransactionListDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity, setGrouping } = useEnterpriseTable({
     data: payments,

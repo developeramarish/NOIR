@@ -26,7 +26,7 @@ public static class InventoryReceiptMapper
         CreatedBy = receipt.CreatedBy
     };
 
-    public static InventoryReceiptSummaryDto ToSummaryDto(InventoryReceipt receipt) => new()
+    public static InventoryReceiptSummaryDto ToSummaryDto(InventoryReceipt receipt, IReadOnlyDictionary<string, string?>? userNames = null) => new()
     {
         Id = receipt.Id,
         ReceiptNumber = receipt.ReceiptNumber,
@@ -36,7 +36,10 @@ public static class InventoryReceiptMapper
         TotalCost = receipt.TotalCost,
         ItemCount = receipt.Items.Count,
         CreatedAt = receipt.CreatedAt,
-        CreatedBy = receipt.CreatedBy
+        CreatedBy = receipt.CreatedBy,
+        ModifiedAt = receipt.ModifiedAt,
+        CreatedByName = receipt.CreatedBy != null && userNames != null ? userNames.GetValueOrDefault(receipt.CreatedBy) : null,
+        ModifiedByName = receipt.ModifiedBy != null && userNames != null ? userNames.GetValueOrDefault(receipt.ModifiedBy) : null
     };
 
     public static InventoryReceiptItemDto ToDto(InventoryReceiptItem item) => new()

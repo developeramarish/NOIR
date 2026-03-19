@@ -57,6 +57,8 @@ export interface CustomerSummaryDto {
   loyaltyPoints: number
   isActive: boolean
   createdAt: string
+  modifiedAt?: string | null
+  modifiedByName?: string | null
 }
 
 export interface CustomerAddressDto {

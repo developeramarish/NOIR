@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.Payments.Queries.GetPaymentTransactions;
 public class GetPaymentTransactionsQueryHandler
 {
     private readonly IRepository<PaymentTransaction, Guid> _paymentRepository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetPaymentTransactionsQueryHandler(IRepository<PaymentTransaction, Guid> paymentRepository)
+    public GetPaymentTransactionsQueryHandler(IRepository<PaymentTransaction, Guid> paymentRepository, IUserDisplayNameService userDisplayNameService)
     {
         _paymentRepository = paymentRepository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<PaymentTransactionListDto>>> Handle(
@@ -38,6 +40,14 @@ public class GetPaymentTransactionsQueryHandler
             query.Provider);
         var totalCount = await _paymentRepository.CountAsync(countSpec, cancellationToken);
 
+        // Resolve user names
+        var userIds = payments
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
         var items = payments.Select(p => new PaymentTransactionListDto(
             p.Id,
             p.TransactionNumber,
@@ -47,7 +57,10 @@ public class GetPaymentTransactionsQueryHandler
             p.Status,
             p.PaymentMethod,
             p.PaidAt,
-            p.CreatedAt)).ToList();
+            p.CreatedAt,
+            p.ModifiedAt,
+            p.CreatedBy != null ? userNames.GetValueOrDefault(p.CreatedBy) : null,
+            p.ModifiedBy != null ? userNames.GetValueOrDefault(p.ModifiedBy) : null)).ToList();
 
         var result = PagedResult<PaymentTransactionListDto>.Create(
             items,

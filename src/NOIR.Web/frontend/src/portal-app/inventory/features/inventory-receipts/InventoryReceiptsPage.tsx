@@ -15,7 +15,7 @@ import { useEntityUpdateSignal } from '@/hooks/useEntityUpdateSignal'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
@@ -226,18 +226,9 @@ export const InventoryReceiptsPage = () => {
       meta: { label: t('inventory.totalCost', 'Total Cost'), align: 'right' },
       cell: ({ row }) => <span className="font-medium">{formatCurrency(row.original.totalCost)}</span>,
     }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
-    ch.accessor('createdAt', {
-      id: 'date',
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('labels.date', 'Date')} />,
-      meta: { label: t('labels.date', 'Date') },
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDateTime(row.original.createdAt)}
-        </span>
-      ),
-    }) as ColumnDef<InventoryReceiptSummaryDto, unknown>,
+    ...createFullAuditColumns<InventoryReceiptSummaryDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canWriteInventory, canManageInventory])
+  ], [t, canWriteInventory, canManageInventory, formatDateTime])
 
   const { table, settings, isCustomized, resetToDefault, setDensity } = useEnterpriseTable({
     data: receipts,

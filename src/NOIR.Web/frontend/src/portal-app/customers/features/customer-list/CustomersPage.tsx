@@ -24,7 +24,7 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable, useSelectedIds } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
-import { createSelectColumn, createActionsColumn } from '@/lib/table/columnHelpers'
+import { createSelectColumn, createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { aggregatedCells } from '@/lib/table/aggregationHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
@@ -60,6 +60,7 @@ import {
 } from '@uikit'
 import { useCustomersQuery, useCustomerStatsQuery, useBulkActivateCustomers, useBulkDeactivateCustomers, useBulkDeleteCustomers } from '@/portal-app/customers/queries'
 import type { CustomerSegment, CustomerSummaryDto, CustomerTier } from '@/types/customer'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import { formatCurrency } from '@/lib/utils/currency'
 import { CustomerFormDialog } from '../../components/CustomerFormDialog'
 import { CustomerImportExport } from '../../components/CustomerImportExport'
@@ -75,6 +76,7 @@ export const CustomersPage = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Customers')
 
   const canCreate = hasPermission(Permissions.CustomersCreate)
@@ -225,8 +227,9 @@ export const CustomersPage = () => {
       aggregatedCell: aggregatedCells.sum(),
       cell: ({ getValue }) => <Badge variant="secondary">{getValue().toLocaleString()}</Badge>,
     }) as ColumnDef<CustomerSummaryDto, unknown>,
+    ...createFullAuditColumns<CustomerSummaryDto>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canUpdate, canDelete])
+  ], [t, canUpdate, canDelete, formatDateTime])
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items])
 

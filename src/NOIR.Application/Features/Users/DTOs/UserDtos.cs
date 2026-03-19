@@ -24,7 +24,11 @@ public sealed record UserListDto(
     string? DisplayName,
     bool IsLocked,
     bool IsSystemUser,
-    IReadOnlyList<string> Roles);
+    IReadOnlyList<string> Roles,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// User's effective permissions.

@@ -63,7 +63,10 @@ public sealed record PostListDto(
     string? AuthorName,
     long ViewCount,
     int ReadingTimeMinutes,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Post category with hierarchy support.
@@ -96,7 +99,11 @@ public sealed record PostCategoryListDto(
     int PostCount,
     Guid? ParentId,
     string? ParentName,
-    int ChildCount);
+    int ChildCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Post tag details.
@@ -120,7 +127,11 @@ public sealed record PostTagListDto(
     string Slug,
     string? Description,
     string? Color,
-    int PostCount);
+    int PostCount,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Request to create a new post.

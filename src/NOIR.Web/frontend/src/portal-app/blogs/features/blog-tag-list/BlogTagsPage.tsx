@@ -12,7 +12,8 @@ import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -39,6 +40,7 @@ const ch = createColumnHelper<PostTagListItem>()
 
 export const BlogTagsPage = () => {
   const { t } = useTranslation('common')
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Blog Tags')
 
   const { getRowAnimationClass, fadeOutRow } = useRowHighlight()
@@ -112,8 +114,9 @@ export const BlogTagsPage = () => {
       size: 80,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue()}</Badge>,
     }) as ColumnDef<PostTagListItem, unknown>,
+    ...createFullAuditColumns<PostTagListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t])
+  ], [t, formatDateTime])
 
   const tableData = useMemo(() => data, [data])
 

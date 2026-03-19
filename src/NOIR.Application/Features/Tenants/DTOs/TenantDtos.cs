@@ -25,7 +25,10 @@ public sealed record TenantListDto(
     string? Name,
     string? Domain,
     bool IsActive,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ModifiedAt,
+    string? CreatedByName = null,
+    string? ModifiedByName = null);
 
 /// <summary>
 /// Public tenant info for login dropdown (minimal exposure).

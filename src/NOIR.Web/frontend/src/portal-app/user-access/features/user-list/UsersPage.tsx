@@ -12,9 +12,10 @@ import { useUrlEditDialog } from '@/hooks/useUrlEditDialog'
 import { useTableParams } from '@/hooks/useTableParams'
 import { useEnterpriseTable } from '@/hooks/useEnterpriseTable'
 import { useRowHighlight } from '@/hooks/useRowHighlight'
-import { createActionsColumn } from '@/lib/table/columnHelpers'
+import { createActionsColumn, createFullAuditColumns } from '@/lib/table/columnHelpers'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useRegionalSettings } from '@/contexts/RegionalSettingsContext'
 import {
   Badge,
   Button,
@@ -56,6 +57,7 @@ export const UsersPage = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
+  const { formatDateTime } = useRegionalSettings()
   usePageContext('Users')
 
   const canCreateUsers = hasPermission(Permissions.UsersCreate)
@@ -234,8 +236,9 @@ export const UsersPage = () => {
         )
       ),
     }) as ColumnDef<UserListItem, unknown>,
+    ...createFullAuditColumns<UserListItem>(t, formatDateTime),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, canEditUsers, canDeleteUsers, canAssignRoles, showActions])
+  ], [t, canEditUsers, canDeleteUsers, canAssignRoles, showActions, formatDateTime])
 
   const users = data?.items ?? []
   const { editItem: userToEdit, openEdit: openEditUser, closeEdit: closeEditUser } = useUrlEditDialog<UserListItem>(users)

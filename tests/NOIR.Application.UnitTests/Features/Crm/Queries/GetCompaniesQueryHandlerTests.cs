@@ -6,6 +6,7 @@ namespace NOIR.Application.UnitTests.Features.Crm.Queries;
 public class GetCompaniesQueryHandlerTests
 {
     private readonly Mock<IRepository<CrmCompany, Guid>> _companyRepoMock;
+    private readonly Mock<IUserDisplayNameService> _userDisplayNameServiceMock;
     private readonly GetCompaniesQueryHandler _handler;
 
     private const string TestTenantId = "tenant-123";
@@ -13,7 +14,11 @@ public class GetCompaniesQueryHandlerTests
     public GetCompaniesQueryHandlerTests()
     {
         _companyRepoMock = new Mock<IRepository<CrmCompany, Guid>>();
-        _handler = new GetCompaniesQueryHandler(_companyRepoMock.Object);
+        _userDisplayNameServiceMock = new Mock<IUserDisplayNameService>();
+        _userDisplayNameServiceMock
+            .Setup(x => x.GetDisplayNamesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string?>());
+        _handler = new GetCompaniesQueryHandler(_companyRepoMock.Object, _userDisplayNameServiceMock.Object);
     }
 
     [Fact]

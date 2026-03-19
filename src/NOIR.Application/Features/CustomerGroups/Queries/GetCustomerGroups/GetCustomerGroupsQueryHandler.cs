@@ -6,10 +6,12 @@ namespace NOIR.Application.Features.CustomerGroups.Queries.GetCustomerGroups;
 public class GetCustomerGroupsQueryHandler
 {
     private readonly IRepository<CustomerGroup, Guid> _repository;
+    private readonly IUserDisplayNameService _userDisplayNameService;
 
-    public GetCustomerGroupsQueryHandler(IRepository<CustomerGroup, Guid> repository)
+    public GetCustomerGroupsQueryHandler(IRepository<CustomerGroup, Guid> repository, IUserDisplayNameService userDisplayNameService)
     {
         _repository = repository;
+        _userDisplayNameService = userDisplayNameService;
     }
 
     public async Task<Result<PagedResult<CustomerGroupListDto>>> Handle(
@@ -34,7 +36,15 @@ public class GetCustomerGroupsQueryHandler
 
         var totalCount = await _repository.CountAsync(countSpec, cancellationToken);
 
-        var items = groups.Select(CustomerGroupMapper.ToListDto).ToList();
+        // Resolve user names
+        var userIds = groups
+            .SelectMany(x => new[] { x.CreatedBy, x.ModifiedBy })
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Select(id => id!)
+            .Distinct();
+        var userNames = await _userDisplayNameService.GetDisplayNamesAsync(userIds, cancellationToken);
+
+        var items = groups.Select(g => CustomerGroupMapper.ToListDto(g, userNames)).ToList();
 
         // PagedResult expects pageIndex (0-based), but query.Page is 1-based
         var pageIndex = query.Page - 1;
