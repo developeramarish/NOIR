@@ -39,9 +39,10 @@ public class ProjectColumnConfiguration : IEntityTypeConfiguration<ProjectColumn
             .HasForeignKey(e => e.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Unique index on TenantId + ProjectId + Name
+        // Unique index on TenantId + ProjectId + Name (only active columns)
         builder.HasIndex(e => new { e.TenantId, e.ProjectId, e.Name })
             .IsUnique()
+            .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_ProjectColumns_TenantId_ProjectId_Name");
 
         // Tenant
@@ -54,5 +55,8 @@ public class ProjectColumnConfiguration : IEntityTypeConfiguration<ProjectColumn
         builder.Property(e => e.ModifiedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.DeletedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+        // Soft delete filter — ensures deleted columns are excluded from all queries
+        builder.HasQueryFilter("SoftDelete", e => !e.IsDeleted);
     }
 }

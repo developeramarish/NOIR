@@ -12,9 +12,10 @@ public class ProjectTaskLabelConfiguration : IEntityTypeConfiguration<ProjectTas
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-        // Unique index: one label per task per tenant
+        // Unique index: one label per task per tenant (only active)
         builder.HasIndex(e => new { e.TaskId, e.LabelId, e.TenantId })
             .IsUnique()
+            .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_ProjectTaskLabels_TaskId_LabelId_TenantId");
 
         // Task FK (Cascade — delete associations when task is deleted)
@@ -39,5 +40,8 @@ public class ProjectTaskLabelConfiguration : IEntityTypeConfiguration<ProjectTas
         builder.Property(e => e.ModifiedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.DeletedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+        // Soft delete filter
+        builder.HasQueryFilter("SoftDelete", e => !e.IsDeleted);
     }
 }

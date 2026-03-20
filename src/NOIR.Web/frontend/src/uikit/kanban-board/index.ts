@@ -4,4 +4,8 @@ export type {
   KanbanBoardProps,
   KanbanMoveCardParams,
   KanbanTerminateCardParams,
+  CardRenderContext,
+  ColumnRenderContext,
+  CustomDragTypeConfig,
+  CustomDropParams,
 } from './types'

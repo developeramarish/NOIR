@@ -45,5 +45,6 @@ public class GetTaskByIdQueryHandler
                 c.Author?.AvatarUrl,
                 c.Content, c.IsEdited, c.CreatedAt)).ToList(),
             t.CreatedAt, t.ModifiedAt,
-            t.Project?.Name, t.Assignee?.AvatarUrl, t.Project?.ProjectCode);
+            t.Project?.Name, t.Assignee?.AvatarUrl, t.Project?.ProjectCode,
+            t.IsArchived, t.ArchivedAt);
 }

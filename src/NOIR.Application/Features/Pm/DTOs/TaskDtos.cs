@@ -31,7 +31,9 @@ public sealed record TaskDto(
     DateTimeOffset? ModifiedAt,
     string? ProjectName = null,
     string? AssigneeAvatarUrl = null,
-    string? ProjectCode = null);
+    string? ProjectCode = null,
+    bool IsArchived = false,
+    DateTimeOffset? ArchivedAt = null);
 
 /// <summary>
 /// Kanban card for board view.
@@ -215,7 +217,9 @@ public sealed record ArchivedTaskCardDto(
     int SubtaskCount,
     List<TaskLabelBriefDto> Labels,
     Guid? ParentTaskId,
-    string? ParentTaskNumber);
+    string? ParentTaskNumber,
+    string? ColumnName,
+    DateTimeOffset? DueDate);
 
 /// <summary>
 /// Request body for adding a subtask to a task.

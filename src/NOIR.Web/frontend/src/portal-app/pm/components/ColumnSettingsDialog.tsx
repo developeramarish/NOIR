@@ -149,7 +149,7 @@ export const ColumnSettingsDialog = ({
                 <label className="text-sm font-medium">{t('pm.wipLimit')}</label>
                 <Input
                   type="number"
-                  min={0}
+                  min={1}
                   {...register('wipLimit')}
                   placeholder={t('pm.wipLimit')}
                   className="mt-1"

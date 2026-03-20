@@ -43,5 +43,7 @@ public class TaskLabelConfiguration : IEntityTypeConfiguration<TaskLabel>
         builder.Property(e => e.ModifiedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.DeletedBy).HasMaxLength(DatabaseConstants.UserIdMaxLength);
         builder.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+        builder.HasQueryFilter("SoftDelete", e => !e.IsDeleted);
     }
 }

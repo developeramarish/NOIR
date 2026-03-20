@@ -51,8 +51,8 @@ import {
   TooltipTrigger,
 } from '@uikit'
 import { getStatusBadgeClasses } from '@/utils/statusBadge'
-import { useProjectByCodeQuery, useProjectQuery, useArchiveProject } from '@/portal-app/pm/queries'
-import { KanbanBoard } from '@/portal-app/pm/components/KanbanBoard'
+import { useProjectByCodeQuery, useProjectQuery, useArchiveProject, useKanbanBoardQuery } from '@/portal-app/pm/queries'
+import { ProjectKanbanBoard } from '@/portal-app/pm/components/ProjectKanbanBoard'
 import { TaskDialog } from '@/portal-app/pm/components/TaskDialog'
 import { MembersManager } from '@/portal-app/pm/components/MembersManager'
 import { LabelManager } from '@/portal-app/pm/components/LabelManager'
@@ -86,6 +86,7 @@ export const ProjectDetailPage = () => {
   const byGuidQuery = useProjectQuery(isGuid ? projectParam : undefined)
   const byCodeQuery = useProjectByCodeQuery(!isGuid ? projectParam : undefined)
   const { data: project, isLoading, refetch } = isGuid ? byGuidQuery : byCodeQuery
+  const { data: board } = useKanbanBoardQuery(project?.id)
 
   const { conflictSignal, deletedSignal, dismissConflict, reloadAndRestart, isReconnecting } = useEntityUpdateSignal({
     entityType: 'Project',
@@ -258,7 +259,7 @@ export const ProjectDetailPage = () => {
 
         <div style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 200ms' }}>
           <TabsContent value="board" className="mt-0">
-            <KanbanBoard
+            <ProjectKanbanBoard
               projectId={project.id}
               members={project.members}
               onCreateTask={handleCreateTask}
@@ -284,6 +285,8 @@ export const ProjectDetailPage = () => {
         open={!!listDetailTaskId}
         onOpenChange={(open) => { if (!open) setListDetailTaskId(null) }}
         onNavigateToTask={(taskId) => setListDetailTaskId(taskId)}
+        projectMembers={project?.members}
+        boardColumns={board?.columns}
       />
 
       {/* Archived task detail modal */}
@@ -292,6 +295,8 @@ export const ProjectDetailPage = () => {
         open={!!archivedDetailTaskId}
         onOpenChange={(open) => { if (!open) setArchivedDetailTaskId(null) }}
         onNavigateToTask={(taskId) => setArchivedDetailTaskId(taskId)}
+        projectMembers={project?.members}
+        boardColumns={board?.columns}
       />
 
       {/* Task create dialog */}
@@ -321,6 +326,11 @@ export const ProjectDetailPage = () => {
           <CredenzaBody>
             <MembersManager projectId={project.id} members={project.members} />
           </CredenzaBody>
+          <CredenzaFooter>
+            <Button variant="outline" className="cursor-pointer" onClick={() => setMembersDialogOpen(false)}>
+              {t('buttons.close', { defaultValue: 'Close' })}
+            </Button>
+          </CredenzaFooter>
         </CredenzaContent>
       </Credenza>
 
@@ -337,6 +347,11 @@ export const ProjectDetailPage = () => {
           <CredenzaBody>
             <LabelManager projectId={project.id} />
           </CredenzaBody>
+          <CredenzaFooter>
+            <Button variant="outline" className="cursor-pointer" onClick={() => setLabelsDialogOpen(false)}>
+              {t('buttons.close', { defaultValue: 'Close' })}
+            </Button>
+          </CredenzaFooter>
         </CredenzaContent>
       </Credenza>
 

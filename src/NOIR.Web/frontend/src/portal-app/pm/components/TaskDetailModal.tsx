@@ -30,12 +30,19 @@ import {
   CornerDownRight,
   Circle,
   CheckCircle2,
+  RotateCcw,
 } from 'lucide-react'
 import {
   Avatar,
   Badge,
   Button,
   Calendar as CalendarPicker,
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
   Dialog,
   DialogContent,
   DialogClose,
@@ -64,6 +71,8 @@ import {
   useAddComment,
   useDeleteComment,
   useArchiveTask,
+  useRestoreTask,
+  usePermanentDeleteTask,
   useCreateTask,
   useProjectLabelsQuery,
   useAddLabelToTask,
@@ -475,6 +484,8 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
   const addCommentMutation = useAddComment()
   const deleteCommentMutation = useDeleteComment()
   const archiveTaskMutation = useArchiveTask()
+  const restoreTaskMutation = useRestoreTask()
+  const permanentDeleteMutation = usePermanentDeleteTask()
   const createTaskMutation = useCreateTask()
   const addLabelMutation = useAddLabelToTask()
   const removeLabelMutation = useRemoveLabelFromTask()
@@ -573,7 +584,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
 
   const handleAssigneeChange = (employeeId: string | null) => {
     if (!task) return
-    updateTaskMutation.mutate({ id: task.id, request: { assigneeId: employeeId ?? '' } }, {
+    updateTaskMutation.mutate({ id: task.id, request: { assigneeId: employeeId ?? undefined } }, {
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
     })
   }
@@ -626,6 +637,23 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
     })
   }
 
+  const handleRestoreTask = () => {
+    if (!task) return
+    restoreTaskMutation.mutate(task.id, {
+      onSuccess: () => { onOpenChange(false) },
+      onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+    })
+  }
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const handlePermanentDelete = () => {
+    if (!task) return
+    permanentDeleteMutation.mutate(task.id, {
+      onSuccess: () => { setShowDeleteConfirm(false); onOpenChange(false) },
+      onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
+    })
+  }
+
   const handleToggleLabel = (labelId: string) => {
     if (!task) return
     const hasLabel = task.labels.some((l) => l.id === labelId)
@@ -643,6 +671,7 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
   // ── Render ──
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-full p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col [&>button:last-child]:hidden">
 
@@ -695,6 +724,11 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                 {boardColumns && task.columnId
                   ? (boardColumns.find(c => c.id === task.columnId)?.name ?? task.columnName ?? t(`statuses.${statusI18nKey(task.status)}`, { defaultValue: task.status }))
                   : t(`statuses.${statusI18nKey(task.status)}`, { defaultValue: task.status })}
+              </Badge>
+            )}
+            {task?.isArchived && (
+              <Badge variant="outline" className="text-xs flex-shrink-0 ml-1.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800">
+                {t('pm.archived', { defaultValue: 'Archived' })}
               </Badge>
             )}
           </nav>
@@ -767,8 +801,8 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                       <Popover key={label.id}>
                         <PopoverTrigger asChild>
                           <button
-                            className="inline-flex items-center rounded px-3 py-1.5 text-[11px] font-semibold cursor-pointer hover:opacity-80 transition-opacity text-white"
-                            style={{ backgroundColor: label.color }}
+                            className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium cursor-pointer hover:opacity-80 transition-opacity border"
+                            style={{ backgroundColor: `${label.color}20`, borderColor: `${label.color}60`, color: label.color }}
                             aria-label={label.name}
                           >
                             {label.name}
@@ -1087,6 +1121,9 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                         <SelectItem value="Done" className="cursor-pointer text-xs">
                           <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-green-500" />{t('statuses.done', { defaultValue: 'Done' })}</span>
                         </SelectItem>
+                        <SelectItem value="Cancelled" className="cursor-pointer text-xs">
+                          <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-red-500" />{t('statuses.cancelled', { defaultValue: 'Cancelled' })}</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </SidebarSection>
@@ -1152,8 +1189,8 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                             {task.labels.map(l => (
                               <span
                                 key={l.id}
-                                className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold text-white"
-                                style={{ backgroundColor: l.color }}
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border"
+                                style={{ backgroundColor: `${l.color}20`, borderColor: `${l.color}60`, color: l.color }}
                               >
                                 {l.name}
                               </span>
@@ -1227,19 +1264,42 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
                   )}
                 </div>
 
-                {/* Archive */}
+                {/* Archive / Restore + Delete */}
                 <div className="border-t border-border/50 dark:border-border/70 pt-3">
-                  <button
-                    className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-amber-600 cursor-pointer transition-colors py-1 rounded-md hover:bg-amber-500/10 disabled:opacity-50"
-                    onClick={handleArchiveTask}
-                    disabled={archiveTaskMutation.isPending}
-                  >
-                    {archiveTaskMutation.isPending
-                      ? <Loader2 className="h-3 w-3 animate-spin" />
-                      : <Trash2 className="h-3 w-3" />
-                    }
-                    {t('pm.archiveTask', { defaultValue: 'Archive task' })}
-                  </button>
+                  {task.isArchived ? (
+                    <div className="space-y-1.5">
+                      <button
+                        className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-green-600 cursor-pointer transition-colors py-1.5 rounded-md hover:bg-green-500/10 disabled:opacity-50"
+                        onClick={handleRestoreTask}
+                        disabled={restoreTaskMutation.isPending}
+                      >
+                        {restoreTaskMutation.isPending
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : <RotateCcw className="h-3 w-3" />
+                        }
+                        {t('pm.restoreTask', { defaultValue: 'Restore task' })}
+                      </button>
+                      <button
+                        className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-destructive cursor-pointer transition-colors py-1.5 rounded-md hover:bg-destructive/10 disabled:opacity-50"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        {t('pm.permanentDelete', { defaultValue: 'Delete permanently' })}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-amber-600 cursor-pointer transition-colors py-1 rounded-md hover:bg-amber-500/10 disabled:opacity-50"
+                      onClick={handleArchiveTask}
+                      disabled={archiveTaskMutation.isPending}
+                    >
+                      {archiveTaskMutation.isPending
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : <Trash2 className="h-3 w-3" />
+                      }
+                      {t('pm.archiveTask', { defaultValue: 'Archive task' })}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1260,5 +1320,31 @@ export const TaskDetailModal = ({ taskId, open, onOpenChange, projectMembers, on
       </DialogContent>
 
     </Dialog>
+
+    {/* Permanent delete confirmation */}
+    <Credenza open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <CredenzaContent className="border-destructive/30">
+        <CredenzaHeader>
+          <CredenzaTitle>{t('pm.permanentDeleteTask', { defaultValue: 'Permanently delete task?' })}</CredenzaTitle>
+          <CredenzaDescription>{t('pm.permanentDeleteTaskDesc', { defaultValue: 'This action cannot be undone. The task and all its data will be permanently removed.' })}</CredenzaDescription>
+        </CredenzaHeader>
+        <CredenzaFooter>
+          <Button variant="outline" className="cursor-pointer" onClick={() => setShowDeleteConfirm(false)}>
+            {t('buttons.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button
+            variant="destructive"
+            className="cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            disabled={permanentDeleteMutation.isPending}
+            onClick={handlePermanentDelete}
+          >
+            {permanentDeleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            {t('pm.permanentDelete', { defaultValue: 'Delete permanently' })}
+          </Button>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
+    </>
   )
 }

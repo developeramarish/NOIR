@@ -156,7 +156,7 @@ export const TaskCard = ({
                   {/* Priority badge */}
                   <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-[1.1] border ${badgeClass}`}>
                     <PriorityIcon className="h-2.5 w-2.5" />
-                    {task.priority}
+                    {t(`priorities.${task.priority.toLowerCase()}`, { defaultValue: task.priority })}
                   </span>
 
                   {/* Parent task badge */}

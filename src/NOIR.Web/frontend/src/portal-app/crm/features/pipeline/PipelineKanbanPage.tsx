@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { usePageContext } from '@/hooks/usePageContext'
 import { usePermissions, Permissions } from '@/hooks/usePermissions'
+import { useUrlDialog } from '@/hooks/useUrlDialog'
 import {
   Button,
   Select,
@@ -13,12 +13,11 @@ import {
   SelectValue,
 } from '@uikit'
 import { usePipelinesQuery, usePipelineViewQuery } from '@/portal-app/crm/queries'
-import type { LeadCardDto } from '@/types/crm'
 import { PipelineKanban } from './components/PipelineKanban'
+import { CreateLeadDialog } from './components/CreateLeadDialog'
 
 export const PipelineKanbanPage = () => {
   const { t } = useTranslation('common')
-  const navigate = useNavigate()
   const { hasPermission } = usePermissions()
   usePageContext('CRM Pipeline')
 
@@ -39,9 +38,7 @@ export const PipelineKanbanPage = () => {
     selectedPipelineId || undefined,
   )
 
-  const handleLeadClick = (lead: LeadCardDto) => {
-    navigate(`/portal/crm/pipeline/deals/${lead.id}`)
-  }
+  const { isOpen: isCreateOpen, open: openCreate, onOpenChange: onCreateOpenChange } = useUrlDialog({ paramValue: 'create-crm-lead' })
 
   return (
     <div className="space-y-6">
@@ -69,7 +66,7 @@ export const PipelineKanbanPage = () => {
           )}
 
           {canCreateLead && (
-            <Button className="group transition-all duration-300 cursor-pointer" onClick={() => navigate('/portal/crm/pipeline?dialog=create-crm-lead')}>
+            <Button className="group transition-all duration-300 cursor-pointer" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90 duration-300" />
               {t('crm.leads.create')}
             </Button>
@@ -80,8 +77,16 @@ export const PipelineKanbanPage = () => {
       <PipelineKanban
         pipelineView={pipelineView}
         isLoading={viewLoading}
-        onLeadClick={handleLeadClick}
       />
+
+      {/* Create Lead Dialog */}
+      {selectedPipelineId && (
+        <CreateLeadDialog
+          open={isCreateOpen}
+          onOpenChange={onCreateOpenChange}
+          pipelineId={selectedPipelineId}
+        />
+      )}
     </div>
   )
 }

@@ -18,6 +18,12 @@ import { toast } from 'sonner'
 import {
   Badge,
   Button,
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
   EmptyState,
   Skeleton,
   Table,
@@ -156,7 +162,7 @@ const ArchivedTaskRow = ({
       {/* Status */}
       <TableCell>
         <Badge variant="outline" className={getStatusBadgeClasses(statusColorMap[task.status])}>
-          {t(`statuses.${STATUS_I18N[task.status]}`, { defaultValue: task.status })}
+          {task.columnName ?? t(`statuses.${STATUS_I18N[task.status]}`, { defaultValue: task.status })}
         </Badge>
       </TableCell>
 
@@ -271,8 +277,12 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
     })
   }
 
-  const handlePermanentDelete = (task: ArchivedTaskCardDto) => {
-    permanentDeleteMutation.mutate(task.id, {
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  const handlePermanentDelete = () => {
+    if (!deleteConfirmId) return
+    permanentDeleteMutation.mutate(deleteConfirmId, {
+      onSuccess: () => setDeleteConfirmId(null),
       onError: (err) => toast.error(err instanceof Error ? err.message : t('errors.unknown')),
     })
   }
@@ -326,6 +336,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
   }
 
   return (
+    <>
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
@@ -449,7 +460,7 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
                   task={task}
                   onViewDetail={onViewDetail}
                   onRestore={handleRestore}
-                  onDelete={handlePermanentDelete}
+                  onDelete={(task) => setDeleteConfirmId(task.id)}
                   isRestoring={restoreMutation.isPending && restoreMutation.variables === task.id}
                   isDeleting={permanentDeleteMutation.isPending && permanentDeleteMutation.variables === task.id}
                   formatDate={formatDate}
@@ -461,5 +472,31 @@ export const ArchivedTasksPanel = ({ projectId, onViewDetail }: ArchivedTasksPan
         </div>
       )}
     </div>
+
+    {/* Permanent delete confirmation */}
+    <Credenza open={deleteConfirmId !== null} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}>
+      <CredenzaContent className="border-destructive/30">
+        <CredenzaHeader>
+          <CredenzaTitle>{t('pm.permanentDeleteTask', { defaultValue: 'Permanently delete task?' })}</CredenzaTitle>
+          <CredenzaDescription>{t('pm.permanentDeleteTaskDesc', { defaultValue: 'This action cannot be undone. The task and all its data will be permanently removed.' })}</CredenzaDescription>
+        </CredenzaHeader>
+        <CredenzaFooter>
+          <Button variant="outline" className="cursor-pointer" onClick={() => setDeleteConfirmId(null)}>
+            {t('buttons.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button
+            variant="destructive"
+            className="cursor-pointer bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            disabled={permanentDeleteMutation.isPending}
+            onClick={handlePermanentDelete}
+          >
+            {permanentDeleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            {t('pm.permanentDelete', { defaultValue: 'Delete permanently' })}
+          </Button>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
+    </>
   )
 }

@@ -139,6 +139,7 @@ export interface ArchivedTaskCardDto {
   labels: TaskLabelBriefDto[]
   parentTaskId: string | null
   parentTaskNumber: string | null
+  columnName: string | null
 }
 
 export interface SubtaskDto {

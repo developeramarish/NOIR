@@ -175,6 +175,7 @@ public sealed class ArchivedTasksByProjectReadSpec : Specification<ProjectTask>
     {
         Query.Where(t => t.ProjectId == projectId && t.IsArchived)
              .Include(t => t.Assignee!)
+             .Include(t => t.Column!)
              .Include(t => t.SubTasks)
              .Include(t => t.Comments)
              .Include("TaskLabels.Label")

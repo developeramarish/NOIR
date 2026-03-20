@@ -136,10 +136,11 @@ interface TaskRowProps {
   onClick: (id: string) => void
   t: ReturnType<typeof useTranslation>['t']
   columnColor?: string | null
+  columnName?: string | null
   formatDate: (date: Date | string) => string
 }
 
-const TaskRow = ({ task, onClick, t, columnColor, formatDate }: TaskRowProps) => {
+const TaskRow = ({ task, onClick, t, columnColor, columnName, formatDate }: TaskRowProps) => {
   const PriorityIcon = PRIORITY_ICONS[task.priority]
 
   const dueDateNode = task.dueDate
@@ -177,7 +178,7 @@ const TaskRow = ({ task, onClick, t, columnColor, formatDate }: TaskRowProps) =>
           {columnColor && (
             <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: columnColor }} />
           )}
-          {t(`statuses.${STATUS_I18N_KEYS[task.status]}`, { defaultValue: task.status })}
+          {columnName ?? t(`statuses.${STATUS_I18N_KEYS[task.status]}`, { defaultValue: task.status })}
         </Badge>
       </TableCell>
       <TableCell>
@@ -213,7 +214,7 @@ const TaskRow = ({ task, onClick, t, columnColor, formatDate }: TaskRowProps) =>
               className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium leading-[1.1] border"
               style={{
                 backgroundColor: `${label.color}20`,
-                borderColor: `${label.color}40`,
+                borderColor: `${label.color}60`,
                 color: label.color,
               }}
             >
@@ -236,10 +237,11 @@ interface TaskTableProps {
   onRowClick: (id: string) => void
   t: ReturnType<typeof useTranslation>['t']
   columnColorMap?: Record<string, string | null>
+  taskColumnMap?: Map<string, { columnId: string; columnName: string; columnColor: string | null }>
   formatDate: (date: Date | string) => string
 }
 
-const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t, columnColorMap = {}, formatDate }: TaskTableProps) => (
+const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t, columnColorMap = {}, taskColumnMap, formatDate }: TaskTableProps) => (
   <div className="rounded-md border">
     <Table>
       <TableHeader>
@@ -267,7 +269,7 @@ const TaskTable = ({ tasks, sortField, sortDir, onSort, onRowClick, t, columnCol
       </TableHeader>
       <TableBody>
         {tasks.map((task) => (
-          <TaskRow key={task.id} task={task} onClick={onRowClick} t={t} columnColor={columnColorMap[task.status]} formatDate={formatDate} />
+          <TaskRow key={task.id} task={task} onClick={onRowClick} t={t} columnColor={taskColumnMap?.get(task.id)?.columnColor ?? columnColorMap[task.status]} columnName={taskColumnMap?.get(task.id)?.columnName} formatDate={formatDate} />
         ))}
       </TableBody>
     </Table>
@@ -289,11 +291,20 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
   const { formatDate } = useRegionalSettings()
   const { data: board, isLoading } = useKanbanBoardQuery(projectId)
 
-  // ── Raw tasks ──
+  // ── Raw tasks + column mapping ──
   const tasks = useMemo(
     () => board?.columns.flatMap((c) => c.tasks) ?? [],
     [board],
   )
+  const taskColumnMap = useMemo(() => {
+    const map = new Map<string, { columnId: string; columnName: string; columnColor: string | null }>()
+    for (const col of board?.columns ?? []) {
+      for (const task of col.tasks) {
+        map.set(task.id, { columnId: col.id, columnName: col.name, columnColor: col.color })
+      }
+    }
+    return map
+  }, [board])
 
   // ── URL filter state ──
   const listSearch = searchParams.get('list-search') ?? ''
@@ -434,7 +445,8 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
         !listSearch ||
         task.title.toLowerCase().includes(listSearch.toLowerCase()) ||
         task.taskNumber.toLowerCase().includes(listSearch.toLowerCase())
-      const matchStatus = listStatuses.length === 0 || listStatuses.includes(task.status)
+      const taskCol = taskColumnMap.get(task.id)
+      const matchStatus = listStatuses.length === 0 || (taskCol ? listStatuses.includes(taskCol.columnId) : false)
       const matchPriority = listPriorities.length === 0 || listPriorities.includes(task.priority)
       const matchAssignee =
         listAssignees.length === 0 ||
@@ -454,7 +466,7 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
       const matchComp = matchCompletion(task.completedAt, listCompletion)
       return matchSearch && matchStatus && matchPriority && matchAssignee && matchReporter && matchLabel && matchDue && matchComp
     })
-  }, [tasks, listSearch, listStatuses, listPriorities, listAssignees, listReporters, listLabels, listDue, listDueStart, listDueEnd, listCompletion])
+  }, [tasks, taskColumnMap, listSearch, listStatuses, listPriorities, listAssignees, listReporters, listLabels, listDue, listDueStart, listDueEnd, listCompletion])
 
   // ── Sorting ──
   const sortedTasks = useMemo(() => {
@@ -577,34 +589,27 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
               <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-44">
-            {(board?.columns ?? []).map((column) => {
-              // Map column name → status enum for filter matching
-              const columnStatusMap: Record<string, string> = {
-                'todo': 'Todo', 'in progress': 'InProgress', 'in review': 'InReview', 'done': 'Done',
-              }
-              const statusValue = columnStatusMap[column.name.toLowerCase()] ?? column.name
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={listStatuses.includes(statusValue)}
-                  onCheckedChange={(checked) => {
-                    const next = checked
-                      ? [...listStatuses, statusValue]
-                      : listStatuses.filter((x) => x !== statusValue)
-                    setFilter('list-status', next.join(','))
-                  }}
-                  onSelect={(e) => e.preventDefault()}
-                  className="cursor-pointer"
-                >
-                  <span
-                    className="h-2.5 w-2.5 rounded-full mr-1.5 flex-shrink-0"
-                    style={{ backgroundColor: column.color ?? DEFAULT_COLUMN_COLORS[column.name.toLowerCase()] ?? '#94a3b8' }}
-                  />
-                  {column.name}
-                </DropdownMenuCheckboxItem>
-              )
-            })}
+          <DropdownMenuContent align="start" className="w-48">
+            {(board?.columns ?? []).map((column) => (
+              <DropdownMenuCheckboxItem
+                key={column.id}
+                checked={listStatuses.includes(column.id)}
+                onCheckedChange={(checked) => {
+                  const next = checked
+                    ? [...listStatuses, column.id]
+                    : listStatuses.filter((x) => x !== column.id)
+                  setFilter('list-status', next.join(','))
+                }}
+                onSelect={(e) => e.preventDefault()}
+                className="cursor-pointer"
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full mr-1.5 flex-shrink-0"
+                  style={{ backgroundColor: column.color ?? DEFAULT_COLUMN_COLORS[column.name.toLowerCase()] ?? '#94a3b8' }}
+                />
+                {column.name}
+              </DropdownMenuCheckboxItem>
+            ))}
             {listStatuses.length > 0 && (
               <>
                 <DropdownMenuSeparator />
@@ -778,6 +783,7 @@ export const TaskListView = ({ projectId, members = [], onTaskClick }: TaskListV
                 onRowClick={handleRowClick}
                 t={t}
                 columnColorMap={columnColorMap}
+                taskColumnMap={taskColumnMap}
                 formatDate={formatDate}
               />
             </div>

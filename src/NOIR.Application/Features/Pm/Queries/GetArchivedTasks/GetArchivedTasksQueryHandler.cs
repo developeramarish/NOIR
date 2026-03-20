@@ -29,7 +29,9 @@ public class GetArchivedTasksQueryHandler
             t.TaskLabels.Select(tl => new Features.Pm.DTOs.TaskLabelBriefDto(
                 tl.Label!.Id, tl.Label.Name, tl.Label.Color)).ToList(),
             t.ParentTaskId,
-            t.ParentTask?.TaskNumber)).ToList();
+            t.ParentTask?.TaskNumber,
+            t.Column?.Name,
+            t.DueDate)).ToList();
 
         return Result.Success(dtos);
     }
